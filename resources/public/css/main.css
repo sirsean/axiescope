@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu');
+
+body {
+    font-family: 'Ubuntu';
+}
+
+.container {
+    padding-left: 0.1em;
+    padding-right: 0.1em;
+}
+
+.footer {
+    border-top: 1px solid #DDDDDD;
+    margin-top: 20px;
+    padding-top: 10px;
+}
+
+.footer a {
+    text-decoration: none;
+}
