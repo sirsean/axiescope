@@ -2,9 +2,16 @@
   (:require
    [re-frame.core :as rf]
    [cuerdas.core :refer [format]]
+   [cljs-await.core :refer [await]]
+   [cljs.core.async :refer [<!]]
+   [camel-snake-kebab.core :refer [->kebab-case-keyword]]
+   [camel-snake-kebab.extras :refer [transform-keys]]
    [ajax.core :as ajax]
    [axiescope.db :as db]
-   ))
+   )
+  (:require-macros
+    [cljs.core.async.macros :refer [go]]
+    ))
 
 (rf/reg-fx
   :http-get
@@ -19,7 +26,16 @@
                         (if err-handler
                           (rf/dispatch (conj err-handler err))
                           (println "error" err)))
-       :handler #(rf/dispatch (conj handler %))})))
+       :handler #(rf/dispatch (conj handler (transform-keys ->kebab-case-keyword %)))})))
+
+(rf/reg-fx
+  :blockchain/enable
+  (fn [{:keys [eth handler]}]
+    (go
+      (let [[err eth-addrs] (<! (await (.enable eth)))]
+        (when err
+          (println "uhoh, enable failed" err))
+        (rf/dispatch [:blockchain/got-addrs eth-addrs handler])))))
 
 (defmulti set-active-panel
   (fn [cofx [_ panel :as event]]
@@ -33,15 +49,69 @@
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)})
 
+(defmethod set-active-panel :my-axies-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handler ::fetch-my-axies}})
+
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]
     (set-active-panel cofx event)))
 
+(rf/reg-event-fx
+  ::initialize-db
+  (fn [_ _]
+    (let [{:keys [eth] :as db} db/default-db]
+      {:db db
+       :blockchain/enable {:eth eth}})))
+
+(rf/reg-event-fx
+  :blockchain/got-addrs
+  (fn [{:keys [db]} [_ eth-addrs handler]]
+    (cond->
+      {:db (assoc db :eth-addr (first eth-addrs))}
+      (some? handler)
+      (merge {:dispatch [handler]}))))
+
+(rf/reg-event-fx
+  ::fetch-my-axies
+  (fn [{:keys [db]} _]
+    {:db (-> db
+             (assoc-in [:my-axies :loading?] true)
+             (assoc-in [:my-axies :axies] []))
+     :dispatch [::fetch-my-axies-page]}))
+
+(rf/reg-event-fx
+  ::fetch-my-axies-page
+  (fn [{:keys [db]} [_ total-axies]]
+    (let [axies (get-in db [:my-axies :axies])]
+      (if (or (nil? total-axies)
+              (< (count axies) total-axies))
+        {:http-get {:url (format "https://axieinfinity.com/api/v2/addresses/%s/axies?a=1&offset=%s"
+                                 (:eth-addr db) (count axies))
+                    :handler [::got-my-axies-page]}}
+
+        {:dispatch [::got-my-axies axies]}))))
+
+(rf/reg-event-fx
+  ::got-my-axies-page
+  (fn [{:keys [db]} [_ {:keys [total-axies axies]}]]
+    {:db (update-in db [:my-axies :axies] concat axies)
+     :dispatch [::fetch-my-axies-page total-axies]}))
+
 (rf/reg-event-db
- ::initialize-db
- (fn [_ _]
-   db/default-db))
+  ::got-my-axies
+  (fn [db [_ axies]]
+    (-> db
+        (assoc-in [:my-axies :loading?] false)
+        (assoc-in [:my-axies :axies] axies))))
+
+(rf/reg-event-db
+  ::set-my-axies-sort-key
+  (fn [db [_ sort-key]]
+    (assoc-in db [:my-axies :sort-key] sort-key)))
 
 (rf/reg-event-fx
   ::fetch-axie

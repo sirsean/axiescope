@@ -14,6 +14,9 @@
   (defroute "/battle-simulator" []
     (rf/dispatch [::events/set-active-panel :battle-simulator-panel]))
 
+  (defroute "/my-axies" []
+    (rf/dispatch [::events/set-active-panel :my-axies-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

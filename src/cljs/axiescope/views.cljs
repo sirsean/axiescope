@@ -8,6 +8,16 @@
    [axiescope.events :as events]
    ))
 
+(defn footer
+  []
+  (let [panel @(rf/subscribe [::subs/active-panel])]
+    [:div.footer.row
+     [:div.col-xs-12.center-xs
+      [:p "Donate to 0x560EBafD8dB62cbdB44B50539d65b48072b98277"]]
+     (when (not= :home-panel panel)
+       [:div.col-xs-12.center-xs
+        [:a {:href "/"} "Back Home"]])]))
+
 (defn home-panel []
   [:div.container
    [:div.row
@@ -20,10 +30,10 @@
     [:div.col-xs-12
      [:ul
       [:li [:a {:href "/battle-simulator"}
-            "Battle Simulator"]]]]]
-   [:div.footer.row
-    [:div.col-xs-12.center-xs
-     [:p "Donate to 0x560EBafD8dB62cbdB44B50539d65b48072b98277"]]]])
+            "Battle Simulator"]]
+      [:li [:a {:href "/my-axies"}
+            "My Axies"]]]]]
+   [footer]])
 
 (defn show-axie
   [{:keys [id name image] :as axie}]
@@ -89,8 +99,7 @@
          [:div.col-xs-12
           [rt/reagent-table
            simulation
-           {:table {:style {:margin "0 auto"
-                            "* td" {:max-width "500px"}}}
+           {:table {:style {:margin "0 auto"}}
             :column-model [{:header "Attack"
                             :key :attack}
                            {:header "Defense"
@@ -99,17 +108,88 @@
                             :key :dmg}]
             :render-cell (fn [{:keys [key]} row _ _]
                            (get row key))}]]])])
-   [:div.footer.row
-    [:div.col-xs-12.center-xs
-     [:p "Donate to 0x560EBafD8dB62cbdB44B50539d65b48072b98277"]]
-    [:div.col-xs-12.center-xs
-     [:a {:href "/"} "Back Home"]]]])
+   [footer]])
+
+(defn my-axies-sort-button
+  [title sort-key active-sort-key]
+  [:button
+   {:style {:border-radius "0.3em"
+            :padding "0.35em"
+            :margin "0 0.1em"}
+    :disabled (= sort-key active-sort-key)
+    :on-click #(rf/dispatch [::events/set-my-axies-sort-key sort-key])}
+   title])
+
+(defn my-axies-panel
+  []
+  (let [loading? @(rf/subscribe [:my-axies/loading?])
+        sort-key @(rf/subscribe [:my-axies/sort-key])
+        axies (rf/subscribe [:my-axies/axies])]
+    [:div.container
+     [:div.row
+      [:div.col-xs-12.center-xs
+       [:h1 "My Axies"]]]
+     (if loading?
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading..."]]]
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:p
+          [:span {:style {:padding-right "0.3em"}}
+           "sort by:"]
+          [my-axies-sort-button "ID" :id sort-key]
+          [my-axies-sort-button "Class" :class sort-key]
+          [my-axies-sort-button "Purity" :purity sort-key]
+          [my-axies-sort-button "Breeds" :breed-count sort-key]
+          [my-axies-sort-button "Attack" :attack sort-key]
+          [my-axies-sort-button "Defense" :defense sort-key]
+          [my-axies-sort-button "Atk+Def" :atk+def sort-key]
+          [my-axies-sort-button "Tank" :tank sort-key]
+          [my-axies-sort-button "DPS" :dps sort-key]]]
+        [:div.col-xs-12
+         [rt/reagent-table
+          axies
+          {:table {:class "table table-striped"
+                   :style {:margin "0 auto"}}
+           :column-model [{:header "ID"
+                           :key :id}
+                          {:key :image}
+                          {:header "Name"
+                           :key :name}
+                          {:header "Class"
+                           :key :class}
+                          {:header "Purity"
+                           :key :purity}
+                          {:header "Breeds"
+                           :key :breed-count}
+                          {:header "Attack"
+                           :key :attack}
+                          {:header "Defense"
+                           :key :defense}
+                          {:header "Atk+Def"
+                           :key :atk+def}
+                          {:header "Tank"
+                           :key :tank}
+                          {:header "DPS"
+                           :key :dps}]
+           :render-cell (fn [{:keys [key]} row _ _]
+                          (let [value (get row key)]
+                            (case key
+                              :id [:a {:href (format "https://axieinfinity.com/axie/%s" value)
+                                       :target "_blank"}
+                                   value]
+                              :image [:img {:style {:width "100%"}
+                                            :src value}]
+                              value)))}]]])
+     [footer]]))
 
 (defn panels
   [panel]
   (case panel
     :home-panel [home-panel]
     :battle-simulator-panel [battle-simulator-panel]
+    :my-axies-panel [my-axies-panel]
     [home-panel]))
 
 (defn show-panel

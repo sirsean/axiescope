@@ -18,3 +18,24 @@ body {
 .footer a {
     text-decoration: none;
 }
+
+.table {
+    border-spacing: 0;
+}
+
+.table thead {
+    background-color: #DDDDDD;
+}
+
+.table th {
+    padding: 0.6em 0;
+}
+
+.table td {
+    text-align: center;
+    padding-right: 5px;
+}
+
+.table-striped tr:nth-child(even) {
+    background-color: #EEEEEE;
+}
