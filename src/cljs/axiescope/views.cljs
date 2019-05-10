@@ -38,7 +38,9 @@
       [:li [:a {:href "/teams"}
             "Teams"]]
       [:li [:a {:href "/unassigned"}
-            "Unassigned Axies"]]]]]
+            "Unassigned Axies"]]
+      [:li [:a {:href "/multi-assigned"}
+            "Multi-Assigned Axies"]]]]]
    [footer]])
 
 (defn show-axie
@@ -280,6 +282,34 @@
              :render-cell axie-table-render-cell}]]]))
      [footer]]))
 
+(defn multi-assigned-panel
+  []
+  (let [loading? @(rf/subscribe [:teams/loading?])
+        axies (rf/subscribe [:teams/multi-assigned-axies])]
+    [:div.container
+     [:div.row
+      [:div.col-xs-12.center-xs
+       [:h1 "Multi-Assigned Axies"]
+       [:p "(These axies are on more than one team right now.)"]]]
+     (if loading?
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading..."]]]
+       (if (empty? @axies)
+         [:div.row
+          [:div.col-xs-12.center-xs
+           [:em "you have no axies assigned to multiple teams"]]]
+         [:div.row
+          [:div.col-xs-12
+           [rt/reagent-table
+            axies
+            {:table {:class "table table-striped"
+                     :style {:margin "0 auto"}}
+             :column-model (conj axie-table-column-model {:header "Team"
+                                                          :key :team-name})
+             :render-cell axie-table-render-cell}]]]))
+     [footer]]))
+
 (defn panels
   [panel]
   (case panel
@@ -289,6 +319,7 @@
     :breedable-panel [breedable-panel]
     :teams-panel [teams-panel]
     :unassigned-panel [unassigned-panel]
+    :multi-assigned-panel [multi-assigned-panel]
     [home-panel]))
 
 (defn show-panel

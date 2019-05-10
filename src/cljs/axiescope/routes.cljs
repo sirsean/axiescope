@@ -26,6 +26,9 @@
   (defroute "/unassigned" []
     (rf/dispatch [::events/set-active-panel :unassigned-panel]))
 
+  (defroute "/multi-assigned" []
+    (rf/dispatch [::events/set-active-panel :multi-assigned-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

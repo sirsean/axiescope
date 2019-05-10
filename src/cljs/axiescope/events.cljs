@@ -74,6 +74,12 @@
    :blockchain/enable {:eth (:eth db)
                        :handler :teams/fetch-unassigned}})
 
+(defmethod set-active-panel :multi-assigned-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handler :teams/fetch-teams}})
+
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]

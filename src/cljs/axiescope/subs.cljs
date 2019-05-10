@@ -225,3 +225,23 @@
          (filter adult?)
          (sort-by sort-key)
          reverse)))
+
+(rf/reg-sub
+  :teams/multi-assigned-axies
+  (fn [_]
+    [(rf/subscribe [:teams/teams])])
+  (fn [[teams]]
+    (->> teams
+         (mapcat (fn [{:keys [team-id name team-members]}]
+                   (->> team-members
+                        (map (fn [{:keys [axie-id axie]}]
+                               [axie-id {:team-id team-id
+                                         :team-name name
+                                         :axie axie}])))))
+         (reduce (fn [a->ts [axie-id t]]
+                   (update a->ts axie-id conj t)) {})
+         (filter (fn [[_ ts]] (< 1 (count ts))))
+         (mapcat (fn [[_ ts]]
+                   (->> ts
+                        (map (fn [{:keys [axie team-name]}]
+                               (assoc axie :team-name team-name)))))))))
