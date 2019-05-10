@@ -114,3 +114,14 @@
      (rf/subscribe [:my-axies/sort-key])])
   (fn [[axies sort-key]]
     (reverse (sort-by sort-key axies))))
+
+(rf/reg-sub
+  :my-axies/breedable
+  (fn [_]
+    [(rf/subscribe [:my-axies/raw-axies])
+     (rf/subscribe [:my-axies/sort-key])])
+  (fn [[axies sort-key]]
+    (->> axies
+         (sort-by sort-key)
+         reverse
+         (filter :breedable))))

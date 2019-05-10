@@ -17,6 +17,9 @@
   (defroute "/my-axies" []
     (rf/dispatch [::events/set-active-panel :my-axies-panel]))
 
+  (defroute "/breedable" []
+    (rf/dispatch [::events/set-active-panel :breedable-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

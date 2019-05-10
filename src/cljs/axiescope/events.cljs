@@ -55,6 +55,12 @@
    :blockchain/enable {:eth (:eth db)
                        :handler ::fetch-my-axies}})
 
+(defmethod set-active-panel :breedable-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handler ::fetch-my-axies}})
+
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]

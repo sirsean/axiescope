@@ -32,7 +32,9 @@
       [:li [:a {:href "/battle-simulator"}
             "Battle Simulator"]]
       [:li [:a {:href "/my-axies"}
-            "My Axies"]]]]]
+            "My Axies"]]
+      [:li [:a {:href "/breedable"}
+            "Breedable"]]]]]
    [footer]])
 
 (defn show-axie
@@ -120,11 +122,64 @@
     :on-click #(rf/dispatch [::events/set-my-axies-sort-key sort-key])}
    title])
 
+(defn my-axies-table
+  [axies-sub]
+  (println "my-axies-table" axies-sub)
+  (let [sort-key @(rf/subscribe [:my-axies/sort-key])
+        axies (rf/subscribe [axies-sub])]
+    [:div.row
+     [:div.col-xs-12.center-xs
+      [:p
+       [:span {:style {:padding-right "0.3em"}}
+        "sort by:"]
+       [my-axies-sort-button "ID" :id sort-key]
+       [my-axies-sort-button "Class" :class sort-key]
+       [my-axies-sort-button "Purity" :purity sort-key]
+       [my-axies-sort-button "Breeds" :breed-count sort-key]
+       [my-axies-sort-button "Attack" :attack sort-key]
+       [my-axies-sort-button "Defense" :defense sort-key]
+       [my-axies-sort-button "Atk+Def" :atk+def sort-key]
+       [my-axies-sort-button "Tank" :tank sort-key]
+       [my-axies-sort-button "DPS" :dps sort-key]]]
+     [:div.col-xs-12
+      [rt/reagent-table
+       axies
+       {:table {:class "table table-striped"
+                :style {:margin "0 auto"}}
+        :column-model [{:header "ID"
+                        :key :id}
+                       {:key :image}
+                       {:header "Name"
+                        :key :name}
+                       {:header "Class"
+                        :key :class}
+                       {:header "Purity"
+                        :key :purity}
+                       {:header "Breeds"
+                        :key :breed-count}
+                       {:header "Attack"
+                        :key :attack}
+                       {:header "Defense"
+                        :key :defense}
+                       {:header "Atk+Def"
+                        :key :atk+def}
+                       {:header "Tank"
+                        :key :tank}
+                       {:header "DPS"
+                        :key :dps}]
+        :render-cell (fn [{:keys [key]} row _ _]
+                       (let [value (get row key)]
+                         (case key
+                           :id [:a {:href (format "https://axieinfinity.com/axie/%s" value)
+                                    :target "_blank"}
+                                value]
+                           :image [:img {:style {:width "100%"}
+                                         :src value}]
+                           value)))}]]]))
+
 (defn my-axies-panel
   []
-  (let [loading? @(rf/subscribe [:my-axies/loading?])
-        sort-key @(rf/subscribe [:my-axies/sort-key])
-        axies (rf/subscribe [:my-axies/axies])]
+  (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
      [:div.row
       [:div.col-xs-12.center-xs
@@ -133,55 +188,21 @@
        [:div.row
         [:div.col-xs-12.center-xs
          [:em "loading..."]]]
+       [my-axies-table :my-axies/axies])
+     [footer]]))
+
+(defn breedable-panel
+  []
+  (let [loading? @(rf/subscribe [:my-axies/loading?])]
+    [:div.container
+     [:div.row
+      [:div.col-xs-12.center-xs
+       [:h1 "Breedable"]]]
+     (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
-         [:p
-          [:span {:style {:padding-right "0.3em"}}
-           "sort by:"]
-          [my-axies-sort-button "ID" :id sort-key]
-          [my-axies-sort-button "Class" :class sort-key]
-          [my-axies-sort-button "Purity" :purity sort-key]
-          [my-axies-sort-button "Breeds" :breed-count sort-key]
-          [my-axies-sort-button "Attack" :attack sort-key]
-          [my-axies-sort-button "Defense" :defense sort-key]
-          [my-axies-sort-button "Atk+Def" :atk+def sort-key]
-          [my-axies-sort-button "Tank" :tank sort-key]
-          [my-axies-sort-button "DPS" :dps sort-key]]]
-        [:div.col-xs-12
-         [rt/reagent-table
-          axies
-          {:table {:class "table table-striped"
-                   :style {:margin "0 auto"}}
-           :column-model [{:header "ID"
-                           :key :id}
-                          {:key :image}
-                          {:header "Name"
-                           :key :name}
-                          {:header "Class"
-                           :key :class}
-                          {:header "Purity"
-                           :key :purity}
-                          {:header "Breeds"
-                           :key :breed-count}
-                          {:header "Attack"
-                           :key :attack}
-                          {:header "Defense"
-                           :key :defense}
-                          {:header "Atk+Def"
-                           :key :atk+def}
-                          {:header "Tank"
-                           :key :tank}
-                          {:header "DPS"
-                           :key :dps}]
-           :render-cell (fn [{:keys [key]} row _ _]
-                          (let [value (get row key)]
-                            (case key
-                              :id [:a {:href (format "https://axieinfinity.com/axie/%s" value)
-                                       :target "_blank"}
-                                   value]
-                              :image [:img {:style {:width "100%"}
-                                            :src value}]
-                              value)))}]]])
+         [:em "loading..."]]]
+       [my-axies-table :my-axies/breedable])
      [footer]]))
 
 (defn panels
@@ -190,6 +211,7 @@
     :home-panel [home-panel]
     :battle-simulator-panel [battle-simulator-panel]
     :my-axies-panel [my-axies-panel]
+    :breedable-panel [breedable-panel]
     [home-panel]))
 
 (defn show-panel
