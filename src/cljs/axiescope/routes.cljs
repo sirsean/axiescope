@@ -20,6 +20,9 @@
   (defroute "/breedable" []
     (rf/dispatch [::events/set-active-panel :breedable-panel]))
 
+  (defroute "/teams" []
+    (rf/dispatch [::events/set-active-panel :teams-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

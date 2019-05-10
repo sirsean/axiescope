@@ -34,7 +34,9 @@
       [:li [:a {:href "/my-axies"}
             "My Axies"]]
       [:li [:a {:href "/breedable"}
-            "Breedable"]]]]]
+            "Breedable"]]
+      [:li [:a {:href "/teams"}
+            "Teams"]]]]]
    [footer]])
 
 (defn show-axie
@@ -112,6 +114,40 @@
                            (get row key))}]]])])
    [footer]])
 
+(def axie-table-column-model
+  [{:header "ID"
+    :key :id}
+   {:key :image}
+   {:header "Name"
+    :key :name}
+   {:header "Class"
+    :key :class}
+   {:header "Purity"
+    :key :purity}
+   {:header "Breeds"
+    :key :breed-count}
+   {:header "Attack"
+    :key :attack}
+   {:header "Defense"
+    :key :defense}
+   {:header "Atk+Def"
+    :key :atk+def}
+   {:header "Tank"
+    :key :tank}
+   {:header "DPS"
+    :key :dps}])
+
+(defn axie-table-render-cell
+  [{:keys [key]} row _ _]
+  (let [value (get row key)]
+    (case key
+      :id [:a {:href (format "https://axieinfinity.com/axie/%s" value)
+               :target "_blank"}
+           value]
+      :image [:img {:style {:width "100%"}
+                    :src value}]
+      value)))
+
 (defn my-axies-sort-button
   [title sort-key active-sort-key]
   [:button
@@ -124,7 +160,6 @@
 
 (defn my-axies-table
   [axies-sub]
-  (println "my-axies-table" axies-sub)
   (let [sort-key @(rf/subscribe [:my-axies/sort-key])
         axies (rf/subscribe [axies-sub])]
     [:div.row
@@ -146,36 +181,8 @@
        axies
        {:table {:class "table table-striped"
                 :style {:margin "0 auto"}}
-        :column-model [{:header "ID"
-                        :key :id}
-                       {:key :image}
-                       {:header "Name"
-                        :key :name}
-                       {:header "Class"
-                        :key :class}
-                       {:header "Purity"
-                        :key :purity}
-                       {:header "Breeds"
-                        :key :breed-count}
-                       {:header "Attack"
-                        :key :attack}
-                       {:header "Defense"
-                        :key :defense}
-                       {:header "Atk+Def"
-                        :key :atk+def}
-                       {:header "Tank"
-                        :key :tank}
-                       {:header "DPS"
-                        :key :dps}]
-        :render-cell (fn [{:keys [key]} row _ _]
-                       (let [value (get row key)]
-                         (case key
-                           :id [:a {:href (format "https://axieinfinity.com/axie/%s" value)
-                                    :target "_blank"}
-                                value]
-                           :image [:img {:style {:width "100%"}
-                                         :src value}]
-                           value)))}]]]))
+        :column-model axie-table-column-model
+        :render-cell axie-table-render-cell}]]]))
 
 (defn my-axies-panel
   []
@@ -205,6 +212,41 @@
        [my-axies-table :my-axies/breedable])
      [footer]]))
 
+(defn teams-panel
+  []
+  (let [loading? @(rf/subscribe [:teams/loading?])
+        teams @(rf/subscribe [:teams/teams])]
+    [:div.container
+     [:div.row
+      [:div.col-xs-12.center-xs
+       [:h1 "Teams"]]]
+     (if loading?
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading teams..."]]]
+       [:div.row
+        [:div.col-xs-12
+         (for [t teams]
+           [:div.row {:key (:team-id t)}
+            [:div.col-xs-12
+             [:div.row {:style {:background-color "#DDDDDD"
+                                :padding "0.4em 0"}}
+              [:div.col-xs-6
+               [:strong (:name t)]]
+              [:div.col-xs-6.end-xs
+               (if (:ready? t)
+                 [:em "ready"]
+                 [:span (format "ready in %sm" (:ready-in t))])]]
+             [:div.row
+              [:div.col-xs-12
+               (let [axies (rf/subscribe [:teams/team-axies (:team-id t)])]
+                 [rt/reagent-table
+                  axies
+                  {:column-model axie-table-column-model
+                   :render-cell axie-table-render-cell}])]]]])]
+        ])
+     [footer]]))
+
 (defn panels
   [panel]
   (case panel
@@ -212,6 +254,7 @@
     :battle-simulator-panel [battle-simulator-panel]
     :my-axies-panel [my-axies-panel]
     :breedable-panel [breedable-panel]
+    :teams-panel [teams-panel]
     [home-panel]))
 
 (defn show-panel

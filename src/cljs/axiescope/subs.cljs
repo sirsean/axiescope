@@ -5,6 +5,11 @@
    [axiescope.battle :as battle]))
 
 (rf/reg-sub
+  :identity
+  (fn [_ [_ x]]
+    x))
+
+(rf/reg-sub
   ::active-panel
   (fn [{:keys [active-panel]}]
     active-panel))
@@ -125,3 +130,71 @@
          (sort-by sort-key)
          reverse
          (filter :breedable))))
+
+(rf/reg-sub
+  :teams/loading?
+  (fn [db]
+    (get-in db [:teams :loading?])))
+
+(rf/reg-sub
+  :teams/raw-teams
+  (fn [db]
+    (get-in db [:teams :teams])))
+
+(rf/reg-sub
+  :teams/axie-id->activity-points
+  (fn [db]
+    (get-in db [:teams :axie-id->activity-points] {})))
+
+(rf/reg-sub
+  :teams/axie-db
+  (fn [db]
+    (get-in db [:teams :axie-db] {})))
+
+(defn team-can-battle?
+  [{:keys [team-members]}]
+  (and (= 3 (count team-members))
+       (every? (comp (partial <= 240) :activity-points) team-members)))
+
+(defn team-ready-in
+  [{:keys [team-members]}]
+  (->> team-members
+       (map :activity-points)
+       (apply min)
+       (- 240)))
+
+(rf/reg-sub
+  :teams/teams
+  (fn [_]
+    [(rf/subscribe [:teams/raw-teams])
+     (rf/subscribe [:teams/axie-id->activity-points])
+     (rf/subscribe [:teams/axie-db])])
+  (fn [[teams axie-id->activity-points axie-db]]
+    (->> teams
+         (map (fn [team]
+                (-> team
+                    (update :team-members
+                            (partial map (fn [{:keys [axie-id] :as a}]
+                                           (assoc a
+                                                  :axie (adjust-axie (get axie-db axie-id))
+                                                  :activity-points (axie-id->activity-points axie-id)))))
+                    ((fn [t]
+                       (assoc t
+                              :ready? (team-can-battle? t)
+                              :ready-in (team-ready-in t)))))))
+         (sort-by :ready-in))))
+
+(rf/reg-sub
+  :teams/team-axies
+  (fn [[_ team-id]]
+    [(rf/subscribe [:identity team-id])
+     (rf/subscribe [:teams/raw-teams])
+     (rf/subscribe [:teams/axie-db])])
+  (fn [[team-id teams axie-db]]
+    (->> teams
+         (filter (fn [t] (= team-id (:team-id t))))
+         first
+         :team-members
+         (map :axie-id)
+         (map axie-db)
+         (map adjust-axie))))

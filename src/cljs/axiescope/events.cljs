@@ -1,6 +1,7 @@
 (ns axiescope.events
   (:require
    [re-frame.core :as rf]
+   [clojure.string :as string]
    [cuerdas.core :refer [format]]
    [cljs-await.core :refer [await]]
    [cljs.core.async :refer [<!]]
@@ -60,6 +61,12 @@
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
                        :handler ::fetch-my-axies}})
+
+(defmethod set-active-panel :teams-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handler :teams/fetch-teams}})
 
 (rf/reg-event-fx
   ::set-active-panel
@@ -145,3 +152,52 @@
   ::got-bs-defender
   (fn [db [_ axie]]
     (assoc-in db [:battle-simulator :defender] axie)))
+
+(rf/reg-event-fx
+  :teams/fetch-teams
+  (fn [{:keys [db]} _]
+    {:db (-> db
+             (assoc-in [:teams :loading?] true)
+             (assoc-in [:teams :teams] []))
+     :http-get {:url (format "https://api.axieinfinity.com/v1/battle/teams/?address=%s&offset=0&count=47&no_limit=1"
+                        (:eth-addr db))
+                :handler [:teams/got-teams]}}))
+
+(rf/reg-event-fx
+  :teams/got-teams
+  (fn [{:keys [db]} [_ teams-result]]
+    (let [teams (:teams teams-result)
+          axie-ids (->> teams (mapcat :team-members) (map :axie-id))]
+      {:db (-> db
+               (assoc-in [:teams :loading?] false)
+               (assoc-in [:teams :teams] teams))
+       :dispatch-n (-> [[:teams/fetch-activity-points axie-ids]]
+                       (concat (map (fn [axie-id]
+                                      [::fetch-axie axie-id :teams/got-axie])
+                                    axie-ids)))})))
+
+(rf/reg-event-fx
+  :teams/fetch-activity-points
+  (fn [{:keys [db]} [_ axie-ids]]
+    {:http-get {:url (format "https://api.axieinfinity.com/v1/battle/battle/activity-point?%s"
+                             (->> axie-ids
+                                  (filter some?)
+                                  (map (partial format "axieId=%s"))
+                                  (string/join "&")))
+                :handler [:teams/got-activity-points]}}))
+
+(rf/reg-event-db
+  :teams/got-activity-points
+  (fn [db [_ points]]
+    (-> db
+        (assoc-in [:teams :axie-id->activity-points]
+                  (reduce
+                    (fn [m {:keys [axie-id activity-point]}]
+                      (assoc m axie-id activity-point))
+                    {}
+                    points)))))
+
+(rf/reg-event-db
+  :teams/got-axie
+  (fn [db [_ axie]]
+    (assoc-in db [:teams :axie-db (:id axie)] axie)))
