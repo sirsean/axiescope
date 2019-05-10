@@ -243,5 +243,7 @@
          (filter (fn [[_ ts]] (< 1 (count ts))))
          (mapcat (fn [[_ ts]]
                    (->> ts
-                        (map (fn [{:keys [axie team-name]}]
-                               (assoc axie :team-name team-name)))))))))
+                        (map (fn [{:keys [axie team-id team-name]}]
+                               (assoc axie
+                                      :team-id team-id
+                                      :team-name team-name)))))))))

@@ -150,6 +150,9 @@
            value]
       :image [:img {:style {:width "100%"}
                     :src value}]
+      :team-name [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
+                      :target "_blank"}
+                  value]
       value)))
 
 (defn my-axies-sort-button
