@@ -63,9 +63,7 @@
 (rf/reg-event-fx
   ::initialize-db
   (fn [_ _]
-    (let [{:keys [eth] :as db} db/default-db]
-      {:db db
-       :blockchain/enable {:eth eth}})))
+    {:db db/default-db}))
 
 (rf/reg-event-fx
   :blockchain/got-addrs
