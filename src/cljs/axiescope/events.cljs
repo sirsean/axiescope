@@ -177,22 +177,36 @@
     {:db (-> db
              (assoc-in [:teams :loading?] true)
              (assoc-in [:teams :teams] []))
-     :http-get {:url (format "https://api.axieinfinity.com/v1/battle/teams/?address=%s&offset=0&count=47&no_limit=1"
-                        (:eth-addr db))
-                :handler [:teams/got-teams]}}))
+     :dispatch [:teams/fetch-teams-page]}))
 
 (rf/reg-event-fx
-  :teams/got-teams
-  (fn [{:keys [db]} [_ teams-result]]
-    (let [teams (:teams teams-result)
-          axie-ids (->> teams (mapcat :team-members) (map :axie-id))]
-      {:db (-> db
-               (assoc-in [:teams :loading?] false)
-               (assoc-in [:teams :teams] teams))
-       :dispatch-n (-> [[:teams/fetch-activity-points axie-ids]]
+  :teams/fetch-teams-page
+  (fn [{:keys [db]} [_ total]]
+    (let [teams (get-in db [:teams :teams])]
+      (if (or (nil? total)
+              (< (count teams) total))
+        {:http-get {:url (format "https://api.axieinfinity.com/v1/battle/teams/?address=%s&offset=%s&count=47&no_limit=1"
+                                 (:eth-addr db) (count teams))
+                    :handler [:teams/got-teams-page]}}
+
+        {:dispatch [:teams/got-teams teams]}))))
+
+(rf/reg-event-fx
+  :teams/got-teams-page
+  (fn [{:keys [db]} [_ {:keys [total teams]}]]
+    (let [axie-ids (->> teams (mapcat :team-members) (map :axie-id))]
+      {:db (update-in db [:teams :teams] concat teams)
+       :dispatch-n (-> [[:teams/fetch-teams-page total]
+                        [:teams/fetch-activity-points axie-ids]]
                        (concat (map (fn [axie-id]
                                       [::fetch-axie axie-id :teams/got-axie])
                                     axie-ids)))})))
+(rf/reg-event-fx
+  :teams/got-teams
+  (fn [{:keys [db]} [_ teams]]
+      {:db (-> db
+               (assoc-in [:teams :loading?] false)
+               (assoc-in [:teams :teams] teams))}))
 
 (rf/reg-event-fx
   :teams/fetch-activity-points
@@ -207,13 +221,15 @@
 (rf/reg-event-db
   :teams/got-activity-points
   (fn [db [_ points]]
-    (-> db
-        (assoc-in [:teams :axie-id->activity-points]
-                  (reduce
-                    (fn [m {:keys [axie-id activity-point]}]
-                      (assoc m axie-id activity-point))
-                    {}
-                    points)))))
+    (let [ap-map (reduce
+                   (fn [m {:keys [axie-id activity-point]}]
+                     (assoc m axie-id activity-point))
+                   {}
+                   points)]
+      (-> db
+          (update-in [:teams :axie-id->activity-points]
+                     merge
+                     ap-map)))))
 
 (rf/reg-event-db
   :teams/got-axie
