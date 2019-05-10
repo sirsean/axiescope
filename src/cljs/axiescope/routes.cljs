@@ -23,6 +23,9 @@
   (defroute "/teams" []
     (rf/dispatch [::events/set-active-panel :teams-panel]))
 
+  (defroute "/unassigned" []
+    (rf/dispatch [::events/set-active-panel :unassigned-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

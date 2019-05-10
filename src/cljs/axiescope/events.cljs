@@ -68,6 +68,12 @@
    :blockchain/enable {:eth (:eth db)
                        :handler :teams/fetch-teams}})
 
+(defmethod set-active-panel :unassigned-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handler :teams/fetch-unassigned}})
+
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]
@@ -85,6 +91,12 @@
       {:db (assoc db :eth-addr (first eth-addrs))}
       (some? handler)
       (merge {:dispatch [handler]}))))
+
+(rf/reg-event-fx
+  :teams/fetch-unassigned
+  (fn [_ _]
+    {:dispatch-n [[::fetch-my-axies]
+                  [:teams/fetch-teams]]}))
 
 (rf/reg-event-fx
   ::fetch-my-axies

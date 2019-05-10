@@ -36,7 +36,9 @@
       [:li [:a {:href "/breedable"}
             "Breedable"]]
       [:li [:a {:href "/teams"}
-            "Teams"]]]]]
+            "Teams"]]
+      [:li [:a {:href "/unassigned"}
+            "Unassigned Axies"]]]]]
    [footer]])
 
 (defn show-axie
@@ -158,10 +160,9 @@
     :on-click #(rf/dispatch [::events/set-my-axies-sort-key sort-key])}
    title])
 
-(defn my-axies-table
-  [axies-sub]
-  (let [sort-key @(rf/subscribe [:my-axies/sort-key])
-        axies (rf/subscribe [axies-sub])]
+(defn axie-sorter
+  []
+  (let [sort-key @(rf/subscribe [:my-axies/sort-key])]
     [:div.row
      [:div.col-xs-12.center-xs
       [:p
@@ -175,7 +176,14 @@
        [my-axies-sort-button "Defense" :defense sort-key]
        [my-axies-sort-button "Atk+Def" :atk+def sort-key]
        [my-axies-sort-button "Tank" :tank sort-key]
-       [my-axies-sort-button "DPS" :dps sort-key]]]
+       [my-axies-sort-button "DPS" :dps sort-key]]]]))
+
+(defn my-axies-table
+  [axies-sub]
+  (let [axies (rf/subscribe [axies-sub])]
+    [:div.row
+     [:div.col-xs-12
+      [axie-sorter]]
      [:div.col-xs-12
       [rt/reagent-table
        axies
@@ -247,6 +255,31 @@
         ])
      [footer]]))
 
+(defn unassigned-panel
+  []
+  (let [axies-loading? @(rf/subscribe [:my-axies/loading?])
+        teams-loading? @(rf/subscribe [:teams/loading?])]
+    [:div.container
+     [:div.row
+      [:div.col-xs-12.center-xs
+       [:h1 "Unassigned Axies"]]]
+     (if (or axies-loading? teams-loading?)
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading..."]]]
+       (let [axies (rf/subscribe [:teams/unassigned-axies])]
+         [:div.row
+          [:div.col-xs-12
+           [axie-sorter]]
+          [:div.col-xs-12
+           [rt/reagent-table
+            axies
+            {:table {:class "table table-striped"
+                     :style {:margin "0 auto"}}
+             :column-model axie-table-column-model
+             :render-cell axie-table-render-cell}]]]))
+     [footer]]))
+
 (defn panels
   [panel]
   (case panel
@@ -255,6 +288,7 @@
     :my-axies-panel [my-axies-panel]
     :breedable-panel [breedable-panel]
     :teams-panel [teams-panel]
+    :unassigned-panel [unassigned-panel]
     [home-panel]))
 
 (defn show-panel

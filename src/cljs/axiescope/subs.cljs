@@ -198,3 +198,30 @@
          (map :axie-id)
          (map axie-db)
          (map adjust-axie))))
+
+(rf/reg-sub
+  :teams/assigned-axie-ids
+  (fn [_]
+    [(rf/subscribe [:teams/raw-teams])])
+  (fn [[teams]]
+    (->> teams
+         (mapcat :team-members)
+         (map :axie-id)
+         set)))
+
+(defn adult?
+  [{:keys [stage]}]
+  (= stage 4))
+
+(rf/reg-sub
+  :teams/unassigned-axies
+  (fn [_]
+    [(rf/subscribe [:my-axies/raw-axies])
+     (rf/subscribe [:teams/assigned-axie-ids])
+     (rf/subscribe [:my-axies/sort-key])])
+  (fn [[axies assigned? sort-key]]
+    (->> axies
+         (remove (comp assigned? :id))
+         (filter adult?)
+         (sort-by sort-key)
+         reverse)))
