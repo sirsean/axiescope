@@ -29,6 +29,12 @@
   (defroute "/multi-assigned" []
     (rf/dispatch [::events/set-active-panel :multi-assigned-panel]))
 
+  (defroute "/morph-to-petite" []
+    (rf/dispatch [::events/set-active-panel :morph-to-petite-panel]))
+
+  (defroute "/morph-to-adult" []
+    (rf/dispatch [::events/set-active-panel :morph-to-adult-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

@@ -1,6 +1,7 @@
 (ns axiescope.subs
   (:require
    [re-frame.core :as rf]
+   [cljsjs.moment]
    [axiescope.moves :as moves]
    [axiescope.battle :as battle]))
 
@@ -8,6 +9,11 @@
   :identity
   (fn [_ [_ x]]
     x))
+
+(rf/reg-sub
+  :time/now
+  (fn [db]
+    (:now db)))
 
 (rf/reg-sub
   ::active-panel
@@ -247,3 +253,29 @@
                                (assoc axie
                                       :team-id team-id
                                       :team-name team-name)))))))))
+
+(rf/reg-sub
+  :my-axies/larva
+  (fn [_]
+    [(rf/subscribe [:time/now])
+     (rf/subscribe [:my-axies/raw-axies])])
+  (fn [[now axies]]
+    (->> axies
+         (filter (fn [{:keys [stage]}] (= stage 2)))
+         (filter (fn [{:keys [birth-date]}]
+                   (let [bd (js/moment (* birth-date 1000))
+                         days (.diff now bd "days")]
+                     (<= 3 days)))))))
+
+(rf/reg-sub
+  :my-axies/petite
+  (fn [_]
+    [(rf/subscribe [:time/now])
+     (rf/subscribe [:my-axies/raw-axies])])
+  (fn [[now axies]]
+    (->> axies
+         (filter (fn [{:keys [stage]}] (= stage 3)))
+         (filter (fn [{:keys [birth-date]}]
+                   (let [bd (js/moment (* birth-date 1000))
+                         days (.diff now bd "days")]
+                     (<= 5 days)))))))

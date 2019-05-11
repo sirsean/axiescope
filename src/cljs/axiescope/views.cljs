@@ -40,7 +40,11 @@
       [:li [:a {:href "/unassigned"}
             "Unassigned Axies"]]
       [:li [:a {:href "/multi-assigned"}
-            "Multi-Assigned Axies"]]]]]
+            "Multi-Assigned Axies"]]
+      [:li [:a {:href "/morph-to-petite"}
+            "Morph to Petite"]]
+      [:li [:a {:href "/morph-to-adult"}
+            "Morph to Adult"]]]]]
    [footer]])
 
 (defn show-axie
@@ -313,6 +317,42 @@
              :render-cell axie-table-render-cell}]]]))
      [footer]]))
 
+(defn morph-to-petite-panel
+  []
+  (let [loading? @(rf/subscribe [:my-axies/loading?])]
+    [:div.container
+     [:div.row
+      [:div.col-xs-12.center-xs
+       [:h1 "Morph to Petite"]]]
+     (if loading?
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading..."]]]
+       (if (empty? @(rf/subscribe [:my-axies/larva]))
+         [:div.row
+          [:div.col-xs-12.center-xs
+           [:em "you have no axies that are ready to morph to petite"]]]
+         [my-axies-table :my-axies/larva]))
+     [footer]]))
+
+(defn morph-to-adult-panel
+  []
+  (let [loading? @(rf/subscribe [:my-axies/loading?])]
+    [:div.container
+     [:div.row
+      [:div.col-xs-12.center-xs
+       [:h1 "Morph to Adult"]]]
+     (if loading?
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading..."]]]
+       (if (empty? @(rf/subscribe [:my-axies/petite]))
+         [:div.row
+          [:div.col-xs-12.center-xs
+           [:em "you have no axies that are ready to morph to adult"]]]
+         [my-axies-table :my-axies/petite]))
+     [footer]]))
+
 (defn panels
   [panel]
   (case panel
@@ -323,6 +363,8 @@
     :teams-panel [teams-panel]
     :unassigned-panel [unassigned-panel]
     :multi-assigned-panel [multi-assigned-panel]
+    :morph-to-petite-panel [morph-to-petite-panel]
+    :morph-to-adult-panel [morph-to-adult-panel]
     [home-panel]))
 
 (defn show-panel

@@ -1,6 +1,7 @@
 (ns axiescope.events
   (:require
    [re-frame.core :as rf]
+   [district0x.re-frame.interval-fx]
    [clojure.string :as string]
    [cuerdas.core :refer [format]]
    [cljs-await.core :refer [await]]
@@ -8,6 +9,7 @@
    [camel-snake-kebab.core :refer [->kebab-case-keyword]]
    [camel-snake-kebab.extras :refer [transform-keys]]
    [ajax.core :as ajax]
+   [cljsjs.moment]
    [axiescope.db :as db]
    )
   (:require-macros
@@ -81,6 +83,18 @@
    :blockchain/enable {:eth (:eth db)
                        :handlers [:teams/fetch-teams]}})
 
+(defmethod set-active-panel :morph-to-petite-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handlers [::fetch-my-axies]}})
+
+(defmethod set-active-panel :morph-to-adult-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handlers [::fetch-my-axies]}})
+
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]
@@ -89,7 +103,15 @@
 (rf/reg-event-fx
   ::initialize-db
   (fn [_ _]
-    {:db db/default-db}))
+    {:db db/default-db
+     :dispatch-interval {:id :ticker
+                         :dispatch [:time/now]
+                         :ms 1000}}))
+
+(rf/reg-event-db
+  :time/now
+  (fn [db]
+    (assoc db :now (js/moment))))
 
 (rf/reg-event-fx
   :blockchain/got-addrs
