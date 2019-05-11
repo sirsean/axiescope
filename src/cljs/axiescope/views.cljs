@@ -332,7 +332,17 @@
          [:div.row
           [:div.col-xs-12.center-xs
            [:em "you have no axies that are ready to morph to petite"]]]
-         [my-axies-table :my-axies/larva]))
+         [:div.row
+          [:div.col-xs-12
+           [:div.row
+            [:div.col-xs-12
+             [my-axies-table :my-axies/larva]]]
+           [:div.row
+            [:div.col-xs-12.center-xs
+             [:p
+              [:a {:href "https://dappsuniverse.com/axie/mass-morph"
+                   :target "_blank"}
+               "go Mass Morph them"]]]]]]))
      [footer]]))
 
 (defn morph-to-adult-panel
@@ -350,7 +360,17 @@
          [:div.row
           [:div.col-xs-12.center-xs
            [:em "you have no axies that are ready to morph to adult"]]]
-         [my-axies-table :my-axies/petite]))
+         [:div.row
+          [:div.col-xs-12
+           [:div.row
+            [:div.col-xs-12
+             [my-axies-table :my-axies/petite]]]
+           [:div.row
+            [:div.col-xs-12.center-xs
+             [:p
+              [:a {:href "https://dappsuniverse.com/axie/mass-morph"
+                   :target "_blank"}
+               "go Mass Morph them"]]]]]]))
      [footer]]))
 
 (defn panels
