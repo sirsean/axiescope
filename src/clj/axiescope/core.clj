@@ -6,6 +6,7 @@
   (fn [request]
     (next-handler
       (if (or (starts-with? (:uri request) "/css/")  ;; default directory layout after doing
+              (starts-with? (:uri request) "/img/")
               (starts-with? (:uri request) "/js/"))  ;; `lein new figwheel my-app`
         request
         (assoc request :uri "/index.html")))))  ;; wrap-resource will find index.html for us
