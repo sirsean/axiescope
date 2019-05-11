@@ -101,11 +101,14 @@
 
 (rf/reg-event-fx
   ::fetch-my-axies
-  (fn [{:keys [db]} _]
-    {:db (-> db
-             (assoc-in [:my-axies :loading?] true)
-             (assoc-in [:my-axies :axies] []))
-     :dispatch [::fetch-my-axies-page]}))
+  (fn [{:keys [db]} [_ force?]]
+    (if (or (-> db :my-axies :axies nil?)
+            force?)
+      {:db (-> db
+               (assoc-in [:my-axies :loading?] true)
+               (assoc-in [:my-axies :axies] []))
+       :dispatch [::fetch-my-axies-page]}
+      {})))
 
 (rf/reg-event-fx
   ::fetch-my-axies-page
@@ -168,11 +171,14 @@
 
 (rf/reg-event-fx
   :teams/fetch-teams
-  (fn [{:keys [db]} _]
-    {:db (-> db
-             (assoc-in [:teams :loading?] true)
-             (assoc-in [:teams :teams] []))
-     :dispatch [:teams/fetch-teams-page]}))
+  (fn [{:keys [db]} [_ force?]]
+    (if (or (-> db :teams :teams nil?)
+            force?)
+      {:db (-> db
+               (assoc-in [:teams :loading?] true)
+               (assoc-in [:teams :teams] []))
+       :dispatch [:teams/fetch-teams-page]}
+      {})))
 
 (rf/reg-event-fx
   :teams/fetch-teams-page
