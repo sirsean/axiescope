@@ -31,12 +31,12 @@
 
 (rf/reg-fx
   :blockchain/enable
-  (fn [{:keys [eth handler]}]
+  (fn [{:keys [eth handlers]}]
     (go
       (let [[err eth-addrs] (<! (await (.enable eth)))]
         (when err
           (println "uhoh, enable failed" err))
-        (rf/dispatch [:blockchain/got-addrs eth-addrs handler])))))
+        (rf/dispatch [:blockchain/got-addrs eth-addrs handlers])))))
 
 (defmulti set-active-panel
   (fn [cofx [_ panel :as event]]
@@ -54,31 +54,32 @@
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handler ::fetch-my-axies}})
+                       :handlers [::fetch-my-axies]}})
 
 (defmethod set-active-panel :breedable-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handler ::fetch-my-axies}})
+                       :handlers [::fetch-my-axies]}})
 
 (defmethod set-active-panel :teams-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handler :teams/fetch-teams}})
+                       :handlers [:teams/fetch-teams]}})
 
 (defmethod set-active-panel :unassigned-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handler :teams/fetch-unassigned}})
+                       :handlers [::fetch-my-axies
+                                  :teams/fetch-teams]}})
 
 (defmethod set-active-panel :multi-assigned-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handler :teams/fetch-teams}})
+                       :handlers [:teams/fetch-teams]}})
 
 (rf/reg-event-fx
   ::set-active-panel
@@ -92,17 +93,11 @@
 
 (rf/reg-event-fx
   :blockchain/got-addrs
-  (fn [{:keys [db]} [_ eth-addrs handler]]
+  (fn [{:keys [db]} [_ eth-addrs handlers]]
     (cond->
       {:db (assoc db :eth-addr (first eth-addrs))}
-      (some? handler)
-      (merge {:dispatch [handler]}))))
-
-(rf/reg-event-fx
-  :teams/fetch-unassigned
-  (fn [_ _]
-    {:dispatch-n [[::fetch-my-axies]
-                  [:teams/fetch-teams]]}))
+      (some? handlers)
+      (merge {:dispatch-n (mapv vector handlers)}))))
 
 (rf/reg-event-fx
   ::fetch-my-axies
