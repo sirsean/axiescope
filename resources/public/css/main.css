@@ -39,3 +39,8 @@ body {
 .table-striped tr:nth-child(even) {
     background-color: #EEEEEE;
 }
+
+.tools-list li {
+    padding: 0.3em;
+    font-size: 1.2em;
+}

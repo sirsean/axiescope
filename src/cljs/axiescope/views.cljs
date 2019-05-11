@@ -28,7 +28,7 @@
      [:p "These are a collection of tools to help you with Axie Infinity."]]]
    [:div.row
     [:div.col-xs-12
-     [:ul
+     [:ul.tools-list
       [:li [:a {:href "/battle-simulator"}
             "Battle Simulator"]]
       [:li [:a {:href "/my-axies"}
