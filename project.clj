@@ -3,6 +3,8 @@
                  [org.clojure/clojurescript "1.10.520"]
                  [reagent "0.8.1"]
                  [re-frame "0.10.6"]
+                 [cljsjs/web3 "0.19.0-0"]
+                 [cljs-web3 "0.19.0-0-11"]
                  [district0x/re-frame-interval-fx "1.0.2"]
                  [camel-snake-kebab "0.4.0"]
                  [cljs-ajax "0.7.4"]

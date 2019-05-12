@@ -2,6 +2,8 @@
   (:require
    [re-frame.core :as rf]
    [district0x.re-frame.interval-fx]
+   [cljs-web3.core]
+   [cljs-web3.eth]
    [clojure.string :as string]
    [cuerdas.core :refer [format]]
    [cljs-await.core :refer [await]]
@@ -49,14 +51,15 @@
   :axie-contract/transfer-axie
   (fn [{:keys [contract-instance handler err-handler from-addr to-addr axie-id]}]
     (println "transfer" from-addr to-addr axie-id)
-    (.safeTransferFrom contract-instance
-                       from-addr to-addr axie-id
-                       (fn [err res]
-                         (if (some? err)
-                           (when (some? err-handler)
-                             (rf/dispatch [err-handler err]))
-                           (when (some? handler)
-                             (rf/dispatch [handler res])))))))
+    (cljs-web3.eth/contract-call contract-instance
+                                 :safeTransferFrom
+                                 from-addr to-addr axie-id
+                                 (fn [err res]
+                                   (if (some? err)
+                                     (when (some? err-handler)
+                                       (rf/dispatch [err-handler err]))
+                                     (when (some? handler)
+                                       (rf/dispatch [handler res])))))))
 
 (rf/reg-event-fx
   :contract/error
@@ -134,10 +137,15 @@
   ::initialize-db
   (fn [_ _]
     {:db db/default-db
-     :dispatch [:contract/load-axie-abi]
      :dispatch-interval {:id :ticker
-                         :dispatch [:time/now]
+                         :dispatch [:tick/second]
                          :ms 1000}}))
+
+(rf/reg-event-fx
+  :tick/second
+  (fn [_ _]
+    {:dispatch-n [[:time/now]
+                  [:contract/load-axie-abi]]}))
 
 (rf/reg-event-db
   :time/now
@@ -154,19 +162,23 @@
 
 (rf/reg-event-fx
   :contract/load-axie-abi
-  (fn [_ _]
-    {:http-get {:url "/js/axie-abi.json"
-                :transform? false
-                :handler [:contract/got-axie-abi]}}))
+  (fn [{:keys [db]} _]
+    (if (nil? (:contract/axie-instance db))
+      {:http-get {:url "/js/axie-abi.json"
+                  :transform? false
+                  :handler [:contract/got-axie-abi]}}
+      {})))
 
 (rf/reg-event-db
   :contract/got-axie-abi
   (fn [db [_ abi]]
-    (assoc db
-           :contract/axie-instance
-           (-> db :web3 .-eth
-               (.contract (clj->js abi))
-               (.at "0xF5b0A3eFB8e8E4c201e2A935F110eAaF3FFEcb8d")))))
+    (if (cljs-web3.eth/eth (aget js/window "web3"))
+      (assoc db
+             :contract/axie-instance (cljs-web3.eth/contract-at
+                                       (aget js/window "web3")
+                                       abi
+                                       "0xF5b0A3eFB8e8E4c201e2A935F110eAaF3FFEcb8d"))
+      db)))
 
 (rf/reg-event-fx
   ::fetch-my-axies
