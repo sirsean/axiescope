@@ -119,15 +119,15 @@
 (defn battle-simulator-panel []
   [:div.container
    [header "Battle Simulator"]
-   (let [attacker @(rf/subscribe [::subs/bs-attacker])
-         defender @(rf/subscribe [::subs/bs-defender])
-         simulation (rf/subscribe [::subs/battle-simulation])
+   (let [attacker @(rf/subscribe [:battle-simulator/attacker])
+         defender @(rf/subscribe [:battle-simulator/defender])
+         simulation (rf/subscribe [:battle-simulator/simulation])
          atk-id (r/atom (:id attacker))
          def-id (r/atom (:id defender))]
      [:div
       [:form {:on-submit (fn [e]
                            (.preventDefault e)
-                           (rf/dispatch [::events/simulate-battle @atk-id @def-id]))}
+                           (rf/dispatch [:battle-simulator/simulate @atk-id @def-id]))}
        [:div.row {:style {:background-color "#EEEEEE"
                           :padding "0.6em"
                           :border-radius "0.5em"}}

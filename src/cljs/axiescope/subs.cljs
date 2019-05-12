@@ -21,20 +21,20 @@
     active-panel))
 
 (rf/reg-sub
-  ::bs-attacker
+  :battle-simulator/attacker
   (fn [db]
     (get-in db [:battle-simulator :attacker])))
 
 (rf/reg-sub
-  ::bs-defender
+  :battle-simulator/defender
   (fn [db]
     (get-in db [:battle-simulator :defender])))
 
 (rf/reg-sub
-  ::battle-simulation
+  :battle-simulator/simulation
   (fn [_]
-    [(rf/subscribe [::bs-attacker])
-     (rf/subscribe [::bs-defender])])
+    [(rf/subscribe [:battle-simulator/attacker])
+     (rf/subscribe [:battle-simulator/defender])])
   (fn [[attacker defender]]
     (when (and attacker defender)
       (battle/simulate attacker defender))))

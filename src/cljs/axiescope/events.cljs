@@ -231,25 +231,20 @@
      :http-get {:url (format "https://axieinfinity.com/api/v2/axies/%s?lang=en" axie-id)
                 :handler [handler]}}))
 
-(rf/reg-event-db
-  ::got-axie
-  (fn [db [_ axie]]
-    db))
-
 (rf/reg-event-fx
-  ::simulate-battle
+  :battle-simulator/simulate
   (fn [{:keys [db]} [_ atk-id def-id]]
     {:db db
-     :dispatch-n [[::fetch-axie atk-id ::got-bs-attacker]
-                  [::fetch-axie def-id ::got-bs-defender]]}))
+     :dispatch-n [[::fetch-axie atk-id :battle-simulator/got-attacker]
+                  [::fetch-axie def-id :battle-simulator/got-defender]]}))
 
 (rf/reg-event-db
-  ::got-bs-attacker
+  :battle-simulator/got-attacker
   (fn [db [_ axie]]
     (assoc-in db [:battle-simulator :attacker] axie)))
 
 (rf/reg-event-db
-  ::got-bs-defender
+  :battle-simulator/got-defender
   (fn [db [_ axie]]
     (assoc-in db [:battle-simulator :defender] axie)))
 
