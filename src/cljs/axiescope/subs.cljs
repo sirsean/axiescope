@@ -119,6 +119,18 @@
     (map adjust-axie (get-in db [:my-axies :axies]))))
 
 (rf/reg-sub
+  :my-axies/count
+  (fn [_]
+    [(rf/subscribe [:my-axies/raw-axies])])
+  (fn [[axies]]
+    (count axies)))
+
+(rf/reg-sub
+  :my-axies/total
+  (fn [db]
+    (get-in db [:my-axies :total] "?")))
+
+(rf/reg-sub
   :my-axies/axies
   (fn [_]
     [(rf/subscribe [:my-axies/raw-axies])
@@ -146,6 +158,18 @@
   :teams/raw-teams
   (fn [db]
     (get-in db [:teams :teams])))
+
+(rf/reg-sub
+  :teams/count
+  (fn [_]
+    [(rf/subscribe [:teams/raw-teams])])
+  (fn [[teams]]
+    (count teams)))
+
+(rf/reg-sub
+  :teams/total
+  (fn [db]
+    (get-in db [:teams :total] "?")))
 
 (rf/reg-sub
   :teams/axie-id->activity-points

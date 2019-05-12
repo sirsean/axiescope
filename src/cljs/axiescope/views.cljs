@@ -8,6 +8,60 @@
    [axiescope.events :as events]
    ))
 
+(defn loading-bar
+  [numer denom color]
+  (let [percent (max 7 (if (and numer denom (not= "?" denom))
+                         (* 100 (/ numer denom))
+                         0))]
+      [:div {:style {:background-color color
+                     :color "white"
+                     :border-radius "0.15em"
+                     :padding "0.2em"
+                     :width (format "%s%" percent)
+                     :height "100%"}}
+       [:span (format "%s/%s" numer denom)]]))
+
+(defn my-axies-bar
+  []
+  (let [loading? @(rf/subscribe [:my-axies/loading?])
+        num-axies @(rf/subscribe [:my-axies/count])
+        total-axies @(rf/subscribe [:my-axies/total])]
+    [:div.row.middle-xs {:style {:margin-bottom "0.1em"}}
+     [:div.col-xs-1.end-xs
+      [:span "Axies"]]
+     [:div.col-xs-10
+      [loading-bar num-axies total-axies "#00b8ce"]]
+     [:div.col-xs-1.end-xs
+      [:button
+       {:disabled loading?
+        :on-click #(rf/dispatch [::events/fetch-my-axies true])}
+       "Reload"]]]))
+
+(defn teams-bar
+  []
+  (let [loading? @(rf/subscribe [:teams/loading?])
+        num-teams @(rf/subscribe [:teams/count])
+        total-teams @(rf/subscribe [:teams/total])]
+    [:div.row.middle-xs {:style {:margin-bottom "0.1em"}}
+     [:div.col-xs-1.end-xs
+      [:span "Teams"]]
+     [:div.col-xs-10
+      [loading-bar num-teams total-teams "#6cc000"]]
+     [:div.col-xs-1.end-xs
+      [:button
+       {:disabled loading?
+        :on-click #(rf/dispatch [:teams/fetch-teams true])}
+       "Reload"]]]))
+
+(defn header
+  [title]
+  [:div.row
+   [:div.col-xs-12
+    [my-axies-bar]
+    [teams-bar]]
+   [:div.col-xs-12.center-xs
+    [:h1 title]]])
+
 (defn footer
   []
   (let [panel @(rf/subscribe [::subs/active-panel])]
@@ -64,9 +118,7 @@
 
 (defn battle-simulator-panel []
   [:div.container
-   [:div.row
-    [:div.col-xs-12.center-xs
-     [:h1 "Battle Simulator"]]]
+   [header "Battle Simulator"]
    (let [attacker @(rf/subscribe [::subs/bs-attacker])
          defender @(rf/subscribe [::subs/bs-defender])
          simulation (rf/subscribe [::subs/battle-simulation])
@@ -212,9 +264,7 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [:div.row
-      [:div.col-xs-12.center-xs
-       [:h1 "My Axies"]]]
+     [header "My Axies"]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -226,9 +276,7 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [:div.row
-      [:div.col-xs-12.center-xs
-       [:h1 "Breedable"]]]
+     [header "Breedable"]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -241,9 +289,7 @@
   (let [loading? @(rf/subscribe [:teams/loading?])
         teams @(rf/subscribe [:teams/teams])]
     [:div.container
-     [:div.row
-      [:div.col-xs-12.center-xs
-       [:h1 "Teams"]]]
+     [header "Teams"]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -276,9 +322,7 @@
   (let [axies-loading? @(rf/subscribe [:my-axies/loading?])
         teams-loading? @(rf/subscribe [:teams/loading?])]
     [:div.container
-     [:div.row
-      [:div.col-xs-12.center-xs
-       [:h1 "Unassigned Axies"]]]
+     [header "Unassigned Axies"]
      (if (or axies-loading? teams-loading?)
        [:div.row
         [:div.col-xs-12.center-xs
@@ -301,9 +345,9 @@
   (let [loading? @(rf/subscribe [:teams/loading?])
         axies (rf/subscribe [:teams/multi-assigned-axies])]
     [:div.container
+     [header "Multi-Assigned Axies"]
      [:div.row
       [:div.col-xs-12.center-xs
-       [:h1 "Multi-Assigned Axies"]
        [:p "(These axies are on more than one team right now.)"]]]
      (if loading?
        [:div.row
@@ -328,9 +372,7 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [:div.row
-      [:div.col-xs-12.center-xs
-       [:h1 "Morph to Petite"]]]
+     [header "Morph to Petite"]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -356,9 +398,7 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [:div.row
-      [:div.col-xs-12.center-xs
-       [:h1 "Morph to Adult"]]]
+     [header "Morph to Adult"]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -385,9 +425,9 @@
   (let [loading? @(rf/subscribe [:my-axies/loading?])
         to-addr @(rf/subscribe [:multi-gifter/to-addr])]
     [:div.container
+     [header "Multi-Gifter"]
      [:div.row
       [:div.col-xs-12.center-xs
-       [:h1 "Multi-Gifter"]
        [:p "You can send gifts faster this way."]]]
      (if loading?
        [:div.row
