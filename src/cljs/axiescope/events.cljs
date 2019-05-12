@@ -200,12 +200,12 @@
               (< (count axies) total-axies))
         {:http-get {:url (format "https://axieinfinity.com/api/v2/addresses/%s/axies?a=1&offset=%s"
                                  (:eth-addr db) (count axies))
-                    :handler [::got-my-axies-page]}}
+                    :handler [:my-axies/got-page]}}
 
-        {:dispatch [::got-my-axies axies]}))))
+        {:dispatch [:my-axies/got axies]}))))
 
 (rf/reg-event-fx
-  ::got-my-axies-page
+  :my-axies/got-page
   (fn [{:keys [db]} [_ {:keys [total-axies axies]}]]
     {:db (-> db
              (assoc-in [:my-axies :total] total-axies)
@@ -213,14 +213,14 @@
      :dispatch [:my-axies/fetch-page total-axies]}))
 
 (rf/reg-event-db
-  ::got-my-axies
+  :my-axies/got
   (fn [db [_ axies]]
     (-> db
         (assoc-in [:my-axies :loading?] false)
         (assoc-in [:my-axies :axies] axies))))
 
 (rf/reg-event-db
-  ::set-my-axies-sort-key
+  :my-axies/set-sort-key
   (fn [db [_ sort-key]]
     (assoc-in db [:my-axies :sort-key] sort-key)))
 

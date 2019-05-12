@@ -226,7 +226,7 @@
             :padding "0.35em"
             :margin "0 0.1em"}
     :disabled (= sort-key active-sort-key)
-    :on-click #(rf/dispatch [::events/set-my-axies-sort-key sort-key])}
+    :on-click #(rf/dispatch [:my-axies/set-sort-key sort-key])}
    title])
 
 (defn axie-sorter
