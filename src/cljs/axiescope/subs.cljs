@@ -131,12 +131,28 @@
     (get-in db [:my-axies :total] "?")))
 
 (rf/reg-sub
+  :my-axies/offset
+  (fn [db]
+    (get-in db [:my-axies :offset] 0)))
+
+(rf/reg-sub
+  :my-axies/page-size
+  (fn [db]
+    (get-in db [:my-axies :page-size] 100)))
+
+(rf/reg-sub
   :my-axies/axies
   (fn [_]
     [(rf/subscribe [:my-axies/raw-axies])
-     (rf/subscribe [:my-axies/sort-key])])
-  (fn [[axies sort-key]]
-    (reverse (sort-by sort-key axies))))
+     (rf/subscribe [:my-axies/sort-key])
+     (rf/subscribe [:my-axies/offset])
+     (rf/subscribe [:my-axies/page-size])])
+  (fn [[axies sort-key offset page-size]]
+    (->> axies
+         (sort-by sort-key)
+         reverse
+         (drop offset)
+         (take page-size))))
 
 (rf/reg-sub
   :my-axies/breedable

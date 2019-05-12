@@ -188,6 +188,7 @@
             force?)
       {:db (-> db
                (assoc-in [:my-axies :loading?] true)
+               (assoc-in [:my-axies :offset] 0)
                (assoc-in [:my-axies :axies] []))
        :dispatch [:my-axies/fetch-page]}
       {})))
@@ -222,7 +223,14 @@
 (rf/reg-event-db
   :my-axies/set-sort-key
   (fn [db [_ sort-key]]
-    (assoc-in db [:my-axies :sort-key] sort-key)))
+    (-> db
+        (assoc-in [:my-axies :sort-key] sort-key)
+        (assoc-in [:my-axies :offset] 0))))
+
+(rf/reg-event-db
+  :my-axies/set-offset
+  (fn [db [_ offset]]
+    (assoc-in db [:my-axies :offset] offset)))
 
 (rf/reg-event-fx
   ::fetch-axie

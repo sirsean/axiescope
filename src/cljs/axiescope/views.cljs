@@ -261,16 +261,49 @@
         :column-model axie-table-column-model
         :render-cell axie-table-render-cell}]]]))
 
+(defn my-axies-pager
+  []
+  (let [offset @(rf/subscribe [:my-axies/offset])
+        page-size @(rf/subscribe [:my-axies/page-size])
+        total @(rf/subscribe [:my-axies/total])
+        prev? (>= (- offset page-size) 0)
+        next? (<= (+ offset page-size) total)]
+    [:div.row {:style {:margin "1.2em 0 0.2em 0"}}
+     [:div.col-xs-5.end-xs
+      (when prev?
+        [:button
+         {:on-click #(rf/dispatch [:my-axies/set-offset (- offset page-size)])}
+         "Previous"])]
+     [:div.col-xs-2.center-xs
+      (when (< page-size total)
+        [:span
+         (format "%s-%s of %s"
+                 (inc offset)
+                 (+ page-size offset)
+                 total)])]
+     [:div.col-xs-5
+      (when next?
+        [:button
+         {:on-click #(rf/dispatch [:my-axies/set-offset (+ offset page-size)])}
+         "Next"])]]))
+
 (defn my-axies-panel
   []
-  (let [loading? @(rf/subscribe [:my-axies/loading?])]
+  (let [loading? @(rf/subscribe [:my-axies/loading?])
+        num-axies @(rf/subscribe [:my-axies/count])
+        page-size @(rf/subscribe [:my-axies/page-size])]
     [:div.container
      [header "My Axies" [:my-axies]]
-     (if loading?
+     (if (and loading?
+              (< num-axies page-size))
        [:div.row
         [:div.col-xs-12.center-xs
          [:em "loading..."]]]
-       [my-axies-table :my-axies/axies])
+       [:div.row
+        [:div.col-xs-12
+         [my-axies-table :my-axies/axies]]
+        [:div.col-xs-12
+         [my-axies-pager]]])
      [footer]]))
 
 (defn breedable-panel
