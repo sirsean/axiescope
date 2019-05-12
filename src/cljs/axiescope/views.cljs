@@ -34,7 +34,7 @@
      [:div.col-xs-1.end-xs
       [:button
        {:disabled loading?
-        :on-click #(rf/dispatch [::events/fetch-my-axies true])}
+        :on-click #(rf/dispatch [:my-axies/fetch true])}
        "Reload"]]]))
 
 (defn teams-bar

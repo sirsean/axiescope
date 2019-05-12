@@ -83,13 +83,13 @@
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [::fetch-my-axies]}})
+                       :handlers [:my-axies/fetch]}})
 
 (defmethod set-active-panel :breedable-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [::fetch-my-axies]}})
+                       :handlers [:my-axies/fetch]}})
 
 (defmethod set-active-panel :teams-panel
   [{:keys [db]} [_ panel]]
@@ -101,33 +101,33 @@
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [::fetch-my-axies
+                       :handlers [:my-axies/fetch
                                   :teams/fetch-teams]}})
 
 (defmethod set-active-panel :multi-assigned-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [::fetch-my-axies
+                       :handlers [:my-axies/fetch
                                   :teams/fetch-teams]}})
 
 (defmethod set-active-panel :morph-to-petite-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [::fetch-my-axies]}})
+                       :handlers [:my-axies/fetch]}})
 
 (defmethod set-active-panel :morph-to-adult-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [::fetch-my-axies]}})
+                       :handlers [:my-axies/fetch]}})
 
 (defmethod set-active-panel :multi-gifter-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [::fetch-my-axies]}})
+                       :handlers [:my-axies/fetch]}})
 
 (rf/reg-event-fx
   ::set-active-panel
@@ -182,18 +182,18 @@
       db)))
 
 (rf/reg-event-fx
-  ::fetch-my-axies
+  :my-axies/fetch
   (fn [{:keys [db]} [_ force?]]
     (if (or (-> db :my-axies :axies nil?)
             force?)
       {:db (-> db
                (assoc-in [:my-axies :loading?] true)
                (assoc-in [:my-axies :axies] []))
-       :dispatch [::fetch-my-axies-page]}
+       :dispatch [:my-axies/fetch-page]}
       {})))
 
 (rf/reg-event-fx
-  ::fetch-my-axies-page
+  :my-axies/fetch-page
   (fn [{:keys [db]} [_ total-axies]]
     (let [axies (get-in db [:my-axies :axies])]
       (if (or (nil? total-axies)
@@ -210,7 +210,7 @@
     {:db (-> db
              (assoc-in [:my-axies :total] total-axies)
              (update-in [:my-axies :axies] concat axies))
-     :dispatch [::fetch-my-axies-page total-axies]}))
+     :dispatch [:my-axies/fetch-page total-axies]}))
 
 (rf/reg-event-db
   ::got-my-axies
