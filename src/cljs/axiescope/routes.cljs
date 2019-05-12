@@ -35,6 +35,9 @@
   (defroute "/morph-to-adult" []
     (rf/dispatch [::events/set-active-panel :morph-to-adult-panel]))
 
+  (defroute "/multi-gifter" []
+    (rf/dispatch [::events/set-active-panel :multi-gifter-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

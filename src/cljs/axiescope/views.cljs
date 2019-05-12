@@ -44,7 +44,9 @@
       [:li [:a {:href "/morph-to-petite"}
             "Morph to Petite"]]
       [:li [:a {:href "/morph-to-adult"}
-            "Morph to Adult"]]]]]
+            "Morph to Adult"]]
+      [:li [:a {:href "/multi-gifter"}
+            "Multi-Gifter"]]]]]
    [footer]])
 
 (defn show-axie
@@ -157,6 +159,11 @@
       :team-name [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
                       :target "_blank"}
                   value]
+      :gift-button (let [to-addr @(rf/subscribe [:multi-gifter/to-addr])]
+                     [:button
+                      {:disabled (nil? to-addr)
+                       :on-click #(rf/dispatch [:multi-gifter/send to-addr (:id row)])}
+                      "Gift"])
       value)))
 
 (defn my-axies-sort-button
@@ -373,6 +380,51 @@
                "go Mass Morph them"]]]]]]))
      [footer]]))
 
+(defn multi-gifter-panel
+  []
+  (let [loading? @(rf/subscribe [:my-axies/loading?])
+        to-addr @(rf/subscribe [:multi-gifter/to-addr])]
+    [:div.container
+     [:div.row
+      [:div.col-xs-12.center-xs
+       [:h1 "Multi-Gifter"]
+       [:p "You can send gifts faster this way."]]]
+     (if loading?
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading..."]]]
+       [:div.row
+        [:div.col-xs-12
+         [:div.row
+          [:div.col-xs-12.center-xs
+           [:h2 "The first thing you have to do is set the recipient's address:"]
+           [:p
+            [:input {:type "text"
+                     :style {:padding "0.4em"
+                             :font-size "1.2em"
+                             :text-align "center"
+                             :width "60%"}
+                     :default-value to-addr
+                     :on-change (fn [e]
+                                  (rf/dispatch [:multi-gifter/set-to-addr
+                                                (-> e .-target .-value)]))}]]]]
+         [:div.row
+          [:div.col-xs-12.center-xs
+           [:h2 "and then you can send any axies as gifts just by clicking the Gift button..."]
+           (let [axies (rf/subscribe [:my-axies/axies])]
+             [:div.row
+              [:div.col-xs-12
+               [axie-sorter]]
+              [:div.col-xs-12
+               [rt/reagent-table
+                axies
+                {:table {:class "table table-striped"
+                         :style {:margin "0 auto"}}
+                 :column-model (conj axie-table-column-model {:header ""
+                                                              :key :gift-button})
+                 :render-cell axie-table-render-cell}]]])]]]])
+     [footer]]))
+
 (defn panels
   [panel]
   (case panel
@@ -385,6 +437,7 @@
     :multi-assigned-panel [multi-assigned-panel]
     :morph-to-petite-panel [morph-to-petite-panel]
     :morph-to-adult-panel [morph-to-adult-panel]
+    :multi-gifter-panel [multi-gifter-panel]
     [home-panel]))
 
 (defn show-panel

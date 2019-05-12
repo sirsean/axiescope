@@ -279,3 +279,8 @@
                    (let [bd (js/moment (* birth-date 1000))
                          days (.diff now bd "days")]
                      (<= 5 days)))))))
+
+(rf/reg-sub
+  :multi-gifter/to-addr
+  (fn [db]
+    (get db :multi-gifter/to-addr)))

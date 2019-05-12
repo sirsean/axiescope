@@ -18,8 +18,9 @@
 
 (rf/reg-fx
   :http-get
-  (fn [{:keys [url handler err-handler response-format]
-        :or {response-format :json}}]
+  (fn [{:keys [url handler err-handler response-format transform?]
+        :or {response-format :json
+             transform? true}}]
     (println :http-get response-format url)
     (ajax/GET
       url
@@ -29,7 +30,11 @@
                         (if err-handler
                           (rf/dispatch (conj err-handler err))
                           (println "error" err)))
-       :handler #(rf/dispatch (conj handler (transform-keys ->kebab-case-keyword %)))})))
+       :handler (fn [result]
+                  (rf/dispatch
+                    (conj handler
+                          (cond->> result
+                            transform? (transform-keys ->kebab-case-keyword)))))})))
 
 (rf/reg-fx
   :blockchain/enable
@@ -39,6 +44,25 @@
         (when err
           (println "uhoh, enable failed" err))
         (rf/dispatch [:blockchain/got-addrs eth-addrs handlers])))))
+
+(rf/reg-fx
+  :axie-contract/transfer-axie
+  (fn [{:keys [contract-instance handler err-handler from-addr to-addr axie-id]}]
+    (println "transfer" from-addr to-addr axie-id)
+    (.safeTransferFrom contract-instance
+                       from-addr to-addr axie-id
+                       (fn [err res]
+                         (if (some? err)
+                           (when (some? err-handler)
+                             (rf/dispatch [err-handler err]))
+                           (when (some? handler)
+                             (rf/dispatch [handler res])))))))
+
+(rf/reg-event-fx
+  :contract/error
+  (fn [_ [_ err]]
+    (println "something failed" err)
+    {}))
 
 (defmulti set-active-panel
   (fn [cofx [_ panel :as event]]
@@ -95,6 +119,12 @@
    :blockchain/enable {:eth (:eth db)
                        :handlers [::fetch-my-axies]}})
 
+(defmethod set-active-panel :multi-gifter-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handlers [::fetch-my-axies]}})
+
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]
@@ -104,6 +134,7 @@
   ::initialize-db
   (fn [_ _]
     {:db db/default-db
+     :dispatch [:contract/load-axie-abi]
      :dispatch-interval {:id :ticker
                          :dispatch [:time/now]
                          :ms 1000}}))
@@ -120,6 +151,22 @@
       {:db (assoc db :eth-addr (first eth-addrs))}
       (some? handlers)
       (merge {:dispatch-n (mapv vector handlers)}))))
+
+(rf/reg-event-fx
+  :contract/load-axie-abi
+  (fn [_ _]
+    {:http-get {:url "/js/axie-abi.json"
+                :transform? false
+                :handler [:contract/got-axie-abi]}}))
+
+(rf/reg-event-db
+  :contract/got-axie-abi
+  (fn [db [_ abi]]
+    (assoc db
+           :contract/axie-instance
+           (-> db :web3 .-eth
+               (.contract (clj->js abi))
+               (.at "0xF5b0A3eFB8e8E4c201e2A935F110eAaF3FFEcb8d")))))
 
 (rf/reg-event-fx
   ::fetch-my-axies
@@ -258,3 +305,24 @@
   :teams/got-axie
   (fn [db [_ axie]]
     (assoc-in db [:teams :axie-db (:id axie)] axie)))
+
+(rf/reg-event-db
+  :multi-gifter/set-to-addr
+  (fn [db [_ to-addr]]
+    (assoc db :multi-gifter/to-addr to-addr)))
+
+(rf/reg-event-fx
+  :multi-gifter/send
+  (fn [{:keys [db]} [_ to-addr axie-id]]
+    {:axie-contract/transfer-axie {:contract-instance (:contract/axie-instance db)
+                                   :from-addr (:eth-addr db)
+                                   :to-addr to-addr
+                                   :axie-id axie-id
+                                   :handler :multi-gifter/sent
+                                   :err-handler :contract/error}}))
+
+(rf/reg-event-db
+  :multi-gifter/sent
+  (fn [db [_ result]]
+    (println "sent" result)
+    db))
