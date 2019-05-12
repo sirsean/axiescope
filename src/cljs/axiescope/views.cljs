@@ -54,11 +54,12 @@
        "Reload"]]]))
 
 (defn header
-  [title]
+  [title bars]
   [:div.row
-   [:div.col-xs-12
-    [my-axies-bar]
-    [teams-bar]]
+   (let [bars (set bars)]
+     [:div.col-xs-12
+      (when (:my-axies bars) [my-axies-bar])
+      (when (:teams bars) [teams-bar])])
    [:div.col-xs-12.center-xs
     [:h1 title]]])
 
@@ -264,7 +265,7 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [header "My Axies"]
+     [header "My Axies" [:my-axies]]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -276,7 +277,7 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [header "Breedable"]
+     [header "Breedable" [:my-axies]]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -289,7 +290,7 @@
   (let [loading? @(rf/subscribe [:teams/loading?])
         teams @(rf/subscribe [:teams/teams])]
     [:div.container
-     [header "Teams"]
+     [header "Teams" [:teams]]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -322,7 +323,7 @@
   (let [axies-loading? @(rf/subscribe [:my-axies/loading?])
         teams-loading? @(rf/subscribe [:teams/loading?])]
     [:div.container
-     [header "Unassigned Axies"]
+     [header "Unassigned Axies" [:my-axies :teams]]
      (if (or axies-loading? teams-loading?)
        [:div.row
         [:div.col-xs-12.center-xs
@@ -345,7 +346,7 @@
   (let [loading? @(rf/subscribe [:teams/loading?])
         axies (rf/subscribe [:teams/multi-assigned-axies])]
     [:div.container
-     [header "Multi-Assigned Axies"]
+     [header "Multi-Assigned Axies" [:my-axies :teams]]
      [:div.row
       [:div.col-xs-12.center-xs
        [:p "(These axies are on more than one team right now.)"]]]
@@ -372,7 +373,7 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [header "Morph to Petite"]
+     [header "Morph to Petite" [:my-axies]]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -398,7 +399,7 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [header "Morph to Adult"]
+     [header "Morph to Adult" [:my-axies]]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs
@@ -425,7 +426,7 @@
   (let [loading? @(rf/subscribe [:my-axies/loading?])
         to-addr @(rf/subscribe [:multi-gifter/to-addr])]
     [:div.container
-     [header "Multi-Gifter"]
+     [header "Multi-Gifter" [:my-axies]]
      [:div.row
       [:div.col-xs-12.center-xs
        [:p "You can send gifts faster this way."]]]
