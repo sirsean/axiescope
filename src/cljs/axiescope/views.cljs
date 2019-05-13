@@ -53,13 +53,30 @@
         :on-click #(rf/dispatch [:teams/fetch-teams true])}
        "Reload"]]]))
 
+(defn search-bar
+  []
+  (let [loading? @(rf/subscribe [:search/loading?])
+        num-axies @(rf/subscribe [:search/count])
+        total-axies @(rf/subscribe [:search/total])]
+    [:div.row.middle-xs {:style {:margin-bottom "0.1em"}}
+     [:div.col-xs-1.end-xs
+      [:span "Search"]]
+     [:div.col-xs-10
+      [loading-bar num-axies total-axies "#c88ae0"]]
+     [:div.col-xs-1.end-xs
+      [:button
+       {:disabled loading?
+        :on-click #(rf/dispatch [:search/fetch true])}
+       "Reload"]]]))
+
 (defn header
   [title bars]
   [:div.row
    (let [bars (set bars)]
      [:div.col-xs-12
       (when (:my-axies bars) [my-axies-bar])
-      (when (:teams bars) [teams-bar])])
+      (when (:teams bars) [teams-bar])
+      (when (:search bars) [search-bar])])
    [:div.col-xs-12.center-xs
     [:h1 title]]])
 
@@ -101,7 +118,9 @@
       [:li [:a {:href "/morph-to-adult"}
             "Morph to Adult"]]
       [:li [:a {:href "/multi-gifter"}
-            "Multi-Gifter"]]]]]
+            "Multi-Gifter"]]
+      [:li [:a {:href "/search"}
+            "Search"]]]]]
    [footer]])
 
 (defn show-axie
@@ -220,59 +239,84 @@
       value)))
 
 (defn my-axies-sort-button
-  [title sort-key active-sort-key]
+  [section title sort-key active-sort-key]
   [:button
    {:style {:border-radius "0.3em"
             :padding "0.35em"
             :margin "0 0.1em"}
     :disabled (= sort-key active-sort-key)
-    :on-click #(rf/dispatch [:my-axies/set-sort-key sort-key])}
+    :on-click #(rf/dispatch [(keyword section :set-sort-key) sort-key])}
    title])
 
+(defn sort-order-button
+  [section order active-order]
+  [:button
+   {:style {:border-radius "0.3em"
+            :padding "0.35em"
+            :margin "0 0.1em"}
+    :disabled (= order active-order)
+    :on-click #(rf/dispatch [(keyword section :set-sort-order) order])}
+   (name order)])
+
 (defn axie-sorter
-  []
-  (let [sort-key @(rf/subscribe [:my-axies/sort-key])]
+  [{:keys [section extra-fields]
+    :or {section :my-axies
+         extra-fields []}}]
+  (let [sort-key @(rf/subscribe [(keyword section :sort-key)])
+        sort-order @(rf/subscribe [(keyword section :sort-order)])]
     [:div.row
      [:div.col-xs-12.center-xs
       [:p
        [:span {:style {:padding-right "0.3em"}}
         "sort by:"]
-       [my-axies-sort-button "ID" :id sort-key]
-       [my-axies-sort-button "Class" :class sort-key]
-       [my-axies-sort-button "Purity" :purity sort-key]
-       [my-axies-sort-button "Breeds" :breed-count sort-key]
-       [my-axies-sort-button "Attack" :attack sort-key]
-       [my-axies-sort-button "Defense" :defense sort-key]
-       [my-axies-sort-button "Atk+Def" :atk+def sort-key]
-       [my-axies-sort-button "Tank" :tank sort-key]
-       [my-axies-sort-button "DPS" :dps sort-key]]]]))
+       (->> extra-fields
+            (concat [["ID" :id]
+                     ["Class" :class]
+                     ["Purity" :purity]
+                     ["Breeds" :breed-count]
+                     ["Attack" :attack]
+                     ["Defense" :defense]
+                     ["Atk+Def" :atk+def]
+                     ["Tank" :tank]
+                     ["DPS" :dps]])
+            (map (fn [[title k]]
+                   ^{:key k}
+                   [my-axies-sort-button section title k sort-key])))
+       [:span {:style {:padding-right "0.3em"}}
+        "order:"]
+       [sort-order-button section :asc sort-order]
+       [sort-order-button section :desc sort-order]]]]))
 
 (defn my-axies-table
-  [axies-sub]
-  (let [axies (rf/subscribe [axies-sub])]
+  [{:keys [section sub column-model extra-sort-fields]
+    :or {section :my-axies
+         column-model axie-table-column-model
+         extra-sort-fields []}}]
+  (let [axies (rf/subscribe [sub])]
     [:div.row
      [:div.col-xs-12
-      [axie-sorter]]
+      [axie-sorter {:section section
+                    :extra-fields extra-sort-fields}]]
      [:div.col-xs-12
       [rt/reagent-table
        axies
        {:table {:class "table table-striped"
                 :style {:margin "0 auto"}}
-        :column-model axie-table-column-model
+        :column-model column-model
         :render-cell axie-table-render-cell}]]]))
 
-(defn my-axies-pager
-  []
-  (let [offset @(rf/subscribe [:my-axies/offset])
-        page-size @(rf/subscribe [:my-axies/page-size])
-        total @(rf/subscribe [:my-axies/total])
+(defn axies-pager
+  [section]
+  (let [offset @(rf/subscribe [(keyword section :offset)])
+        page-size @(rf/subscribe [(keyword section :page-size)])
+        total @(rf/subscribe [(keyword section :total)])
         prev? (>= (- offset page-size) 0)
         next? (<= (+ offset page-size) total)]
     [:div.row {:style {:margin "1.2em 0 0.2em 0"}}
      [:div.col-xs-5.end-xs
       (when prev?
         [:button
-         {:on-click #(rf/dispatch [:my-axies/set-offset (- offset page-size)])}
+         {:on-click #(rf/dispatch [(keyword section :set-offset) (- offset page-size)])}
          "Previous"])]
      [:div.col-xs-2.center-xs
       (when (< page-size total)
@@ -284,7 +328,7 @@
      [:div.col-xs-5
       (when next?
         [:button
-         {:on-click #(rf/dispatch [:my-axies/set-offset (+ offset page-size)])}
+         {:on-click #(rf/dispatch [(keyword section :set-offset) (+ offset page-size)])}
          "Next"])]]))
 
 (defn my-axies-panel
@@ -301,9 +345,9 @@
          [:em "loading..."]]]
        [:div.row
         [:div.col-xs-12
-         [my-axies-table :my-axies/axies]]
+         [my-axies-table {:sub :my-axies/axies}]]
         [:div.col-xs-12
-         [my-axies-pager]]])
+         [axies-pager :my-axies]]])
      [footer]]))
 
 (defn breedable-panel
@@ -315,7 +359,7 @@
        [:div.row
         [:div.col-xs-12.center-xs
          [:em "loading..."]]]
-       [my-axies-table :my-axies/breedable])
+       [my-axies-table {:sub :my-axies/breedable}])
      [footer]]))
 
 (defn teams-panel
@@ -364,7 +408,7 @@
        (let [axies (rf/subscribe [:teams/unassigned-axies])]
          [:div.row
           [:div.col-xs-12
-           [axie-sorter]]
+           [axie-sorter {:section :my-axies}]]
           [:div.col-xs-12
            [rt/reagent-table
             axies
@@ -419,7 +463,7 @@
           [:div.col-xs-12
            [:div.row
             [:div.col-xs-12
-             [my-axies-table :my-axies/larva]]]
+             [my-axies-table {:sub :my-axies/larva}]]]
            [:div.row
             [:div.col-xs-12.center-xs
              [:p
@@ -445,7 +489,7 @@
           [:div.col-xs-12
            [:div.row
             [:div.col-xs-12
-             [my-axies-table :my-axies/petite]]]
+             [my-axies-table {:sub :my-axies/petite}]]]
            [:div.row
             [:div.col-xs-12.center-xs
              [:p
@@ -488,7 +532,7 @@
            (let [axies (rf/subscribe [:my-axies/axies])]
              [:div.row
               [:div.col-xs-12
-               [axie-sorter]]
+               [axie-sorter {:section :my-axies}]]
               [:div.col-xs-12
                [rt/reagent-table
                 axies
@@ -497,6 +541,30 @@
                  :column-model (conj axie-table-column-model {:header ""
                                                               :key :gift-button})
                  :render-cell axie-table-render-cell}]]])]]]])
+     [footer]]))
+
+(defn search-panel
+  []
+  (let [loading? @(rf/subscribe [:search/loading?])
+        num-axies @(rf/subscribe [:search/count])
+        page-size @(rf/subscribe [:search/page-size])]
+    [:div.container
+     [header "Search" [:search]]
+     (if (and loading?
+             (< num-axies page-size))
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading..."]]]
+       [:div.row
+        [:div.col-xs-12
+         [my-axies-table {:section :search
+                          :sub :search/axies
+                          :extra-sort-fields [["Price" :price]]
+                          :column-model (conj axie-table-column-model
+                                              {:header "Price"
+                                               :key :price})}]]
+        [:div.col-xs-12
+         [axies-pager :search]]])
      [footer]]))
 
 (defn panels
@@ -512,6 +580,7 @@
     :morph-to-petite-panel [morph-to-petite-panel]
     :morph-to-adult-panel [morph-to-adult-panel]
     :multi-gifter-panel [multi-gifter-panel]
+    :search-panel [search-panel]
     [home-panel]))
 
 (defn show-panel

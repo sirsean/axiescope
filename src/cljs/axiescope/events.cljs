@@ -129,6 +129,12 @@
    :blockchain/enable {:eth (:eth db)
                        :handlers [:my-axies/fetch]}})
 
+(defmethod set-active-panel :search-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handlers [:search/fetch]}})
+
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]
@@ -181,6 +187,65 @@
                                        "0xF5b0A3eFB8e8E4c201e2A935F110eAaF3FFEcb8d"))
       db)))
 
+(rf/reg-event-db
+  :search/set-sort-key
+  (fn [db [_ sort-key]]
+    (-> db
+        (assoc-in [:search :sort-key] sort-key)
+        (assoc-in [:search :offset] 0))))
+
+(rf/reg-event-db
+  :search/set-sort-order
+  (fn [db [_ sort-order]]
+    (-> db
+        (assoc-in [:search :sort-order] sort-order)
+        (assoc-in [:search :offset] 0))))
+
+(rf/reg-event-db
+  :search/set-offset
+  (fn [db [_ offset]]
+    (assoc-in db [:search :offset] offset)))
+
+(rf/reg-event-fx
+  :search/fetch
+  (fn [{:keys [db]} [_ force?]]
+    (if (or (-> db :search :axies nil?)
+            force?)
+      {:db (-> db
+               (assoc-in [:search :loading?] true)
+               (assoc-in [:search :offset] 0)
+               (assoc-in [:search :axies] []))
+       :dispatch [:search/fetch-page]}
+      {})))
+
+(rf/reg-event-fx
+  :search/fetch-page
+  (fn [{:keys [db]} [_ total-axies]]
+    (let [axies (get-in db [:search :axies])]
+      (if (or (nil? total-axies)
+              (< (count axies) total-axies))
+        {:http-get {:url (format "https://axieinfinity.com/api/v2/axies?breedable&lang=en&offset=%s&sale=1&sorting=lowest_price"
+                                 (count axies))
+                    :handler [:search/got-page]}}
+
+        {:dispatch [:search/got axies]}))))
+
+
+(rf/reg-event-fx
+  :search/got-page
+  (fn [{:keys [db]} [_ {:keys [total-axies axies]}]]
+    {:db (-> db
+             (assoc-in [:search :total] total-axies)
+             (update-in [:search :axies] concat axies))
+     :dispatch [:search/fetch-page total-axies]}))
+
+(rf/reg-event-db
+  :search/got
+  (fn [db [_ axies]]
+    (-> db
+        (assoc-in [:search :loading?] false)
+        (assoc-in [:search :axie] axies))))
+
 (rf/reg-event-fx
   :my-axies/fetch
   (fn [{:keys [db]} [_ force?]]
@@ -225,6 +290,13 @@
   (fn [db [_ sort-key]]
     (-> db
         (assoc-in [:my-axies :sort-key] sort-key)
+        (assoc-in [:my-axies :offset] 0))))
+
+(rf/reg-event-db
+  :my-axies/set-sort-order
+  (fn [db [_ sort-order]]
+    (-> db
+        (assoc-in [:my-axies :sort-order] sort-order)
         (assoc-in [:my-axies :offset] 0))))
 
 (rf/reg-event-db

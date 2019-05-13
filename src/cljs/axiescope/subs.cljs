@@ -1,6 +1,7 @@
 (ns axiescope.subs
   (:require
    [re-frame.core :as rf]
+   [cljs-web3.core :as web3]
    [cljsjs.moment]
    [axiescope.moves :as moves]
    [axiescope.battle :as battle]))
@@ -98,12 +99,25 @@
                          (map moves/tank-move-score)
                          (apply +))))
 
+(defn calc-price
+  [axie]
+  (some-> axie
+          :auction
+          :buy-now-price
+          web3/to-decimal
+          (* 1e-18M)))
+
+(defn attach-price
+  [axie]
+  (assoc axie :price (calc-price axie)))
+
 (defn adjust-axie
   [axie]
   (-> axie
       attach-attack
       attach-defense
       attach-atk+def
+      attach-price
       attach-purity
       attach-dps-score
       attach-tank-score))
@@ -112,6 +126,11 @@
   :my-axies/sort-key
   (fn [db]
     (get-in db [:my-axies :sort-key] :id)))
+
+(rf/reg-sub
+  :my-axies/sort-order
+  (fn [db]
+    (get-in db [:my-axies :sort-order] :desc)))
 
 (rf/reg-sub
   :my-axies/raw-axies
@@ -145,12 +164,13 @@
   (fn [_]
     [(rf/subscribe [:my-axies/raw-axies])
      (rf/subscribe [:my-axies/sort-key])
+     (rf/subscribe [:my-axies/sort-order])
      (rf/subscribe [:my-axies/offset])
      (rf/subscribe [:my-axies/page-size])])
-  (fn [[axies sort-key offset page-size]]
+  (fn [[axies sort-key sort-order offset page-size]]
     (->> axies
          (sort-by sort-key)
-         reverse
+         ((if (= :asc sort-order) identity reverse))
          (drop offset)
          (take page-size))))
 
@@ -324,3 +344,60 @@
   :multi-gifter/to-addr
   (fn [db]
     (get db :multi-gifter/to-addr)))
+
+(rf/reg-sub
+  :search/loading?
+  (fn [db]
+    (get-in db [:search :loading?] false)))
+
+(rf/reg-sub
+  :search/raw-axies
+  (fn [db]
+    (map adjust-axie (get-in db [:search :axies]))))
+
+(rf/reg-sub
+  :search/count
+  (fn [_]
+    [(rf/subscribe [:search/raw-axies])])
+  (fn [[axies]]
+    (count axies)))
+
+(rf/reg-sub
+  :search/total
+  (fn [db]
+    (get-in db [:search :total] "?")))
+
+(rf/reg-sub
+  :search/offset
+  (fn [db]
+    (get-in db [:search :offset] 0)))
+
+(rf/reg-sub
+  :search/page-size
+  (fn [db]
+    (get-in db [:search :page-size] 100)))
+
+(rf/reg-sub
+  :search/sort-key
+  (fn [db]
+    (get-in db [:search :sort-key] :price)))
+
+(rf/reg-sub
+  :search/sort-order
+  (fn [db]
+    (get-in db [:search :sort-order] :asc)))
+
+(rf/reg-sub
+  :search/axies
+  (fn [_]
+    [(rf/subscribe [:search/raw-axies])
+     (rf/subscribe [:search/sort-key])
+     (rf/subscribe [:search/sort-order])
+     (rf/subscribe [:search/offset])
+     (rf/subscribe [:search/page-size])])
+  (fn [[axies sort-key sort-order offset page-size]]
+    (->> axies
+         (sort-by sort-key)
+         ((if (= :asc sort-order) identity reverse))
+         (drop offset)
+         (take page-size))))

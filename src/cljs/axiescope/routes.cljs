@@ -38,6 +38,9 @@
   (defroute "/multi-gifter" []
     (rf/dispatch [::events/set-active-panel :multi-gifter-panel]))
 
+  (defroute "/search" []
+    (rf/dispatch [::events/set-active-panel :search-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

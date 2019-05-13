@@ -8,4 +8,5 @@
    :now (js/moment)
    :web3 (aget js/window "web3")
    :eth (aget js/window "ethereum")
-   :my-axies {:page-size 100}})
+   :my-axies {:page-size 100}
+   :search {:page-size 100}})
