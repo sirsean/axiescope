@@ -3,6 +3,7 @@
    [re-frame.core :as rf]
    [reagent.core :as r]
    [reagent-table.core :as rt]
+   [clojure.string :as string]
    [cuerdas.core :refer [format]]
    [axiescope.subs :as subs]
    [axiescope.events :as events]
@@ -233,7 +234,7 @@
                   value]
       :gift-button (let [to-addr @(rf/subscribe [:multi-gifter/to-addr])]
                      [:button
-                      {:disabled (nil? to-addr)
+                      {:disabled (string/blank? to-addr)
                        :on-click #(rf/dispatch [:multi-gifter/send to-addr (:id row)])}
                       "Gift"])
       value)))
@@ -501,7 +502,8 @@
 
 (defn multi-gifter-panel
   []
-  (let [loading? @(rf/subscribe [:my-axies/loading?])
+  (let [followers-farm-addr "0x8EaDBb0209ca4D1c299Dc403dEAE40421e2e075B"
+        loading? @(rf/subscribe [:my-axies/loading?])
         to-addr @(rf/subscribe [:multi-gifter/to-addr])]
     [:div.container
      [header "Multi-Gifter" [:my-axies]]
@@ -518,7 +520,8 @@
           [:div.col-xs-12.center-xs
            [:h2 "The first thing you have to do is set the recipient's address:"]
            [:p
-            [:input {:type "text"
+            [:input {:id "multi-gifter-to-addr"
+                     :type "text"
                      :style {:padding "0.4em"
                              :font-size "1.2em"
                              :text-align "center"
@@ -526,7 +529,17 @@
                      :default-value to-addr
                      :on-change (fn [e]
                                   (rf/dispatch [:multi-gifter/set-to-addr
-                                                (-> e .-target .-value)]))}]]]]
+                                                (-> e .-target .-value)]))}]]
+           [:p "Donate to " [:a {:href "#"
+                                 :on-click (fn [e]
+                                             (-> js/document
+                                                 (.getElementById "multi-gifter-to-addr")
+                                                 (aset "value" followers-farm-addr))
+                                             (rf/dispatch [:multi-gifter/set-to-addr
+                                                           followers-farm-addr])
+                                             (.preventDefault e))}
+                             "Followers FARM"]
+            " to help the community grow."]]]
          [:div.row
           [:div.col-xs-12.center-xs
            [:h2 "and then you can send any axies as gifts just by clicking the Gift button..."]
