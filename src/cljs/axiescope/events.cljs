@@ -85,6 +85,12 @@
    :blockchain/enable {:eth (:eth db)
                        :handlers [:my-axies/fetch]}})
 
+(defmethod set-active-panel :gallery-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handlers [:my-axies/fetch]}})
+
 (defmethod set-active-panel :breedable-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
