@@ -106,6 +106,8 @@
             "Battle Simulator"]]
       [:li [:a {:href "/my-axies"}
             "My Axies"]]
+      [:li [:a {:href "/gallery"}
+            "Gallery"]]
       [:li [:a {:href "/breedable"}
             "Breedable"]]
       [:li [:a {:href "/teams"}
@@ -352,6 +354,31 @@
          [axies-pager :my-axies]]])
      [footer]]))
 
+(defn gallery-panel
+  []
+  (let [loading? @(rf/subscribe [:my-axies/loading?])
+        num-axies @(rf/subscribe [:my-axies/count])
+        axies @(rf/subscribe [:my-axies/axies])]
+    [:div.container
+     [header "Axie Gallery" [:my-axies]]
+     (if (and loading?
+              (< num-axies 10))
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:em "loading..."]]]
+       [:div.row
+        [:div.col-xs-12
+         [axie-sorter {:section :my-axies}]]
+        [:div.col-xs-12
+         [:div.row.middle-xs
+          (for [{:keys [id image]} axies]
+            [:div.col-xs-2.center-xs {:key id}
+             [:a {:href (format "https://axieinfinity.com/axie/%s" id)
+                  :target "_blank"}
+              [:img {:style {:width "100%"}
+                     :src image}]]])]]])
+     [footer]]))
+
 (defn breedable-panel
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
@@ -587,6 +614,7 @@
     :home-panel [home-panel]
     :battle-simulator-panel [battle-simulator-panel]
     :my-axies-panel [my-axies-panel]
+    :gallery-panel [gallery-panel]
     :breedable-panel [breedable-panel]
     :teams-panel [teams-panel]
     :unassigned-panel [unassigned-panel]
