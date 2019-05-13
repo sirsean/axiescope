@@ -193,6 +193,21 @@
                                        "0xF5b0A3eFB8e8E4c201e2A935F110eAaF3FFEcb8d"))
       db)))
 
+(rf/reg-event-fx
+  :axie/set-id
+  (fn [{:keys [db]} [_ axie-id]]
+    {:db (-> db
+             (assoc-in [:axie :loading?] true)
+             (assoc-in [:axie :id] axie-id))
+     :dispatch [::fetch-axie axie-id :axie/got]}))
+
+(rf/reg-event-db
+  :axie/got
+  (fn [db [_ axie]]
+    (-> db
+        (assoc-in [:axie :loading?] false)
+        (assoc-in [:axie :axie] axie))))
+
 (rf/reg-event-db
   :search/set-sort-key
   (fn [db [_ sort-key]]

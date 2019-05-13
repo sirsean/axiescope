@@ -14,6 +14,9 @@
   (defroute "/battle-simulator" []
     (rf/dispatch [::events/set-active-panel :battle-simulator-panel]))
 
+  (defroute "/axie" []
+    (rf/dispatch [::events/set-active-panel :axie-panel]))
+
   (defroute "/my-axies" []
     (rf/dispatch [::events/set-active-panel :my-axies-panel]))
 

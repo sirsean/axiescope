@@ -104,6 +104,8 @@
      [:ul.tools-list
       [:li [:a {:href "/battle-simulator"}
             "Battle Simulator"]]
+      [:li [:a {:href "/axie"}
+            "Axie Evaluator"]]
       [:li [:a {:href "/my-axies"}
             "My Axies"]]
       [:li [:a {:href "/gallery"}
@@ -138,6 +140,42 @@
      [:div.col-xs-12.center-xs
       [:img {:style {:width "100%"}
              :src image}]]]))
+
+(defn axie-info
+  [axie]
+  (when (:id axie)
+    [:div {:style {:padding "1.5em"}}
+     (for [[title k] [["Class" :class]
+                      ["Purity" :purity]
+                      ["Breeds" :breed-count]
+                      ["HP" :hp]
+                      ["Speed" :speed]
+                      ["Skill" :skill]
+                      ["Morale" :morale]
+                      ["Attack" :attack]
+                      ["Defense" :defense]
+                      ["Atk+Def" :atk+def]
+                      ["Tank" :tank]
+                      ["DPS" :dps]
+                      ["Mystic" :num-mystic]
+                      ["Price" :price]]]
+       [:div.row.middle-xs {:key k}
+        [:div.col-xs-6.end-xs [:strong title]]
+        [:div.col-xs-6 (get axie k)]])
+     [:div.row {:style {:margin-top "1em"}}
+      [:div.col-xs-12
+       [:div.row
+        [:div.col-xs-2 [:strong "type"]]
+        [:div.col-xs-2 [:strong "class"]]
+        [:div.col-xs-4 [:strong "name"]]]
+       (for [p (:parts axie)]
+         [:div.row.middle-xs {:key (:id p)}
+          [:div.col-xs-2 (:type p)]
+          [:div.col-xs-2 (:class p)]
+          [:div.col-xs-4 (:name p)]
+          [:div.col-xs-4
+           (when (:mystic p) "mystic")
+           ]])]]]))
 
 (defn battle-simulator-panel []
   [:div.container
@@ -334,6 +372,41 @@
         [:button
          {:on-click #(rf/dispatch [(keyword section :set-offset) (+ offset page-size)])}
          "Next"])]]))
+
+(defn axie-panel
+  []
+  (let [loading? @(rf/subscribe [:axie/loading?])
+        axie @(rf/subscribe [:axie/axie])
+        axie-id (r/atom (:id axie))]
+    [:div.container
+     [header "Axie Evaluator"]
+     [:div.row
+      [:div.col-xs-12
+       [:form {:on-submit (fn [e]
+                            (.preventDefault e)
+                            (rf/dispatch [:axie/set-id @axie-id]))}
+        [:div.row.middle-xs
+         [:div.col-xs-1.end-xs
+          [:span "Axie ID"]]
+         [:div.col-xs-10.center-xs
+          [:input {:type "text"
+                   :name "axie-id"
+                   :default-value (:id axie)
+                   :on-change (fn [e]
+                                (reset! axie-id (-> e .-target .-value)))
+                   :style {:width "100%"
+                           :font-size "1.2em"
+                           :padding "0.3em"}}]]
+         [:div.col-xs-1.end-xs
+          [:button {:style {:padding "0.5em"
+                            :font-size "1.0em"}}
+           "Evaluate"]]]]]]
+     [:div.row
+      [:div.col-xs-6
+       [show-axie axie]]
+      [:div.col-xs-6
+       [axie-info axie]]]
+     [footer]]))
 
 (defn my-axies-panel
   []
@@ -613,6 +686,7 @@
   (case panel
     :home-panel [home-panel]
     :battle-simulator-panel [battle-simulator-panel]
+    :axie-panel [axie-panel]
     :my-axies-panel [my-axies-panel]
     :gallery-panel [gallery-panel]
     :breedable-panel [breedable-panel]
