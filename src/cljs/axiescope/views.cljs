@@ -282,7 +282,8 @@
             (map (fn [[title k]]
                    ^{:key k}
                    [my-axies-sort-button section title k sort-key])))
-       [:span {:style {:padding-right "0.3em"}}
+       [:span {:style {:padding-left "0.6em"
+                       :padding-right "0.3em"}}
         "order:"]
        [sort-order-button section :asc sort-order]
        [sort-order-button section :desc sort-order]]]]))
