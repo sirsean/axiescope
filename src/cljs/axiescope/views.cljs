@@ -267,6 +267,9 @@
       :id [:a {:href (format "https://axieinfinity.com/axie/%s" value)
                :target "_blank"}
            value]
+      :name [:a {:href "/axie"
+                 :on-click #(rf/dispatch [:axie/set-id (get row :id)])}
+             value]
       :image [:img {:style {:width "100%"}
                     :src value}]
       :team-name [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
@@ -391,7 +394,6 @@
          [:div.col-xs-10.center-xs
           [:input {:type "text"
                    :name "axie-id"
-                   :default-value (:id axie)
                    :on-change (fn [e]
                                 (reset! axie-id (-> e .-target .-value)))
                    :style {:width "100%"
@@ -482,7 +484,9 @@
              [:div.row {:style {:background-color "#DDDDDD"
                                 :padding "0.4em 0"}}
               [:div.col-xs-6
-               [:strong (:name t)]]
+               [:a {:href (format "https://axieinfinity.com/team/%s" (:team-id t))
+                    :target "_blank"}
+                [:strong (:name t)]]]
               [:div.col-xs-6.end-xs
                (if (:ready? t)
                  [:em "ready"]
