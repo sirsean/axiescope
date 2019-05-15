@@ -79,6 +79,11 @@
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)})
 
+(defmethod set-active-panel :axie-panel
+  [{:keys [db]} [_ panel axie-id]]
+  {:db (assoc db :active-panel panel)
+   :dispatch [:axie/set-id axie-id]})
+
 (defmethod set-active-panel :my-axies-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)

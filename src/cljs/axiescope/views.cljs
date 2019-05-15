@@ -1,6 +1,7 @@
 (ns axiescope.views
   (:require
    [re-frame.core :as rf]
+   [accountant.core :as accountant]
    [reagent.core :as r]
    [reagent-table.core :as rt]
    [clojure.string :as string]
@@ -267,8 +268,7 @@
       :id [:a {:href (format "https://axieinfinity.com/axie/%s" value)
                :target "_blank"}
            value]
-      :name [:a {:href "/axie"
-                 :on-click #(rf/dispatch [:axie/set-id (get row :id)])}
+      :name [:a {:href (format "/axie/%s" (get row :id))}
              value]
       :image [:img {:style {:width "100%"}
                     :src value}]
@@ -387,7 +387,7 @@
       [:div.col-xs-12
        [:form {:on-submit (fn [e]
                             (.preventDefault e)
-                            (rf/dispatch [:axie/set-id @axie-id]))}
+                            (accountant/navigate! (format "/axie/%s" @axie-id)))}
         [:div.row.middle-xs
          [:div.col-xs-1.end-xs
           [:span "Axie ID"]]

@@ -17,6 +17,9 @@
   (defroute "/axie" []
     (rf/dispatch [::events/set-active-panel :axie-panel]))
 
+  (defroute "/axie/:axie-id" {:keys [axie-id]}
+    (rf/dispatch [::events/set-active-panel :axie-panel axie-id]))
+
   (defroute "/my-axies" []
     (rf/dispatch [::events/set-active-panel :my-axies-panel]))
 
