@@ -8,6 +8,7 @@
    [cuerdas.core :refer [format]]
    [axiescope.subs :as subs]
    [axiescope.events :as events]
+   [axiescope.moves :as moves]
    ))
 
 (defn loading-bar
@@ -168,15 +169,23 @@
        [:div.row
         [:div.col-xs-2 [:strong "type"]]
         [:div.col-xs-2 [:strong "class"]]
-        [:div.col-xs-4 [:strong "name"]]]
+        [:div.col-xs-4 [:strong "name"]]
+        [:div.col-xs-1.end-xs [:strong "atk"]]
+        [:div.col-xs-1.end-xs [:strong "def"]]
+        [:div.col-xs-1.end-xs [:strong "tank"]]
+        [:div.col-xs-1.end-xs [:strong "dps"]]]
        (for [p (:parts axie)]
-         [:div.row.middle-xs {:key (:id p)}
+         [:div.row.middle-xs {:key (:id p)
+                              :style {:background-color (when (:mystic p) "#54b0e6")
+                                      :padding "0.1em 0"
+                                      :border-radius "1em"}}
           [:div.col-xs-2 (:type p)]
           [:div.col-xs-2 (:class p)]
           [:div.col-xs-4 (:name p)]
-          [:div.col-xs-4
-           (when (:mystic p) "mystic")
-           ]])]]]))
+          [:div.col-xs-1.end-xs (-> p :moves first :attack)]
+          [:div.col-xs-1.end-xs (-> p :moves first :defense)]
+          [:div.col-xs-1.end-xs (some-> p :name moves/tank-move-score)]
+          [:div.col-xs-1.end-xs (some-> p :name moves/dps-move-score)]])]]]))
 
 (defn battle-simulator-panel []
   [:div.container
