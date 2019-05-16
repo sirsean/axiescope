@@ -700,7 +700,7 @@
   []
   [:div.container
    [header "Auto-Battle"]
-   [:p "Each team can battle once every four hours, up to 3 times per 12 hours. That means that in order to maximize your exp, you need to log in multiple times per day and send each time to battle over and over."]
+   [:p "Each team can battle once every four hours, up to 3 times per 12 hours. That means that in order to maximize your exp, you need to log in multiple times per day and send each team to battle over and over."]
    [:p "That is a lot of work! I can do it automatically for you, so you can maximize your exp with no work at all. In exchange, you pay $10/month in ETH."]
    (let [eth-addr @(rf/subscribe [::subs/eth-addr])
          token @(rf/subscribe [:auto-battle/token])]
