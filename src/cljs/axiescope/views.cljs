@@ -702,15 +702,18 @@
    [header "Auto-Battle"]
    [:p "Each team can battle once every four hours, up to 3 times per 12 hours. That means that in order to maximize your exp, you need to log in multiple times per day and send each time to battle over and over."]
    [:p "That is a lot of work! I can do it automatically for you, so you can maximize your exp with no work at all. In exchange, you pay $10/month in ETH."]
-   [:p "In order for the auto-battle program to work, I need your ETH address and your Axie Infinity bearer token. Please click the Generate Token button to fill in the token."]
-   [:button {:on-click (fn [e]
-                         (rf/dispatch [:auto-battle/generate-token]))}
-    "Generate Token"]
    (let [eth-addr @(rf/subscribe [::subs/eth-addr])
          token @(rf/subscribe [:auto-battle/token])]
-     [:pre (.stringify js/JSON (clj->js {:eth-addr eth-addr
-                                         :token token}) nil 4)])
-   [:p "Send me that JSON in Discord and show proof of payment, and I'll get you set up."]
+     (if (some? token)
+       [:div
+        [:pre (.stringify js/JSON (clj->js {:eth-addr eth-addr
+                                            :token token}) nil 4)]
+        [:p "Send me that JSON in Discord and show proof of payment, and I'll get you set up."]]
+       [:div
+        [:p "In order for the auto-battle program to work, I need your ETH address and your Axie Infinity bearer token. Please click the Generate Token button to fill in the token."]
+        [:button {:on-click (fn [e]
+                              (rf/dispatch [:auto-battle/generate-token]))}
+         "Generate Token"]]))
    [footer]])
 
 (defn panels
