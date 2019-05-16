@@ -344,3 +344,8 @@
   :auto-battle/token
   (fn [db]
     (get-in db [:auto-battle :token])))
+
+(rf/reg-sub
+  :cryptonator/ticker
+  (fn [db [_ ticker]]
+    (get-in db [:cryptonator ticker])))

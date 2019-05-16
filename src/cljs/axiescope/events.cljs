@@ -62,6 +62,21 @@
                                    (rf/dispatch [handler res])))))))
 
 (rf/reg-fx
+  :blockchain/send-eth
+  (fn [{:keys [web3 handler err-handler from-addr to-addr value]}]
+    (println "send" from-addr to-addr value)
+    (cljs-web3.eth/send-transaction! web3
+                                     {:from from-addr
+                                      :to to-addr
+                                      :value value}
+                                     (fn [err res]
+                                       (if (some? err)
+                                         (when (some? err-handler)
+                                           (rf/dispatch [err-handler err]))
+                                         (when (some? handler)
+                                           (rf/dispatch [handler res])))))))
+
+(rf/reg-fx
   :axie-contract/transfer-axie
   (fn [{:keys [contract-instance handler err-handler from-addr to-addr axie-id]}]
     (println "transfer" from-addr to-addr axie-id)
@@ -163,7 +178,8 @@
 (defmethod set-active-panel :auto-battle-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
-   :blockchain/enable {:eth (:eth db)}})
+   :blockchain/enable {:eth (:eth db)}
+   :dispatch [:cryptonator/fetch-ticker "eth-usd"]})
 
 (rf/reg-event-fx
   ::set-active-panel
@@ -216,6 +232,22 @@
                                        abi
                                        "0xF5b0A3eFB8e8E4c201e2A935F110eAaF3FFEcb8d"))
       db)))
+
+(rf/reg-event-fx
+  :eth/send-eth
+  (fn [{:keys [db]} [_ to-addr eth-value]]
+    {:blockchain/send-eth {:web3 (:web3 db)
+                           :from-addr (:eth-addr db)
+                           :to-addr to-addr
+                           :value (cljs-web3.core/to-wei eth-value :ether)
+                           :err-handler :contract/error
+                           :handler :eth/sent}}))
+
+(rf/reg-event-fx
+  :eth/sent
+  (fn [_ [_ resp]]
+    (println "sent" resp)
+    {}))
 
 (rf/reg-event-fx
   :axie/set-id
@@ -477,3 +509,15 @@
   :auto-battle/got-token
   (fn [db [_ token]]
     (assoc-in db [:auto-battle :token] token)))
+
+(rf/reg-event-fx
+  :cryptonator/fetch-ticker
+  (fn [_ [_ ticker]]
+    {:http-get {:url (format "https://api.cryptonator.com/api/ticker/%s"
+                             (string/lower-case ticker))
+                :handler [:cryptonator/got-ticker ticker]}}))
+
+(rf/reg-event-db
+  :cryptonator/got-ticker
+  (fn [db [_ ticker result]]
+    (assoc-in db [:cryptonator ticker] (:ticker result))))

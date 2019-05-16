@@ -703,17 +703,52 @@
    [:p "Each team can battle once every four hours, up to 3 times per 12 hours. That means that in order to maximize your exp, you need to log in multiple times per day and send each team to battle over and over."]
    [:p "That is a lot of work! I can do it automatically for you, so you can maximize your exp with no work at all. In exchange, you pay $10/month in ETH."]
    (let [eth-addr @(rf/subscribe [::subs/eth-addr])
-         token @(rf/subscribe [:auto-battle/token])]
-     (if (some? token)
-       [:div
-        [:pre (.stringify js/JSON (clj->js {:eth-addr eth-addr
-                                            :token token}) nil 4)]
-        [:p "Send me that JSON in Discord and show proof of payment, and I'll get you set up."]]
-       [:div
-        [:p "In order for the auto-battle program to work, I need your ETH address and your Axie Infinity bearer token. Please click the Generate Token button to fill in the token."]
-        [:button {:on-click (fn [e]
-                              (rf/dispatch [:auto-battle/generate-token]))}
-         "Generate Token"]]))
+         token @(rf/subscribe [:auto-battle/token])
+         eth-usd @(rf/subscribe [:cryptonator/ticker "eth-usd"])]
+     [:div
+      (if (some? token)
+        (let [json (.stringify js/JSON (clj->js {:eth-addr eth-addr
+                                                 :token token}) nil 4)]
+          [:div
+           [:textarea {:rows 4
+                       :style {:width "100%"
+                               :border "none"}
+                       :value json
+                       :read-only true
+                       :id "my-json-code"}]
+           [:p [:button {:on-click (fn [e]
+                                     (let [elem (.getElementById js/document "my-json-code")]
+                                       (.setSelectionRange elem 0 (.. elem -value -length))
+                                       (.focus elem)
+                                       (.execCommand js/document "copy")
+                                       (.blur elem)
+                                       (.preventDefault e)))}
+                "Copy to Clipboard"]]
+           [:p "Send me that JSON in Discord and show proof of payment, and I'll get you set up."]])
+        [:div
+         [:p "In order for the auto-battle program to work, I need your ETH address and your Axie Infinity bearer token. Please click the Generate Token button to fill in the token."]
+         [:button {:on-click (fn [e]
+                               (rf/dispatch [:auto-battle/generate-token]))}
+          "Generate Token"]])
+      [:div.row
+       [:div.col-xs-12.col-xs-offset-1
+        [:h3 "Price List"]]]
+      [:div.row
+       [:div.col-xs-1.end-xs [:strong "USD"]]
+       [:div.col-xs-6
+        (let [price 10]
+          (format "%s/month" price))]]
+      (let [price (->> eth-usd :price (/ 10.))]
+        [:div.row.middle-xs
+         [:div.col-xs-1.end-xs [:strong "ETH"]]
+         [:div.col-xs-3
+          (format "%s/month" price)]
+         [:div.col-xs-3
+          [:button {:on-click (fn [e]
+                                (rf/dispatch [:eth/send-eth
+                                              "0x560EBafD8dB62cbdB44B50539d65b48072b98277"
+                                              price]))}
+           "Pay"]]])])
    [footer]])
 
 (defn panels
