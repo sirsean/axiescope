@@ -50,6 +50,9 @@
   (defroute "/search" []
     (rf/dispatch [::events/set-active-panel :search-panel]))
 
+  (defroute "/auto-battle" []
+    (rf/dispatch [::events/set-active-panel :auto-battle-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

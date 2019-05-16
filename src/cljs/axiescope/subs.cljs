@@ -21,6 +21,11 @@
     active-panel))
 
 (rf/reg-sub
+  ::eth-addr
+  (fn [{:keys [eth-addr]}]
+    eth-addr))
+
+(rf/reg-sub
   :battle-simulator/attacker
   (fn [db]
     (get-in db [:battle-simulator :attacker])))
@@ -334,3 +339,8 @@
          ((if (= :asc sort-order) identity reverse))
          (drop offset)
          (take page-size))))
+
+(rf/reg-sub
+  :auto-battle/token
+  (fn [db]
+    (get-in db [:auto-battle :token])))

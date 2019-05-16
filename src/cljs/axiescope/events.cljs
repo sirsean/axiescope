@@ -4,6 +4,7 @@
    [district0x.re-frame.interval-fx]
    [cljs-web3.core]
    [cljs-web3.eth]
+   [cljs-web3.personal]
    [clojure.string :as string]
    [cuerdas.core :refer [format]]
    [cljs-await.core :refer [await]]
@@ -46,6 +47,19 @@
         (when err
           (println "uhoh, enable failed" err))
         (rf/dispatch [:blockchain/got-addrs eth-addrs handlers])))))
+
+(rf/reg-fx
+  :blockchain/sign
+  (fn [{:keys [web3 handler err-handler addr data]}]
+    (println "sign" addr data)
+    (cljs-web3.personal/sign web3
+                             data addr
+                             (fn [err res]
+                               (if (some? err)
+                                 (when (some? err-handler)
+                                   (rf/dispatch [err-handler err]))
+                                 (when (some? handler)
+                                   (rf/dispatch [handler res])))))))
 
 (rf/reg-fx
   :axie-contract/transfer-axie
@@ -145,6 +159,11 @@
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
                        :handlers [:search/fetch]}})
+
+(defmethod set-active-panel :auto-battle-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)}})
 
 (rf/reg-event-fx
   ::set-active-panel
@@ -444,3 +463,17 @@
   (fn [db [_ result]]
     (println "sent" result)
     db))
+
+(rf/reg-event-fx
+  :auto-battle/generate-token
+  (fn [{:keys [db]} _]
+    {:blockchain/sign {:web3 (:web3 db)
+                       :addr (:eth-addr db)
+                       :data "0x4178696520496e66696e697479"
+                       :handler :auto-battle/got-token
+                       :err-handler :contract/error}}))
+
+(rf/reg-event-db
+  :auto-battle/got-token
+  (fn [db [_ token]]
+    (assoc-in db [:auto-battle :token] token)))
