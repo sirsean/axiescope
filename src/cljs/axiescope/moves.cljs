@@ -1,164 +1,167 @@
 (ns axiescope.moves)
 
-(defn tank-move-score
-  [move-name]
-  (case move-name
-    "Hot Butt" 4
-    "Tiny Dino" 4
-    "Pumpkin" 4
-    "Red Ear" 4
-    "Rose Bud" 4
-    "Beech" 4
-    "Zigzag" 4
-    "Herbivore" 4
-    "Carrot" 3
-    "Cattail" 3
-    "Thorny Caterpillar" 3
-    "Hermit" 3
-    "Sponge" 3
-    "1ND14N-5T4R" 3
-    "Snail Shell" 3
-    "Shiitake" 3
-    "Cerastes" 3
-    "Cactus" 3
-    "Leaf Bug" 3
-    "Serious" 3
-    "Silence Whisper" 3
-    "Hatsune" 2
-    "Bidens" 2
-    "Bamboo Shoot" 2
-    "Razor Bite" 2
-    "Ant" 2
-    "Mint" 2
-    "Merry" 2
-    "Toothless Bite" 2
-    "Snake Jar" 2
-    "Timber" 2
-    "Incisor" 2
-    "Tiny Turtle" 2
-    "Fish Snack" 2
-    "Watermelon" 2
-    "Feather Fan" 2
-    "Potato Leaf" 2
-    "Wall Gecko" 2
-    "Gila" 2
-    "Grass Snake" 2
-    "Koi" 1
-    "Bone Sail" 1
-    "Lagging" 1
-    "Lam" 1
-    "Pupae" 1
-    "Turnip" 1
-    "Scaly Spear" 1
-    "Pincer" 1
-    "Shrimp" 1
-    "Anemone" 1
-    "Teal Shell" 1
-    "Piranha" 1
-    "Croc" 1
-    "Babylonia" 1
-    "Risky Fish" 1
-    "Navaga" 1
-    "Green Thorns" 1
-    "Pliers" 1
-    "Nimo" 1
-    "Watering Can" 1
-    "Scaly Spoon" 1
+(defn tank-part-score
+  [part-id]
+  (case part-id
+    "tail-hot-butt" 4
+    "tail-tiny-dino" 4
+    "back-pumpkin" 4
+    "back-red-ear" 4
+    "horn-rose-bud" 4
+    "horn-beech" 4
+    "mouth-zigzag" 4
+    "mouth-herbivore" 4
+    "tail-carrot" 3
+    "tail-cattail" 3
+    "tail-thorny-caterpillar" 3
+    "back-hermit" 3
+    "back-sponge" 3
+    "back-indian-star" 3
+    "back-snail-shell" 3
+    "back-shiitake" 3
+    "horn-cerastes" 3
+    "horn-cactus" 3
+    "horn-leafbug" 3
+    "mouth-serious" 3
+    "mouth-silence-whisper" 3
+    "tail-hatsune" 2
+    "tail-ant" 2
+    "tail-feather-fan" 2
+    "tail-potato-leaf" 2
+    "tail-wall-gecko" 2
+    "tail-gila" 2
+    "tail-grass-snake" 2
+    "tail-snake-jar" 2
+    "tail-fish-snack" 2
+    "back-bidens" 2
+    "back-mint" 2
+    "back-timber" 2
+    "horn-bamboo-shoot" 2
+    "horn-merry" 2
+    "horn-ncisor" 2
+    "horn-watermelon" 2
+    "mouth-razor-bite" 2
+    "mouth-toothless-bite" 2
+    "mouth-tiny-turtle" 2
+    "tail-koi" 1
+    "back-bone-sail" 1
+    "horn-lagging" 1
+    "mouth-lam" 1
+    "tail-pupae" 1
+    "back-turnip" 1
+    "horn-scaly-spear" 1
+    "mouth-pincer" 1
+    "tail-shrimp" 1
+    "back-anemone" 1
+    "horn-teal-shell" 1
+    "mouth-piranha" 1
+    "back-croc" 1
+    "horn-abylonia" 1
+    "mouth-riskyfish" 1
+    "tail-navaga" 1
+    "back-green-thorns" 1
+    "horn-pliers" 1
+    "tail-nimo" 1
+    "back-watering-can" 1
+    "horn-scaly-spoon" 1
     0))
 
-(defn dps-move-score
-  [move-name]
-  (case move-name
-    "The Last One" 4
-    "Tri Feather" 4
-    "Eggshell" 4
-    "Little Owl" 4
-    "Post Flight" 4
-    "Kingfisher" 4
-    "Cactus" 4
-    "Nut Cracker" 4
-    "Hare" 4
-    "Ronin" 4
-    "Feather Spear" 4
-    "Doubletalk" 4
-    "Little Branch" 4
-    "Imp" 4
-    "Swallow" 3
-    "Raven" 3
-    "Trump" 3
-    "Peace Maker" 3
-    "Shiba" 3
-    "Cupid" 3
-    "Wing Horn" 3
-    "Hungry Bird" 3
-    "Gerbil" 3
-    "Scarab" 3
-    "Cuckoo" 3
-    "Axie Kiss" 3
-    "Furball" 3
-    "Shoal Star" 3
-    "Cute Bunny" 3
-    "Cloud" 3
-    "Risky Beast" 3
-    "Scaly Spear" 3
-    "Tiny Turtle" 3
-    "Navaga" 3
-    "Jaguar" 3
-    "Cerastes" 3
-    "Razor Bite" 3
-    "Iguana" 3
-    "Hero" 3
-    "Arco" 3
-    "Toothless Bite" 3
-    "Shrimp" 3
-    "Granma's Fan" 2
-    "Pigeon Post" 2
-    "Pocky" 2
-    "Goda" 2
-    "Tadpole" 2
-    "Bone Sail" 2
-    "Pliers" 2
-    "Kotaro" 2
-    "Cottontail" 2
-    "Perch" 2
-    "Dual Blade" 2
-    "Piranha" 2
-    "Nimo" 2
-    "Balloon" 2
-    "Lagging" 2
-    "Risky Fish" 2
-    "Ranchu" 2
-    "Blue Moon" 2
-    "Parasite" 2
-    "Rice" 2
-    "Goldfish" 2
-    "Kestrel" 2
-    "Grass Snake" 2
-    "Tri Spikes" 2
-    "Bumpy" 2
-    "Spiky Wing" 2
-    "Babylonia" 2
-    "Beech" 2
-    "Snake Jar" 1
-    "Anemone" 1
-    "Teal Shell" 1
-    "Catfish" 1
-    "Koi" 1
-    "Croc" 1
-    "Merry" 1
-    "Lam" 1
-    "Hot Butt" 1
-    "Garish Worm" 1
-    "Clamshell" 1
-    "Herbivore" 1
-    "Green Thorns" 1
-    "Serious" 1
-    "Scaly Spoon" 1
-    "Square Teeth" 1
-    "Incisor" 1
-    "Oranda" 1
-    "Unko" 1
-    "Watermelon" 1
-    "Antenna" 1
-    "Caterpillars" 1
+(defn dps-part-score
+  [part-id]
+  (case part-id
+    "tail-the-last-one" 4
+    "back-tri-feather" 4
+    "horn-eggshell" 4
+    "mouth-little-owl" 4
+    "tail-post-flight" 4
+    "back-kingfisher" 4
+    "horn-cactus" 4
+    "mouth-nut-cracker" 4
+    "tail-hare" 4
+    "back-ronin" 4
+    "horn-feather-spear" 4
+    "mouth-doubletalk" 4
+    "horn-little-branch" 4
+    "horn-imp" 4
+    "tail-swallow" 3
+    "back-raven" 3
+    "horn-trump" 3
+    "mouth-peace-maker" 3
+    "tail-shiba" 3
+    "back-cupid" 3
+    "horn-wing-horn" 3
+    "mouth-hungry-bird" 3
+    "tail-gerbil" 3
+    "back-scarab" 3
+    "horn-cuckoo" 3
+    "mouth-axie-kiss" 3
+    "tail-nut-cracker" 3
+    "back-furball" 3
+    "horn-shoal-star" 3
+    "mouth-cute-bunny" 3
+    "tail-cloud" 3
+    "back-risky-beast" 3
+    "horn-scaly-spear" 3
+    "mouth-tiny-turtle" 3
+    "tail-navaga" 3
+    "back-jaguar" 3
+    "horn-cerastes" 3
+    "mouth-razor-bite" 3
+    "tail-iguana" 3
+    "back-hero" 3
+    "horn-arco" 3
+    "mouth-toothless-bite" 3
+    "tail-shrimp" 3
+    "tail-granmas-fan" 2
+    "back-pigeon-post" 2
+    "horns-pocky" 2
+    "mouth-goda" 2
+    "tail-tadpole" 2
+    "back-bone-sail" 2
+    "horn-pliers" 2
+    "mouth-kotaro" 2
+    "tail-cottontail" 2
+    "back-perch" 2
+    "horn-dual-blade" 2
+    "mouth-piranha" 2
+    "tail-nimo" 2
+    "back-balloon" 2
+    "horn-lagging" 2
+    "mouth-risky-fish" 2
+    "tail-ranchu" 2
+    "back-blue-moon" 2
+    "horn-parasite" 2
+    "tail-rice" 2
+    "back-goldfish" 2
+    "horn-kestrel" 2
+    "tail-grass-snake" 2
+    "back-tri-spikes" 2
+    "horn-bumpy" 2
+    "back-spiky-wing" 2
+    "horn-babylonia" 2
+    "horn-beech" 2
+    "horn-bamboo-shoot" 2
+    "tail-snake-jar" 1
+    "back-anemone" 1
+    "horn-teal-shell" 1
+    "mouth-catfish" 1
+    "tail-koi" 1
+    "back-roc" 1
+    "horn-merry" 1
+    "mouth-lam" 1
+    "tail-hot-butt" 1
+    "back-garish-worm" 1
+    "horn-clamshell" 1
+    "mouth-herbivore" 1
+    "back-green-thorns" 1
+    "mouth-serious" 1
+    "horn-anemone" 1
+    "horn-scaly-spoon" 1
+    "mouth-square-teeth" 1
+    "horn-incisor" 1
+    "horn-oranda" 1
+    "horn-unko" 1
+    "horn-watermelon" 1
+    "horn-antenna" 1
+    "horn-caterpillars" 1
     0))

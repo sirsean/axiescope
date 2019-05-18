@@ -59,15 +59,15 @@
 (defn attach-dps-score
   [{:keys [parts] :as axie}]
   (assoc axie :dps (->> parts
-                        (map :name)
-                        (map moves/dps-move-score)
+                        (map :id)
+                        (map moves/dps-part-score)
                         (apply +))))
 
 (defn attach-tank-score
   [{:keys [parts] :as axie}]
   (assoc axie :tank (->> parts
-                         (map :name)
-                         (map moves/tank-move-score)
+                         (map :id)
+                         (map moves/tank-part-score)
                          (apply +))))
 
 (defn calc-price

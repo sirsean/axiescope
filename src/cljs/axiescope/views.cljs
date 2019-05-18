@@ -186,8 +186,8 @@
           [:div.col-xs-4 (:name p)]
           [:div.col-xs-1.end-xs (-> p :moves first :attack)]
           [:div.col-xs-1.end-xs (-> p :moves first :defense)]
-          [:div.col-xs-1.end-xs (some-> p :name moves/tank-move-score)]
-          [:div.col-xs-1.end-xs (some-> p :name moves/dps-move-score)]])]]]))
+          [:div.col-xs-1.end-xs (some-> p :id moves/tank-part-score)]
+          [:div.col-xs-1.end-xs (some-> p :id moves/dps-part-score)]])]]]))
 
 (defn battle-simulator-panel []
   [:div.container
