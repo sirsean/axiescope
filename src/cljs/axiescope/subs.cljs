@@ -341,9 +341,27 @@
          (take page-size))))
 
 (rf/reg-sub
+  :auto-battle/dollars-per-month
+  (fn [_]
+    10))
+
+(rf/reg-sub
+  :auto-battle/num-months
+  (fn [db]
+    (get-in db [:auto-battle :num-months] 1)))
+
+(rf/reg-sub
   :auto-battle/token
   (fn [db]
     (get-in db [:auto-battle :token])))
+
+(rf/reg-sub
+  :auto-battle/until
+  (fn [_]
+    [(rf/subscribe [:time/now])
+     (rf/subscribe [:auto-battle/num-months])])
+  (fn [[now num-months]]
+    (.add (js/moment now) num-months "months")))
 
 (rf/reg-sub
   :cryptonator/ticker

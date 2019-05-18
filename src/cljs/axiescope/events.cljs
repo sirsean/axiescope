@@ -503,6 +503,11 @@
   (fn [db [_ token]]
     (assoc-in db [:auto-battle :token] token)))
 
+(rf/reg-event-db
+  :auto-battle/set-num-months
+  (fn [db [_ num-months]]
+    (assoc-in db [:auto-battle :num-months] num-months)))
+
 (rf/reg-event-fx
   :cryptonator/fetch-ticker
   (fn [_ [_ ticker]]

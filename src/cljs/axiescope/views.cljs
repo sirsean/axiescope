@@ -700,17 +700,21 @@
   []
   [:div.container
    [header "Auto-Battle"]
-   [:p "Each team can battle once every four hours, up to 3 times per 12 hours. That means that in order to maximize your exp, you need to log in multiple times per day and send each team to battle over and over."]
-   [:p "That is a lot of work! I can do it automatically for you, so you can maximize your exp with no work at all. In exchange, you pay $10/month in ETH."]
    (let [eth-addr @(rf/subscribe [::subs/eth-addr])
          token @(rf/subscribe [:auto-battle/token])
-         eth-usd @(rf/subscribe [:cryptonator/ticker "eth-usd"])]
+         eth-usd @(rf/subscribe [:cryptonator/ticker "eth-usd"])
+         dollars-per-month @(rf/subscribe [:auto-battle/dollars-per-month])
+         num-months @(rf/subscribe [:auto-battle/num-months])
+         until @(rf/subscribe [:auto-battle/until])]
      [:div
+      [:p "Each team can battle once every four hours, up to 3 times per 12 hours. That means that in order to maximize your exp, you need to log in multiple times per day and send each team to battle over and over."]
+      [:p (format "That is a lot of work! I can do it automatically for you, so you can maximize your exp with no work at all. In exchange, you pay $%s/month in ETH." dollars-per-month)]
       (if (some? token)
         (let [json (.stringify js/JSON (clj->js {:eth-addr eth-addr
-                                                 :token token}) nil 4)]
+                                                 :token token
+                                                 :until (.format until "YYYY-MM-DD")}) nil 4)]
           [:div
-           [:textarea {:rows 4
+           [:textarea {:rows 5
                        :style {:width "100%"
                                :border "none"}
                        :value json
@@ -733,22 +737,33 @@
       [:div.row
        [:div.col-xs-12.col-xs-offset-1
         [:h3 "Price List"]]]
+      [:div.row.middle-xs {:style {:margin-bottom "1em"}}
+       [:div.col-xs-1
+        (format "%s month%s" num-months (when (not= 1 num-months) "s"))]
+       [:div.col-xs
+        [:button {:disabled (>= 1 num-months)
+                  :on-click #(rf/dispatch [:auto-battle/set-num-months (dec num-months)])}
+         "-1"]
+        [:button {:on-click #(rf/dispatch [:auto-battle/set-num-months (inc num-months)])}
+         "+1"]]]
       [:div.row
        [:div.col-xs-1.end-xs [:strong "USD"]]
        [:div.col-xs-6
-        (let [price 10]
-          (format "%s/month" price))]]
-      (let [price (->> eth-usd :price (/ 10.))]
+        (format "%s/month" dollars-per-month)]]
+      (let [price-per-month (->> eth-usd :price (/ dollars-per-month))
+            price (* price-per-month num-months)]
         [:div.row.middle-xs
          [:div.col-xs-1.end-xs [:strong "ETH"]]
          [:div.col-xs-3
-          (format "%s/month" price)]
+          (format "%s/month" price-per-month)]
          [:div.col-xs-3
-          [:button {:on-click (fn [e]
+          [:button {:style {:padding "0.5em"
+                            :border-radius "0.6em"}
+                    :on-click (fn [e]
                                 (rf/dispatch [:eth/send-eth
                                               "0x560EBafD8dB62cbdB44B50539d65b48072b98277"
                                               price]))}
-           "Pay"]]])])
+           (format "Pay %s" price)]]])])
    [footer]])
 
 (defn panels
