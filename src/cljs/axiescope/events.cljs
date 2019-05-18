@@ -48,18 +48,22 @@
           (println "uhoh, enable failed" err))
         (rf/dispatch [:blockchain/got-addrs eth-addrs handlers])))))
 
+(defn metamask-callback-fn
+  [handler err-handler]
+  (fn [err res]
+    (if (some? err)
+      (when (some? err-handler)
+        (rf/dispatch [err-handler err]))
+      (when (some? handler)
+        (rf/dispatch [handler res])))))
+
 (rf/reg-fx
   :blockchain/sign
   (fn [{:keys [web3 handler err-handler addr data]}]
     (println "sign" addr data)
     (cljs-web3.personal/sign web3
                              data addr
-                             (fn [err res]
-                               (if (some? err)
-                                 (when (some? err-handler)
-                                   (rf/dispatch [err-handler err]))
-                                 (when (some? handler)
-                                   (rf/dispatch [handler res])))))))
+                             (metamask-callback-fn handler err-handler))))
 
 (rf/reg-fx
   :blockchain/send-eth
@@ -69,26 +73,16 @@
                                      {:from from-addr
                                       :to to-addr
                                       :value value}
-                                     (fn [err res]
-                                       (if (some? err)
-                                         (when (some? err-handler)
-                                           (rf/dispatch [err-handler err]))
-                                         (when (some? handler)
-                                           (rf/dispatch [handler res])))))))
+                                     (metamask-callback-fn handler err-handler))))
 
 (rf/reg-fx
-  :axie-contract/transfer-axie
-  (fn [{:keys [contract-instance handler err-handler from-addr to-addr axie-id]}]
-    (println "transfer" from-addr to-addr axie-id)
-    (cljs-web3.eth/contract-call contract-instance
-                                 :safeTransferFrom
-                                 from-addr to-addr axie-id
-                                 (fn [err res]
-                                   (if (some? err)
-                                     (when (some? err-handler)
-                                       (rf/dispatch [err-handler err]))
-                                     (when (some? handler)
-                                       (rf/dispatch [handler res])))))))
+  :blockchain/contract-call
+  (fn [{:keys [contract-instance handler err-handler method args]}]
+    (println "contract-call" method args)
+    (apply cljs-web3.eth/contract-call
+           (concat [contract-instance method]
+                   args
+                   [(metamask-callback-fn handler err-handler)]))))
 
 (rf/reg-event-fx
   :contract/error
@@ -483,12 +477,11 @@
 (rf/reg-event-fx
   :multi-gifter/send
   (fn [{:keys [db]} [_ to-addr axie-id]]
-    {:axie-contract/transfer-axie {:contract-instance (:contract/axie-instance db)
-                                   :from-addr (:eth-addr db)
-                                   :to-addr to-addr
-                                   :axie-id axie-id
-                                   :handler :multi-gifter/sent
-                                   :err-handler :contract/error}}))
+    {:blockchain/contract-call {:contract-instance (:contract/axie-instance db)
+                                :method :safeTransferFrom
+                                :args [(:eth-addr db) to-addr axie-id]
+                                :handler :multi-gifter/sent
+                                :err-handler :contract/error}}))
 
 (rf/reg-event-db
   :multi-gifter/sent
