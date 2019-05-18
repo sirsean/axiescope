@@ -415,9 +415,9 @@
                             :font-size "1.0em"}}
            "Evaluate"]]]]]]
      [:div.row
-      [:div.col-xs-6
+      [:div.col-xs-12.col-md-6
        [show-axie axie]]
-      [:div.col-xs-6
+      [:div.col-xs-12.col-md-6
        [axie-info axie]]]
      [footer]]))
 
