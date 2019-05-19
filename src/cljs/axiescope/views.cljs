@@ -763,7 +763,8 @@
                                 (rf/dispatch [:eth/send-eth
                                               "0x560EBafD8dB62cbdB44B50539d65b48072b98277"
                                               price]))}
-           (format "Pay %s" price)]]])])
+           (format "Pay %s" price)]]])
+      [:p "Prices are negotiable, if you think this is more than you want to pay ... or you'd prefer to pay with DAI or LOOM or some other token. Let's talk about it."]])
    [footer]])
 
 (defn panels
