@@ -294,9 +294,27 @@
     (map adjust-axie (get-in db [:search :axies]))))
 
 (rf/reg-sub
+  :search/filtered-axies
+  (fn [_]
+    [(rf/subscribe [:search/raw-axies])
+     (rf/subscribe [:search/filters])])
+  (fn [[axies filters]]
+    (->> axies
+         (filter (fn [a]
+                   (and (<= (:min-purity filters) (:purity a))
+                        (>= (:max-breed-count filters) (:breed-count a))))))))
+
+(rf/reg-sub
   :search/count
   (fn [_]
     [(rf/subscribe [:search/raw-axies])])
+  (fn [[axies]]
+    (count axies)))
+
+(rf/reg-sub
+  :search/filtered-count
+  (fn [_]
+    [(rf/subscribe [:search/filtered-axies])])
   (fn [[axies]]
     (count axies)))
 
@@ -326,9 +344,28 @@
     (get-in db [:search :sort-order] :asc)))
 
 (rf/reg-sub
+  :search/min-purity
+  (fn [db]
+    (get-in db [:search :filter :min-purity] 0)))
+
+(rf/reg-sub
+  :search/max-breed-count
+  (fn [db]
+    (get-in db [:search :filter :max-breed-count] 7)))
+
+(rf/reg-sub
+  :search/filters
+  (fn [_]
+    [(rf/subscribe [:search/min-purity])
+     (rf/subscribe [:search/max-breed-count])])
+  (fn [[min-purity max-breed-count]]
+    {:min-purity min-purity
+     :max-breed-count max-breed-count}))
+
+(rf/reg-sub
   :search/axies
   (fn [_]
-    [(rf/subscribe [:search/raw-axies])
+    [(rf/subscribe [:search/filtered-axies])
      (rf/subscribe [:search/sort-key])
      (rf/subscribe [:search/sort-order])
      (rf/subscribe [:search/offset])

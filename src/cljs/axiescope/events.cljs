@@ -277,6 +277,11 @@
   (fn [db [_ offset]]
     (assoc-in db [:search :offset] offset)))
 
+(rf/reg-event-db
+  :search/set-filter
+  (fn [db [_ k v]]
+    (assoc-in db [:search :filter k] v)))
+
 (rf/reg-event-fx
   :search/fetch
   (fn [{:keys [db]} [_ force?]]
