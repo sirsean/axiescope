@@ -901,7 +901,7 @@
          [items-sorter]
          [rt/reagent-table
           items
-          {:table {:class "table table-striped table-wrap"
+          {:table {:class "table table-big table-striped table-wrap"
                    :style {:margin "0 auto"}}
            :column-model [{:header ""
                            :key :image}
@@ -976,7 +976,7 @@
          [market-sorter]
          [rt/reagent-table
           items
-          {:table {:class "table table-striped table-wrap"
+          {:table {:class "table table-big table-striped table-wrap"
                    :style {:margin "0 auto"}}
            :column-model [{:header ""
                            :key :image}
@@ -1047,7 +1047,7 @@
          [valuation-sorter]
          [rt/reagent-table
           items
-          {:table {:class "table table-striped table-wrap"
+          {:table {:class "table table-big table-striped table-wrap"
                    :style {:margin "0 auto"}}
            :column-model [{:header ""
                            :key :image}

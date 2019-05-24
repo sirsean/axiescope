@@ -34,6 +34,9 @@ body {
 .table td {
     text-align: center;
     padding-right: 5px;
+}
+
+.table-big td {
     max-width: 300px !important;
 }
 
