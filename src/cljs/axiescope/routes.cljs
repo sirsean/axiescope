@@ -53,6 +53,18 @@
   (defroute "/auto-battle" []
     (rf/dispatch [::events/set-active-panel :auto-battle-panel]))
 
+  (defroute "/land" []
+    (rf/dispatch [::events/set-active-panel :land-panel]))
+
+  (defroute "/land/items" []
+    (rf/dispatch [::events/set-active-panel :land-items-panel]))
+
+  (defroute "/land/market" []
+    (rf/dispatch [::events/set-active-panel :land-market-panel]))
+
+  (defroute "/land/valuation" []
+    (rf/dispatch [::events/set-active-panel :land-valuation-panel]))
+
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

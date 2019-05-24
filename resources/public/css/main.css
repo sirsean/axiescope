@@ -34,10 +34,15 @@ body {
 .table td {
     text-align: center;
     padding-right: 5px;
+    max-width: 300px !important;
 }
 
 .table-striped tr:nth-child(even) {
     background-color: #EEEEEE;
+}
+
+.table-wrap td {
+    white-space: unset !important;
 }
 
 .tools-list li {
