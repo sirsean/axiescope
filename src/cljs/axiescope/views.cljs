@@ -122,7 +122,11 @@
   (let [panel @(rf/subscribe [::subs/active-panel])]
     [:div.footer.row
      [:div.col-xs-12.center-xs
-      [:p "Donate to 0x560EBafD8dB62cbdB44B50539d65b48072b98277"]]
+      [:p [:a {:href "#"
+               :on-click (fn [e]
+                           (.preventDefault e)
+                           (rf/dispatch [:eth/send-eth "0x560EBafD8dB62cbdB44B50539d65b48072b98277" "0.05"]))}
+           "donate to sirsean.eth"]]]
      (when (not= :home-panel panel)
        [:div.col-xs-12.center-xs
         [:a {:href "/"} "Back Home"]])]))
@@ -181,27 +185,37 @@
       [:img {:style {:width "100%"}
              :src image}]]]))
 
+(defn axie-stat-list
+  [axie pairs]
+  [:div
+   (for [[title k] pairs]
+     [:div.row.middle-xs {:key k}
+      [:div.col-xs-6.end-xs [:strong title]]
+      [:div.col-xs-6 (get axie k)]])])
+
 (defn axie-info
   [axie]
   (when (:id axie)
     [:div {:style {:padding "1.5em"}}
-     (for [[title k] [["Class" :class]
-                      ["Purity" :purity]
-                      ["Breeds" :breed-count]
-                      ["HP" :hp]
-                      ["Speed" :speed]
-                      ["Skill" :skill]
-                      ["Morale" :morale]
-                      ["Attack" :attack]
-                      ["Defense" :defense]
-                      ["Atk+Def" :atk+def]
-                      ["Tank" :tank]
-                      ["DPS" :dps]
-                      ["Mystic" :num-mystic]
-                      ["Price" :price]]]
-       [:div.row.middle-xs {:key k}
-        [:div.col-xs-6.end-xs [:strong title]]
-        [:div.col-xs-6 (get axie k)]])
+     [:div.row
+      [:div.col-xs-12.col-md-6
+       [axie-stat-list axie [["Class" :class]
+                             ["Purity" :purity]
+                             ["Breeds" :breed-count]
+                             ["Mystic" :num-mystic]
+                             ["Price" :price]
+                             ["EXP" :exp]
+                             ["Pending EXP" :pending-exp]]]]
+      [:div.col-xs-12.col-md-6
+       [axie-stat-list axie [["HP" :hp]
+                             ["Speed" :speed]
+                             ["Skill" :skill]
+                             ["Morale" :morale]
+                             ["Attack" :attack]
+                             ["Defense" :defense]
+                             ["Atk+Def" :atk+def]
+                             ["Tank" :tank]
+                             ["DPS" :dps]]]]]
      [:div.row {:style {:margin-top "1em"}}
       [:div.col-xs-12
        [:div.row
