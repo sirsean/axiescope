@@ -202,10 +202,11 @@
        [axie-stat-list axie [["Class" :class]
                              ["Purity" :purity]
                              ["Breeds" :breed-count]
+                             ["Title" :title]
                              ["Mystic" :num-mystic]
                              ["Price" :price]
                              ["EXP" :exp]
-                             ["Pending EXP" :pending-exp]]]]
+                             ["Next Breed" :next-breed]]]]
       [:div.col-xs-12.col-md-6
        [axie-stat-list axie [["HP" :hp]
                              ["Speed" :speed]

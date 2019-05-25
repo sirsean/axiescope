@@ -4,6 +4,25 @@
     [axiescope.moves :as moves]
     ))
 
+(def breed-count->next-exp
+  {0 700
+   1 900
+   2 900
+   3 1500
+   4 2400
+   5 3000
+   6 3000})
+
+(defn calc-next-breed
+  [axie]
+  (-> axie
+      :breed-count
+      breed-count->next-exp))
+
+(defn attach-next-breed
+  [axie]
+  (assoc axie :next-breed (calc-next-breed axie)))
+
 (defn calc-num-mystic
   [axie]
   (->> axie
@@ -96,5 +115,6 @@
       attach-atk+def
       attach-price
       attach-purity
+      attach-next-breed
       attach-dps-score
       attach-tank-score))
