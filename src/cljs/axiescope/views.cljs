@@ -230,15 +230,19 @@
        (for [p (:parts axie)]
          [:div.row.middle-xs {:key (:id p)
                               :style {:background-color (when (:mystic p) "#54b0e6")
-                                      :padding "0.1em 0"
-                                      :border-radius "1em"}}
+                                      :padding "0.2em 0"
+                                      :border-radius "0.25em"}}
           [:div.col-xs-2 (:type p)]
           [:div.col-xs-2 (:class p)]
           [:div.col-xs-4 (:name p)]
           [:div.col-xs-1.end-xs (-> p :moves first :attack)]
           [:div.col-xs-1.end-xs (-> p :moves first :defense)]
           [:div.col-xs-1.end-xs (some-> p :id moves/tank-part-score)]
-          [:div.col-xs-1.end-xs (some-> p :id moves/dps-part-score)]])]]]))
+          [:div.col-xs-1.end-xs (some-> p :id moves/dps-part-score)]
+          (when-some [desc (-> p :moves first :effects first :description)]
+            [:div.col-xs-8.col-xs-offset-4
+             {:style {:font-size "0.7em"}}
+             desc])])]]]))
 
 (defn battle-simulator-panel []
   [:div.container
