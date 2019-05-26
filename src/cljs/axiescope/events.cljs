@@ -450,7 +450,7 @@
 (rf/reg-event-fx
   :teams/fetch-records
   (fn [{:keys [db]} _]
-    {:http-get {:url (format "http://104.46.3.251/api/winslosses/%s"
+    {:http-get {:url (format "https://whatthemoose.sirsean.me/api/winslosses/%s"
                              (:eth-addr db))
                 :handler [:teams/got-records]}}))
 
