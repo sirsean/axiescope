@@ -532,6 +532,11 @@
        [my-axies-table {:sub :my-axies/breedable}])
      [footer]]))
 
+(defn round
+  [d precision]
+  (let [factor (Math/pow 10 precision)]
+    (/ (Math/round (* d factor)) factor)))
+
 (defn teams-panel
   []
   (let [loading? @(rf/subscribe [:teams/loading?])
@@ -549,11 +554,18 @@
             [:div.col-xs-12
              [:div.row {:style {:background-color "#DDDDDD"
                                 :padding "0.4em 0"}}
-              [:div.col-xs-6
+              [:div.col-xs-4
                [:a {:href (format "https://axieinfinity.com/team/%s" (:team-id t))
                     :target "_blank"}
                 [:strong (:name t)]]]
-              [:div.col-xs-6.end-xs
+              [:div.col-xs-4.center-xs
+               (when-some [record (:record t)]
+                 (let [{:keys [wins losses wins-24 losses-24]} record
+                       win-percentage (round (* 100 (/ wins (+ wins losses))) 2)]
+                 [:span
+                  (format "%s-%s [%s%] last 24: %s-%s"
+                          wins losses win-percentage wins-24 losses-24)]))]
+              [:div.col-xs-4.end-xs
                (if (:ready? t)
                  [:em "ready"]
                  [:span (format "ready in %sm" (:ready-in t))])]]
