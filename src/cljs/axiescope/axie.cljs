@@ -23,6 +23,22 @@
   [axie]
   (assoc axie :next-breed (calc-next-breed axie)))
 
+(defn calc-pending-exp
+  [{:keys [exp pending-exp breed-count]}]
+  (let [used-exp (->> breed-count->next-exp
+                      (filter (fn [[bc _]]
+                                (< bc breed-count)))
+                      (map second)
+                      (apply +))]
+    (- pending-exp
+       used-exp
+       -400 ; because axies start with 400 exp
+       exp)))
+
+(defn attach-pending-exp
+  [axie]
+  (assoc axie :pending-exp (calc-pending-exp axie)))
+
 (defn calc-num-mystic
   [axie]
   (->> axie
@@ -116,5 +132,6 @@
       attach-price
       attach-purity
       attach-next-breed
+      attach-pending-exp
       attach-dps-score
       attach-tank-score))
