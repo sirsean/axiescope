@@ -291,7 +291,7 @@
   (fn [{:keys [db]} [_ axie-id]]
     {:db (-> db
              (assoc-in [:axie :loading?] true)
-             (assoc-in [:axie :id] axie-id))
+             (assoc-in [:axie :id] (str axie-id)))
      :dispatch [::fetch-axie axie-id :axie/got]}))
 
 (rf/reg-event-db
@@ -299,7 +299,7 @@
   (fn [db [_ axie]]
     (-> db
         (assoc-in [:axie :loading?] false)
-        (assoc-in [:axie :axie] axie))))
+        (assoc-in [:axie :db (str (:id axie))] axie))))
 
 (rf/reg-event-db
   :search/set-sort-key
@@ -493,7 +493,7 @@
        :dispatch-n (-> [[:teams/fetch-teams-page total]
                         [:teams/fetch-activity-points axie-ids]]
                        (concat (map (fn [axie-id]
-                                      [::fetch-axie axie-id :teams/got-axie])
+                                      [::fetch-axie axie-id :axie/got])
                                     axie-ids)))})))
 (rf/reg-event-fx
   :teams/got-teams
@@ -524,11 +524,6 @@
           (update-in [:teams :axie-id->activity-points]
                      merge
                      ap-map)))))
-
-(rf/reg-event-db
-  :teams/got-axie
-  (fn [db [_ axie]]
-    (assoc-in db [:teams :axie-db (:id axie)] axie)))
 
 (rf/reg-event-db
   :multi-gifter/set-to-addr

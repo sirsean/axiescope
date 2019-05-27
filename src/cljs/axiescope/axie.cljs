@@ -123,15 +123,15 @@
 
 (defn adjust-axie
   [axie]
-  (-> axie
-      merge-stats
-      attach-num-mystic
-      attach-attack
-      attach-defense
-      attach-atk+def
-      attach-price
-      attach-purity
-      attach-next-breed
-      attach-pending-exp
-      attach-dps-score
-      attach-tank-score))
+  (some-> axie
+          merge-stats
+          attach-num-mystic
+          attach-attack
+          attach-defense
+          attach-atk+def
+          attach-price
+          attach-purity
+          attach-next-breed
+          attach-pending-exp
+          attach-dps-score
+          attach-tank-score))

@@ -446,15 +446,16 @@
 (defn axie-panel
   []
   (let [loading? @(rf/subscribe [:axie/loading?])
-        axie @(rf/subscribe [:axie/axie])
-        axie-id (r/atom (:id axie))]
+        axie-id @(rf/subscribe [:axie/axie-id])
+        axie @(rf/subscribe [:axie/axie axie-id])
+        axie-id-atom (r/atom axie-id)]
     [:div.container
      [header "Axie Evaluator"]
      [:div.row
       [:div.col-xs-12
        [:form {:on-submit (fn [e]
                             (.preventDefault e)
-                            (accountant/navigate! (format "/axie/%s" @axie-id)))}
+                            (accountant/navigate! (format "/axie/%s" @axie-id-atom)))}
         [:div.row.middle-xs
          [:div.col-xs-1.end-xs
           [:span "Axie ID"]]
@@ -462,7 +463,7 @@
           [:input {:type "text"
                    :name "axie-id"
                    :on-change (fn [e]
-                                (reset! axie-id (-> e .-target .-value)))
+                                (reset! axie-id-atom (-> e .-target .-value)))
                    :style {:width "100%"
                            :font-size "1.2em"
                            :padding "0.3em"}}]]
@@ -470,11 +471,15 @@
           [:button {:style {:padding "0.5em"
                             :font-size "1.0em"}}
            "Evaluate"]]]]]]
-     [:div.row
-      [:div.col-xs-12.col-md-6
-       [show-axie axie]]
-      [:div.col-xs-12.col-md-6
-       [axie-info axie]]]
+     (if (and loading? (nil? axie))
+       [:div.row
+        [:div.col-xs-12.center-xs
+         [:p [:em "loading..."]]]]
+       [:div.row
+        [:div.col-xs-12.col-md-6
+         [show-axie axie]]
+        [:div.col-xs-12.col-md-6
+         [axie-info axie]]])
      [footer]]))
 
 (defn my-axies-panel
@@ -515,8 +520,7 @@
          [:div.row.middle-xs
           (for [{:keys [id image]} axies]
             [:div.col-xs-2.center-xs {:key id}
-             [:a {:href (format "https://axieinfinity.com/axie/%s" id)
-                  :target "_blank"}
+             [:a {:href (format "/axie/%s" id)}
               [:img {:style {:width "100%"}
                      :src image}]]])]]])
      [footer]]))
@@ -591,16 +595,20 @@
         [:div.col-xs-12.center-xs
          [:em "loading..."]]]
        (let [axies (rf/subscribe [:teams/unassigned-axies])]
-         [:div.row
-          [:div.col-xs-12
-           [axie-sorter {:section :my-axies}]]
-          [:div.col-xs-12
-           [rt/reagent-table
-            axies
-            {:table {:class "table table-striped"
-                     :style {:margin "0 auto"}}
-             :column-model axie-table-column-model
-             :render-cell axie-table-render-cell}]]]))
+         (if (empty? @axies)
+           [:div.row
+            [:div.col-xs-12.center-xs
+             [:em "you have no unassigned axies"]]]
+           [:div.row
+            [:div.col-xs-12
+             [axie-sorter {:section :my-axies}]]
+            [:div.col-xs-12
+             [rt/reagent-table
+              axies
+              {:table {:class "table table-striped"
+                       :style {:margin "0 auto"}}
+               :column-model axie-table-column-model
+               :render-cell axie-table-render-cell}]]])))
      [footer]]))
 
 (defn multi-assigned-panel

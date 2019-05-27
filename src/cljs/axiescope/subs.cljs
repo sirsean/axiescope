@@ -52,9 +52,9 @@
     (get-in db [:axie :loading?])))
 
 (rf/reg-sub
-  :axie/axie
+  :axie/axie-id
   (fn [db]
-    (adjust-axie (get-in db [:axie :axie]))))
+    (get-in db [:axie :id])))
 
 (rf/reg-sub
   :my-axies/loading?
@@ -176,9 +176,19 @@
     (get-in db [:teams :axie-id->activity-points] {})))
 
 (rf/reg-sub
-  :teams/axie-db
+  :axie/db
   (fn [db]
-    (get-in db [:teams :axie-db] {})))
+    (get-in db [:axie :db] {})))
+
+(rf/reg-sub
+  :axie/axie
+  (fn [[_ axie-id]]
+    [(rf/subscribe [:axie/db])
+     (rf/subscribe [:identity axie-id])])
+  (fn [[axie-db axie-id]]
+    (-> axie-db
+        (get axie-id)
+        adjust-axie)))
 
 (defn team-can-battle?
   [{:keys [team-members]}]
@@ -197,7 +207,7 @@
   (fn [_]
     [(rf/subscribe [:teams/raw-teams])
      (rf/subscribe [:teams/axie-id->activity-points])
-     (rf/subscribe [:teams/axie-db])
+     (rf/subscribe [:axie/db])
      (rf/subscribe [:teams/record-map])])
   (fn [[teams axie-id->activity-points axie-db record-map]]
     (->> teams
@@ -206,7 +216,7 @@
                     (update :team-members
                             (partial map (fn [{:keys [axie-id] :as a}]
                                            (assoc a
-                                                  :axie (adjust-axie (get axie-db axie-id))
+                                                  :axie (adjust-axie (get axie-db (str axie-id)))
                                                   :activity-points (axie-id->activity-points axie-id)))))
                     ((fn [t]
                        (assoc t
@@ -220,13 +230,13 @@
   (fn [[_ team-id]]
     [(rf/subscribe [:identity team-id])
      (rf/subscribe [:teams/raw-teams])
-     (rf/subscribe [:teams/axie-db])])
+     (rf/subscribe [:axie/db])])
   (fn [[team-id teams axie-db]]
     (->> teams
          (filter (fn [t] (= team-id (:team-id t))))
          first
          :team-members
-         (map :axie-id)
+         (map (comp str :axie-id))
          (map axie-db)
          (map adjust-axie))))
 
