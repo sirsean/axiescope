@@ -564,6 +564,11 @@
   (fn [db [_ num-months]]
     (assoc-in db [:auto-battle :num-months] num-months)))
 
+(rf/reg-event-db
+  :auto-battle/set-current-tier-index
+  (fn [db [_ index]]
+    (assoc-in db [:auto-battle :current-tier-index] index)))
+
 (rf/reg-event-fx
   :cryptonator/fetch-ticker
   (fn [_ [_ ticker]]

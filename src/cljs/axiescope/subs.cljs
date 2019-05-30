@@ -415,9 +415,33 @@
          (take page-size))))
 
 (rf/reg-sub
+  :auto-battle/price-tiers
+  (fn [_]
+    [{:max-teams 3 :dollars-per-month 0}
+     {:max-teams 10 :dollars-per-month 3}
+     {:max-teams 30 :dollars-per-month 6}
+     {:max-teams 100 :dollars-per-month 10}
+     {:max-teams nil :dollars-per-month 20}]))
+
+(rf/reg-sub
+  :auto-battle/current-tier-index
+  (fn [db]
+    (get-in db [:auto-battle :current-tier-index] 0)))
+
+(rf/reg-sub
+  :auto-battle/current-tier
+  (fn [_]
+    [(rf/subscribe [:auto-battle/price-tiers])
+     (rf/subscribe [:auto-battle/current-tier-index])])
+  (fn [[tiers index]]
+    (nth tiers index)))
+
+(rf/reg-sub
   :auto-battle/dollars-per-month
   (fn [_]
-    10))
+    [(rf/subscribe [:auto-battle/current-tier])])
+  (fn [[tier]]
+    (:dollars-per-month tier)))
 
 (rf/reg-sub
   :auto-battle/num-months
