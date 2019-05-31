@@ -126,29 +126,6 @@
          (filter :breedable))))
 
 (rf/reg-sub
-  :teams/records
-  (fn [db]
-    (get-in db [:teams :records])))
-
-(rf/reg-sub
-  :teams/record-map
-  (fn [_]
-    [(rf/subscribe [:teams/records])])
-  (fn [[records]]
-    (->> records
-         (map (fn [{:keys [axies] :as r}]
-                [axies (select-keys r [:wins :losses :wins-24 :losses-24])]))
-         (into {}))))
-
-(defn team-record-key
-  [team]
-  (->> team
-       :team-members
-       (map :axie-id)
-       sort
-       (string/join ",")))
-
-(rf/reg-sub
   :teams/loading?
   (fn [db]
     (get-in db [:teams :loading?])))
@@ -207,9 +184,8 @@
   (fn [_]
     [(rf/subscribe [:teams/raw-teams])
      (rf/subscribe [:teams/axie-id->activity-points])
-     (rf/subscribe [:axie/db])
-     (rf/subscribe [:teams/record-map])])
-  (fn [[teams axie-id->activity-points axie-db record-map]]
+     (rf/subscribe [:axie/db])])
+  (fn [[teams axie-id->activity-points axie-db]]
     (->> teams
          (map (fn [team]
                 (-> team
@@ -220,7 +196,6 @@
                                                   :activity-points (axie-id->activity-points axie-id)))))
                     ((fn [t]
                        (assoc t
-                              :record (get record-map (team-record-key t))
                               :ready? (team-can-battle? t)
                               :ready-in (team-ready-in t)))))))
          (sort-by :ready-in))))

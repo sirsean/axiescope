@@ -448,18 +448,6 @@
     (assoc-in db [:battle-simulator :defender] axie)))
 
 (rf/reg-event-fx
-  :teams/fetch-records
-  (fn [{:keys [db]} _]
-    {:http-get {:url (format "https://whatthemoose.sirsean.me/api/winslosses/%s"
-                             (:eth-addr db))
-                :handler [:teams/got-records]}}))
-
-(rf/reg-event-db
-  :teams/got-records
-  (fn [db [_ records]]
-    (assoc-in db [:teams :records] records)))
-
-(rf/reg-event-fx
   :teams/fetch-teams
   (fn [{:keys [db]} [_ force?]]
     (if (or (-> db :teams :teams nil?)
@@ -467,8 +455,7 @@
       {:db (-> db
                (assoc-in [:teams :loading?] true)
                (assoc-in [:teams :teams] []))
-       :dispatch-n [[:teams/fetch-teams-page]
-                    [:teams/fetch-records]]}
+       :dispatch [:teams/fetch-teams-page]}
       {})))
 
 (rf/reg-event-fx
