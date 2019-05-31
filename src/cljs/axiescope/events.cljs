@@ -292,14 +292,7 @@
     {:db (-> db
              (assoc-in [:axie :loading?] true)
              (assoc-in [:axie :id] (str axie-id)))
-     :dispatch [::fetch-axie axie-id :axie/got]}))
-
-(rf/reg-event-db
-  :axie/got
-  (fn [db [_ axie]]
-    (-> db
-        (assoc-in [:axie :loading?] false)
-        (assoc-in [:axie :db (str (:id axie))] axie))))
+     :dispatch [::fetch-axie axie-id {:force? true}]}))
 
 (rf/reg-event-db
   :search/set-sort-key
@@ -425,17 +418,36 @@
 
 (rf/reg-event-fx
   ::fetch-axie
-  (fn [{:keys [db]} [_ axie-id handler]]
-    {:db db
-     :http-get {:url (format "https://axieinfinity.com/api/v2/axies/%s?lang=en" axie-id)
-                :handler [handler]}}))
+  (fn [{:keys [db]} [_ axie-id {:keys [force? handler]}]]
+    (let [axie (get-in db [:axie :db (str axie-id)])]
+      (cond
+        (or (nil? axie)
+            force?)
+        {:http-get {:url (format "https://axieinfinity.com/api/v2/axies/%s?lang=en" axie-id)
+                    :handler [:axie/got handler]}}
+
+        (and (some? axie) (some? handler))
+        {:dispatch [handler axie]}
+
+        :else
+        {}))))
+
+(rf/reg-event-fx
+  :axie/got
+  (fn [{:keys [db]} [_ handler axie]]
+    (cond->
+      {:db (-> db
+               (assoc-in [:axie :loading?] false)
+               (assoc-in [:axie :db (str (:id axie))] axie))}
+      (some? handler)
+      (merge {:dispatch [handler axie]}))))
 
 (rf/reg-event-fx
   :battle-simulator/simulate
   (fn [{:keys [db]} [_ atk-id def-id]]
     {:db db
-     :dispatch-n [[::fetch-axie atk-id :battle-simulator/got-attacker]
-                  [::fetch-axie def-id :battle-simulator/got-defender]]}))
+     :dispatch-n [[::fetch-axie atk-id {:handler :battle-simulator/got-attacker}]
+                  [::fetch-axie def-id {:handler :battle-simulator/got-defender}]]}))
 
 (rf/reg-event-db
   :battle-simulator/got-attacker
@@ -480,7 +492,7 @@
        :dispatch-n (-> [[:teams/fetch-teams-page total]
                         [:teams/fetch-activity-points axie-ids]]
                        (concat (map (fn [axie-id]
-                                      [::fetch-axie axie-id :axie/got])
+                                      [::fetch-axie axie-id])
                                     axie-ids)))})))
 (rf/reg-event-fx
   :teams/got-teams
