@@ -4,6 +4,14 @@ body {
     font-family: 'Ubuntu';
 }
 
+a {
+    color: #2277bb;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
 .container {
     padding-left: 0.1em;
     padding-right: 0.1em;

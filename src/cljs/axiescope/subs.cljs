@@ -167,6 +167,45 @@
         (get axie-id)
         adjust-axie)))
 
+(defn family-axie
+  [axie]
+  (select-keys axie [:id :name :image :title :sire-id :matron-id]))
+
+(defn generate-family-tree
+  [axie-db {:keys [sire-id matron-id] :as axie}]
+  (cond-> axie
+    (and (some? sire-id) (not (zero? sire-id)))
+    (assoc :sire (generate-family-tree
+                   axie-db
+                   (family-axie (get axie-db (str sire-id)))))
+    (and (some? matron-id) (not (zero? matron-id)))
+    (assoc :matron (generate-family-tree
+                     axie-db
+                     (family-axie (get axie-db (str matron-id)))))))
+
+(rf/reg-sub
+  :axie/family-tree
+  (fn [[_ axie-id]]
+    [(rf/subscribe [:axie/db])
+     (rf/subscribe [:identity axie-id])])
+  (fn [[axie-db axie-id]]
+    (generate-family-tree
+      axie-db
+      (family-axie (get axie-db (str axie-id))))))
+
+(rf/reg-sub
+  :axie/family-tree-expansions
+  (fn [db]
+    (get-in db [:axie :family-tree-expansions] {})))
+
+(rf/reg-sub
+  :axie/family-tree-expanded?
+  (fn [[_ axie-id]]
+    [(rf/subscribe [:axie/family-tree-expansions])
+     (rf/subscribe [:identity axie-id])])
+  (fn [[expansions axie-id]]
+    (get expansions (str axie-id))))
+
 (defn team-can-battle?
   [{:keys [team-members]}]
   (and (= 3 (count team-members))

@@ -218,6 +218,11 @@
    :dispatch [:land/login {:after-handlers [[:land/fetch-items]
                                             [:land/fetch-market]]}]})
 
+(defmethod set-active-panel :lineage-panel
+  [{:keys [db]} [_ panel axie-id]]
+  {:db (assoc db :active-panel panel)
+   :dispatch [:axie/set-id axie-id {:handler :axie/fetch-parents}]})
+
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]
@@ -288,11 +293,13 @@
 
 (rf/reg-event-fx
   :axie/set-id
-  (fn [{:keys [db]} [_ axie-id]]
+  (fn [{:keys [db]} [_ axie-id {:keys [handler]}]]
     {:db (-> db
              (assoc-in [:axie :loading?] true)
+             (assoc-in [:axie :family-tree-expansions] {(str axie-id) true})
              (assoc-in [:axie :id] (str axie-id)))
-     :dispatch [::fetch-axie axie-id {:force? true}]}))
+     :dispatch [::fetch-axie axie-id {:force? true
+                                      :handler handler}]}))
 
 (rf/reg-event-db
   :search/set-sort-key
@@ -441,6 +448,22 @@
                (assoc-in [:axie :db (str (:id axie))] axie))}
       (some? handler)
       (merge {:dispatch [handler axie]}))))
+
+(rf/reg-event-fx
+  :axie/fetch-parents
+  (fn [{:keys [db]} [_ {:keys [sire-id matron-id]}]]
+    {:dispatch-n
+     (cond-> []
+       (and (some? sire-id) (not (zero? sire-id)))
+       (conj [::fetch-axie sire-id {:handler :axie/fetch-parents}])
+
+       (and (some? matron-id) (not (zero? matron-id)))
+       (conj [::fetch-axie matron-id {:handler :axie/fetch-parents}]))}))
+
+(rf/reg-event-db
+  :axie/family-tree-expand
+  (fn [db [_ axie-id]]
+    (update-in db [:axie :family-tree-expansions (str axie-id)] not)))
 
 (rf/reg-event-fx
   :battle-simulator/simulate

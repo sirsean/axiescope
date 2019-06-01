@@ -23,6 +23,7 @@
     [axiescope.views.panels.search :as search]
     [axiescope.views.panels.auto-battle :as auto-battle]
     [axiescope.views.panels.land :as land]
+    [axiescope.views.panels.lineage :as lineage]
     [axiescope.views.layout :refer [header footer]]
     [axiescope.views.shared :refer [axies-pager axie-sorter sort-key-button sort-order-button axie-table-column-model axie-table-render-cell my-axies-table]]
     ))
@@ -65,7 +66,9 @@
       [:li [:a {:href "/auto-battle"}
             "Auto-Battle"]]
       [:li [:a {:href "/land"}
-            "Land"]]]]]
+            "Land"]]
+      [:li [:a {:href "/lineage"}
+            "Axie Lineage"]]]]]
    [footer]])
 
 (defn get-panel
@@ -89,6 +92,7 @@
     :land-items-panel [land/land-items-panel]
     :land-market-panel [land/land-market-panel]
     :land-valuation-panel [land/land-valuation-panel]
+    :lineage-panel [lineage/panel]
     [home-panel]))
 
 (defn show-panel
