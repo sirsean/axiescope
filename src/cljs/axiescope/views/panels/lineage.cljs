@@ -2,6 +2,7 @@
   (:require
     [re-frame.core :as rf]
     [reagent.core :as r]
+    [clojure.string :refer [blank?]]
     [accountant.core :as accountant]
     [cuerdas.core :refer [format]]
     [axiescope.views.layout :refer [header footer]]
@@ -80,11 +81,12 @@
           [:button {:style {:padding "0.5em"
                             :font-size "1.0em"}}
            "Evaluate"]]]]]]
-     (if (and loading? (nil? axie))
-       [:div.row
-        [:div.col-xs-12.center-xs
-         [:p [:em "loading..."]]]]
-       [:div.row
-        [:div.col-xs-12
-         [show-lineage-list family-tree]]])
+     (when-not (blank? axie-id)
+       (if (and loading? (nil? axie))
+         [:div.row
+          [:div.col-xs-12.center-xs
+           [:p [:em "loading..."]]]]
+         [:div.row
+          [:div.col-xs-12
+           [show-lineage-list family-tree]]]))
      [footer]]))
