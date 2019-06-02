@@ -1,6 +1,7 @@
 (ns axiescope.axie
   (:require
     [cljs-web3.core :as web3]
+    [cljsjs.moment]
     [axiescope.moves :as moves]
     ))
 
@@ -117,6 +118,16 @@
   [axie]
   (assoc axie :price (calc-price axie)))
 
+(defn update-birth-date
+  [axie]
+  (update axie :birth-date (comp js/moment (partial * 1000))))
+
+(defn attach-morphable
+  [{:keys [birth-date] :as axie}]
+  (assoc axie
+         :morph-to-petite (.add (js/moment birth-date) 3 "days")
+         :morph-to-adult (.add (js/moment birth-date) 5 "days")))
+
 (defn merge-stats
   [{:keys [stats] :as axie}]
   (merge stats axie))
@@ -125,6 +136,8 @@
   [axie]
   (some-> axie
           merge-stats
+          update-birth-date
+          attach-morphable
           attach-num-mystic
           attach-attack
           attach-defense

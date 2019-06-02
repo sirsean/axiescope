@@ -58,6 +58,16 @@
                              ["Atk+Def" :atk+def]
                              ["Tank" :tank]
                              ["DPS" :dps]]]]]
+     (when (= 2 (:stage axie))
+       [:div.row {:style {:margin-top "1em"}}
+        [:div.col-xs-6.end-xs [:strong "To Petite"]]
+        [:div.col-xs-6
+         (.fromNow (:morph-to-petite axie))]])
+     (when (= 3 (:stage axie))
+       [:div.row {:style {:margin-top "1em"}}
+        [:div.col-xs-6.end-xs [:strong "To Adult"]]
+        [:div.col-xs-6
+         (.fromNow (:morph-to-adult axie))]])
      [:div.row {:style {:margin-top "1em"}}
       [:div.col-xs-12
        [:div.row

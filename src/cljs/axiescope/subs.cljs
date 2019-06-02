@@ -311,10 +311,8 @@
   (fn [[now axies]]
     (->> axies
          (filter (fn [{:keys [stage]}] (= stage 2)))
-         (filter (fn [{:keys [birth-date]}]
-                   (let [bd (js/moment (* birth-date 1000))
-                         days (.diff now bd "days")]
-                     (<= 3 days)))))))
+         (filter (fn [{:keys [morph-to-petite]}]
+                   (<= 0 (.diff now morph-to-petite "seconds")))))))
 
 (rf/reg-sub
   :my-axies/petite
@@ -324,10 +322,8 @@
   (fn [[now axies]]
     (->> axies
          (filter (fn [{:keys [stage]}] (= stage 3)))
-         (filter (fn [{:keys [birth-date]}]
-                   (let [bd (js/moment (* birth-date 1000))
-                         days (.diff now bd "days")]
-                     (<= 5 days)))))))
+         (filter (fn [{:keys [morph-to-adult]}]
+                   (<= 0 (.diff now morph-to-adult "seconds")))))))
 
 (rf/reg-sub
   :multi-gifter/to-addr
