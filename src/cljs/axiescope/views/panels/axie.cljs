@@ -15,7 +15,7 @@
         axie @(rf/subscribe [:axie/axie axie-id])
         axie-id-atom (r/atom axie-id)]
     [:div.container
-     [header "Axie Evaluator"]
+     [header {:title "Axie Evaluator"}]
      [:div.row
       [:div.col-xs-12
        [:form {:on-submit (fn [e]

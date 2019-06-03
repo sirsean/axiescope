@@ -11,7 +11,8 @@
   (let [loading? @(rf/subscribe [:teams/loading?])
         axies (rf/subscribe [:teams/multi-assigned-axies])]
     [:div.container
-     [header "Multi-Assigned Axies" [:my-axies :teams]]
+     [header {:title "Multi-Assigned Axies"
+              :bars [:my-axies :teams]}]
      [:div.row
       [:div.col-xs-12.center-xs
        [:p "(These axies are on more than one team right now.)"]]]

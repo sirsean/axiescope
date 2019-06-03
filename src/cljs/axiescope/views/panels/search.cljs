@@ -32,7 +32,8 @@
         num-axies @(rf/subscribe [:search/count])
         page-size @(rf/subscribe [:search/page-size])]
     [:div.container
-     [header "Search" [:search]]
+     [header {:title "Search"
+              :bars [:search]}]
      (if (and loading?
              (< num-axies page-size))
        [:div.row

@@ -10,7 +10,7 @@
 (defn panel
   []
   [:div.container
-   [header "Auto-Battle"]
+   [header {:title "Auto-Battle"}]
    (let [eth-addr @(rf/subscribe [::subs/eth-addr])
          token @(rf/subscribe [:auto-battle/token])
          eth-usd @(rf/subscribe [:cryptonator/ticker "eth-usd"])
@@ -99,6 +99,7 @@
          [:div.col-xs-3
           [:button {:style {:padding "0.5em"
                             :border-radius "0.6em"}
+                    :disabled (not (pos? price))
                     :on-click (fn [e]
                                 (rf/dispatch [:eth/send-eth
                                               "0x560EBafD8dB62cbdB44B50539d65b48072b98277"

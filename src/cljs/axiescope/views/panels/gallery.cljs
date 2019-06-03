@@ -12,7 +12,8 @@
         num-axies @(rf/subscribe [:my-axies/count])
         axies @(rf/subscribe [:my-axies/axies])]
     [:div.container
-     [header "Axie Gallery" [:my-axies]]
+     [header {:title "Axie Gallery"
+              :bars [:my-axies]}]
      (if (and loading?
               (< num-axies 10))
        [:div.row

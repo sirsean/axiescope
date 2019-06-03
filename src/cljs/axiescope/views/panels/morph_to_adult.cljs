@@ -9,7 +9,8 @@
   []
   (let [loading? @(rf/subscribe [:my-axies/loading?])]
     [:div.container
-     [header "Morph to Adult" [:my-axies]]
+     [header {:title "Morph to Adult"
+              :bars [:my-axies]}]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs

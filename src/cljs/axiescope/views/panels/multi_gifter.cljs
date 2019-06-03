@@ -12,7 +12,8 @@
         loading? @(rf/subscribe [:my-axies/loading?])
         to-addr @(rf/subscribe [:multi-gifter/to-addr])]
     [:div.container
-     [header "Multi-Gifter" [:my-axies]]
+     [header {:title "Multi-Gifter"
+              :bars [:my-axies]}]
      [:div.row
       [:div.col-xs-12.center-xs
        [:p "You can send gifts faster this way."]]]

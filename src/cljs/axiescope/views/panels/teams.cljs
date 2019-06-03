@@ -12,7 +12,8 @@
   (let [loading? @(rf/subscribe [:teams/loading?])
         teams @(rf/subscribe [:teams/teams])]
     [:div.container
-     [header "Teams" [:teams]]
+     [header {:title "Teams"
+              :bars [:teams]}]
      (if loading?
        [:div.row
         [:div.col-xs-12.center-xs

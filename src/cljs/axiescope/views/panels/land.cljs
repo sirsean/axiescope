@@ -10,7 +10,7 @@
 (defn land-panel
   []
   [:div.container
-   [header "Land"]
+   [header {:title "Land"}]
    (if (not @(rf/subscribe [:land/logged-in?]))
      [:div.row
       [:div.col-xs-12

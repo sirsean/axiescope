@@ -6,7 +6,7 @@
     ))
 
 (defn header
-  [title bars]
+  [{:keys [title bars]}]
   [:div.row
    (let [bars (set bars)]
      [:div.col-xs-12

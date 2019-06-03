@@ -11,7 +11,8 @@
   (let [axies-loading? @(rf/subscribe [:my-axies/loading?])
         teams-loading? @(rf/subscribe [:teams/loading?])]
     [:div.container
-     [header "Unassigned Axies" [:my-axies :teams]]
+     [header {:title "Unassigned Axies"
+              :bars [:my-axies :teams]}]
      (if (or axies-loading? teams-loading?)
        [:div.row
         [:div.col-xs-12.center-xs

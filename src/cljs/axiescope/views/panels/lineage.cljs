@@ -46,7 +46,7 @@
         gen (count-generations axie)]
     (when-not (zero? gen)
       [:button
-       {:style {:margin-left "6px"
+       {:style {:margin-left "12px"
                 :padding "4px 8px"
                 :color (if expanded?
                          "white"
@@ -72,7 +72,7 @@
                     :padding "9px"
                     :border-radius "0.3em"
                     :vertical-align "middle"
-                    :margin-left "6px"}}
+                    :margin-left "12px"}}
      (format "%s" title)]))
 
 (defn pure-tag
@@ -88,6 +88,7 @@
       [:div
        [:img {:style {:height "100px"
                       :width "133px"
+                      :margin-right "-14px"
                       :vertical-align "middle"}
               :src image}]
        [:a {:style {:text-decoration "none"
@@ -110,7 +111,7 @@
         axie @(rf/subscribe [:axie/axie axie-id])
         family-tree @(rf/subscribe [:axie/family-tree axie-id])]
     [:div.container
-     [header "Axie Lineage"]
+     [header {:title "Axie Lineage"}]
      [:div.row
       [:div.col-xs-12
        [:form {:on-submit (fn [e]
@@ -131,12 +132,15 @@
           [:button {:style {:padding "0.5em"
                             :font-size "1.0em"}}
            "Evaluate"]]]]]]
-     (when-not (blank? axie-id)
+     (if-not (blank? axie-id)
        (if (and loading? (nil? axie))
          [:div.row
           [:div.col-xs-12.center-xs
            [:p [:em "loading..."]]]]
          [:div.row
           [:div.col-xs-12
-           [show-lineage-list family-tree]]]))
+           [show-lineage-list family-tree]]])
+       [:div.row
+        [:div.col-xs-8.col-xs-offset-2
+         [:p "This tool shows you the lineage of any Axie. You may be curious about the family tree, and where your Axie came from. Maybe you want to see how many generations it's been since an Origin, or an MEO. Now there's a fast and easy way to find out."]]])
      [footer]]))

@@ -9,7 +9,7 @@
 
 (defn panel []
   [:div.container
-   [header "Battle Simulator"]
+   [header {:title "Battle Simulator"}]
    (let [attacker @(rf/subscribe [:battle-simulator/attacker])
          defender @(rf/subscribe [:battle-simulator/defender])
          simulation (rf/subscribe [:battle-simulator/simulation])

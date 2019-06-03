@@ -11,7 +11,8 @@
         num-axies @(rf/subscribe [:my-axies/count])
         page-size @(rf/subscribe [:my-axies/page-size])]
     [:div.container
-     [header "My Axies" [:my-axies]]
+     [header {:title "My Axies"
+              :bars [:my-axies]}]
      (if (and loading?
               (< num-axies page-size))
        [:div.row
