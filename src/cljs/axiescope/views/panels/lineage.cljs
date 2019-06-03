@@ -8,45 +8,95 @@
     [axiescope.views.layout :refer [header footer]]
     ))
 
-(defn count-descendants
+(defn count-generations
+  [{:keys [sire matron] :as axie}]
+  (if-some [parents (seq (filter some? [sire matron]))]
+    (inc (apply max (map count-generations parents)))
+    0))
+
+(defn count-ancestors
   [{:keys [sire matron] :as axie}]
   (cond-> 0
-    (some? sire) (+ 1 (count-descendants sire))
-    (some? matron) (+ 1 (count-descendants matron))))
+    (some? sire) (+ 1 (count-ancestors sire))
+    (some? matron) (+ 1 (count-ancestors matron))))
+
+(defn descendants-button
+  [{:keys [id] :as axie}]
+  (let [expanded? @(rf/subscribe [:axie/family-tree-expanded? id])
+        num-descendants (count-ancestors axie)]
+    (when (pos? num-descendants)
+      [:button
+       {:style {:margin-left "6px"
+                :padding "4px 8px"
+                :color (if expanded?
+                         "white"
+                         "black")
+                :background-color (if expanded?
+                                    "#2277bb"
+                                    "#bcd6ea")
+                :border "none"
+                :outline "none"
+                :border-radius "1em"}
+        :on-click #(rf/dispatch [:axie/family-tree-expand id])}
+       num-descendants])))
+
+(defn generations-button
+  [{:keys [id] :as axie}]
+  (let [expanded? @(rf/subscribe [:axie/family-tree-expanded? id])
+        gen (count-generations axie)]
+    (when-not (zero? gen)
+      [:button
+       {:style {:margin-left "6px"
+                :padding "4px 8px"
+                :color (if expanded?
+                         "white"
+                         "black")
+                :background-color (if expanded?
+                                    "#2277bb"
+                                    "#bcd6ea")
+                :font-size "0.7em"
+                :vertical-align "middle"
+                :border "none"
+                :outline "none"
+                :border-radius "1em"}
+        :disabled (zero? gen)
+        :on-click #(rf/dispatch [:axie/family-tree-expand id])}
+       (format "gen %s" gen)])))
+
+(defn title-tag
+  [{:keys [title]}]
+  (when (some? title)
+    [:span {:style {:background-color "#c13884"
+                    :color "white"
+                    :font-size "0.9em"
+                    :padding "9px"
+                    :border-radius "0.3em"
+                    :vertical-align "middle"
+                    :margin-left "6px"}}
+     (format "%s" title)]))
+
+(defn pure-tag
+  [{:keys [purity]}]
+  nil)
 
 (defn show-lineage-list
   [{:keys [id name image title sire matron] :as axie}]
   (let [expanded? @(rf/subscribe [:axie/family-tree-expanded? id])]
     [:ul {:style {:list-style "none"
                   :padding-inline-start "60px"}}
-     [:li
+     [:li {:style {:margin-bottom "-2em"}}
       [:div
-       [:img {:style {:height "55px"
-                      :width "74px"
+       [:img {:style {:height "100px"
+                      :width "133px"
                       :vertical-align "middle"}
               :src image}]
-       [:a {:style {:text-decoration "none"}
+       [:a {:style {:text-decoration "none"
+                    :vertical-align "middle"}
             :href (format "/axie/%s" id)}
         name]
-       (let [num-descendants (count-descendants axie)]
-         (when (pos? num-descendants)
-           [:button
-            {:style {:margin-left "6px"
-                     :padding "4px 8px"
-                     :color (if expanded?
-                              "white"
-                              "black")
-                     :background-color (if expanded?
-                                         "#2277bb"
-                                         "#bcd6ea")
-                     :border "none"
-                     :outline "none"
-                     :border-radius "1em"}
-             :on-click #(rf/dispatch [:axie/family-tree-expand id])}
-            num-descendants]))
-       (when (some? title)
-         [:span {:style {:margin-left "6px"}}
-          (format "(%s)" title)])]]
+       [generations-button axie]
+       [pure-tag axie]
+       [title-tag axie]]]
      (when (and expanded? (some? sire))
        [:li [show-lineage-list sire]])
      (when (and expanded? (some? matron))

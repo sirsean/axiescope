@@ -4,7 +4,7 @@
    [clojure.string :as string]
    [cljsjs.moment]
    [cljs-web3.core :as web3]
-   [axiescope.axie :refer [adjust-axie]]
+   [axiescope.axie :refer [adjust-axie attach-purity]]
    [axiescope.battle :as battle]))
 
 (rf/reg-sub
@@ -169,7 +169,10 @@
 
 (defn family-axie
   [axie]
-  (select-keys axie [:id :name :image :title :sire-id :matron-id]))
+  (-> axie
+      attach-purity
+      (select-keys [:id :name :image :title :class
+                    :sire-id :matron-id :purity])))
 
 (defn generate-family-tree
   [axie-db {:keys [sire-id matron-id] :as axie}]

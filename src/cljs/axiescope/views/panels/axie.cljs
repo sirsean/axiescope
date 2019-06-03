@@ -45,7 +45,7 @@
          [show-axie axie]]
         [:div.col-xs-12.col-md-6
          [axie-info axie]]
-        [:div.col-xs-12.center-xs
+        #_[:div.col-xs-12.center-xs
          [:a {:href (format "/lineage/%s" axie-id)}
           "Lineage"]]])
      [footer]]))

@@ -67,7 +67,7 @@
             "Auto-Battle"]]
       [:li [:a {:href "/land"}
             "Land"]]
-      [:li [:a {:href "/lineage"}
+      #_[:li [:a {:href "/lineage"}
             "Axie Lineage"]]]]]
    [footer]])
 
