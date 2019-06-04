@@ -129,9 +129,14 @@
                            :font-size "1.2em"
                            :padding "0.3em"}}]]
          [:div.col-xs-1.end-xs
-          [:button {:style {:padding "0.5em"
-                            :font-size "1.0em"}}
-           "Evaluate"]]]]]]
+          [:button {:style {:padding "0.6em"
+                            :font-size "1.0em"
+                            :background-color "#2277bb"
+                            :color "white"
+                            :border "none"
+                            :outline "none"
+                            :border-radius "1em"}}
+           "Start"]]]]]]
      (if-not (blank? axie-id)
        (if (and loading? (nil? axie))
          [:div.row
