@@ -29,9 +29,14 @@
   [axie pairs]
   [:div
    (for [[title k] pairs]
-     [:div.row.middle-xs {:key k}
-      [:div.col-xs-6.end-xs [:strong title]]
-      [:div.col-xs-6 (get axie k)]])])
+     (let [value (get axie k)]
+       [:div.row.middle-xs {:key k
+                            :style {:line-height "1.5em"}}
+        [:div.col-xs-6.end-xs {:style {:margin-right "-0.6em"}}
+         [:strong title]]
+        [:div.col-xs-6 (if (string/blank? value)
+                         "n/a"
+                         value)]]))])
 
 (defn axie-info
   [axie]
@@ -59,16 +64,16 @@
                              ["Tank" :tank]
                              ["DPS" :dps]]]]]
      (when (= 2 (:stage axie))
-       [:div.row {:style {:margin-top "1em"}}
+       [:div.row {:style {:margin-top "1.8em"}}
         [:div.col-xs-6.end-xs [:strong "To Petite"]]
         [:div.col-xs-6
          (.fromNow (:morph-to-petite axie))]])
      (when (= 3 (:stage axie))
-       [:div.row {:style {:margin-top "1em"}}
+       [:div.row {:style {:margin-top "1.8em"}}
         [:div.col-xs-6.end-xs [:strong "To Adult"]]
         [:div.col-xs-6
          (.fromNow (:morph-to-adult axie))]])
-     [:div.row {:style {:margin-top "1em"}}
+     [:div.row {:style {:margin-top "1.8em"}}
       [:div.col-xs-12
        [:div.row
         [:div.col-xs-2 [:strong "type"]]
