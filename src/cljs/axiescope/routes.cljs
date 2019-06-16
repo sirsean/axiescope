@@ -68,9 +68,6 @@
   (defroute "/lineage" []
     (rf/dispatch [::events/set-active-panel :lineage-panel]))
 
-  (defroute "/lineage/:axie-id" {:keys [axie-id]}
-    (rf/dispatch [::events/set-active-panel :lineage-panel axie-id]))
-
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

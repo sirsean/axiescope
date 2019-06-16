@@ -8,7 +8,6 @@
    [axiescope.routes :as routes]
    ))
 
-
 (defn dev-setup []
   (when config/debug?
     (enable-console-print!)

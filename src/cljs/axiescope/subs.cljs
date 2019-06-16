@@ -28,6 +28,53 @@
     eth-addr))
 
 (rf/reg-sub
+  :axiescope/account
+  (fn [db]
+    (get-in db [:axiescope :account])))
+
+(rf/reg-sub
+  :axiescope/logged-in?
+  (fn [_]
+    [(rf/subscribe [:axiescope/account])])
+  (fn [[account]]
+    (some? account)))
+
+(rf/reg-sub
+  :axiescope.prices.family-tree/loading?
+  (fn [db]
+    (get-in db [:axiescope :prices :family-tree :loading?] false)))
+
+(rf/reg-sub
+  :axiescope.prices.family-tree/tiers
+  (fn [db]
+    (get-in db [:axiescope :prices :family-tree :tiers] [])))
+
+(rf/reg-sub
+  :axiescope.family-tree/views
+  (fn [db]
+    (get-in db [:axiescope :family-tree :views] [])))
+
+(rf/reg-sub
+  :axiescope.family-tree/loading?
+  (fn [db]
+    (get-in db [:axiescope :family-tree :loading?] false)))
+
+(rf/reg-sub
+  :axiescope.family-tree/error
+  (fn [db]
+    (get-in db [:axiescope :family-tree :error] nil)))
+
+(rf/reg-sub
+  :axiescope.family-tree/axie-id
+  (fn [db]
+    (get-in db [:axiescope :family-tree :axie-id])))
+
+(rf/reg-sub
+  :axiescope.family-tree/tree
+  (fn [db]
+    (get-in db [:axiescope :family-tree :tree])))
+
+(rf/reg-sub
   :battle-simulator/attacker
   (fn [db]
     (get-in db [:battle-simulator :attacker])))

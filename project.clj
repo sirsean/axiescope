@@ -55,7 +55,8 @@
      :compiler     {:main            axiescope.core
                     :output-to       "resources/public/js/compiled/app.js"
                     :optimizations   :advanced
-                    :closure-defines {goog.DEBUG false}
+                    :closure-defines {goog.DEBUG false
+                                      axiescope.config/api-host "https://axiescope-api.sirsean.me"}
                     :pretty-print    false}}
 
 
