@@ -7,11 +7,6 @@
     [axiescope.moves :as moves]
     ))
 
-(defn round
-  [d precision]
-  (let [factor (Math/pow 10 precision)]
-    (/ (Math/round (* d factor)) factor)))
-
 (defn show-axie
   [{:keys [id name image] :as axie}]
   (when axie
@@ -61,8 +56,9 @@
                              ["Attack" :attack]
                              ["Defense" :defense]
                              ["Atk+Def" :atk+def]
-                             ["Tank" :tank]
-                             ["DPS" :dps]]]]]
+                             ["Tank Tiers" :tank-tiers]
+                             ["Tank Body" :tank-body]
+                             ["DPS Tiers" :dps-tiers]]]]]
      (when (= 2 (:stage axie))
        [:div.row {:style {:margin-top "1.8em"}}
         [:div.col-xs-6.end-xs [:strong "To Petite"]]
@@ -139,8 +135,9 @@
                      ["Attack" :attack]
                      ["Defense" :defense]
                      ["Atk+Def" :atk+def]
-                     ["Tank" :tank]
-                     ["DPS" :dps]])
+                     ["Tank Body" :tank-body]
+                     ["Tank Tiers" :tank-tiers]
+                     ["DPS Tiers" :dps-tiers]])
             (map (fn [[title k]]
                    ^{:key k}
                    [sort-key-button section title k sort-key])))
@@ -194,10 +191,12 @@
     :key :defense}
    {:header "Atk+Def"
     :key :atk+def}
-   {:header "Tank"
-    :key :tank}
-   {:header "DPS"
-    :key :dps}])
+   {:header "Tank Body"
+    :key :tank-body}
+   {:header "Tank Tiers"
+    :key :tank-tiers}
+   {:header "DPS Tiers"
+    :key :dps-tiers}])
 
 (defn axie-table-render-cell
   [{:keys [key]} row _ _]

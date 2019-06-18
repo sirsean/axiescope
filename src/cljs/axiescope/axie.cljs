@@ -3,6 +3,8 @@
     [cljs-web3.core :as web3]
     [cljsjs.moment]
     [axiescope.moves :as moves]
+    [axiescope.stats :as stats]
+    [axiescope.util :refer [round]]
     ))
 
 (def breed-count->next-exp
@@ -92,19 +94,47 @@
   [{:keys [attack defense] :as axie}]
   (assoc axie :atk+def (+ (or attack 0) (or defense 0))))
 
-(defn attach-dps-score
+(defn attach-dps-tiers
   [{:keys [parts] :as axie}]
-  (assoc axie :dps (->> parts
-                        (map :id)
-                        (map moves/dps-part-score)
-                        (apply +))))
+  (assoc axie :dps-tiers (->> parts
+                              (map :id)
+                              (map moves/dps-part-score)
+                              (apply +))))
 
-(defn attach-tank-score
+(defn attach-tank-tiers
   [{:keys [parts] :as axie}]
-  (assoc axie :tank (->> parts
-                         (map :id)
-                         (map moves/tank-part-score)
-                         (apply +))))
+  (assoc axie :tank-tiers (->> parts
+                               (map :id)
+                               (map moves/tank-part-score)
+                               (apply +))))
+
+(defn average
+  [nums]
+  (if (empty? nums)
+    0
+    (/ (reduce + nums) (count nums))))
+
+(defn weighted-average
+  "Calculates a total score from individual weighted results.
+  Expects pairs of <weight>, <score> whose weights add to 1.0."
+  [& args]
+  (apply + (map #(apply * %)
+                (partition 2 args))))
+
+(defn tank-body
+  [{:keys [stats parts]}]
+  (apply weighted-average
+         [0.40 (stats/hp-score (:hp stats))
+          0.20 (stats/speed-score (:speed stats))
+          0.40 (->> parts
+                    (mapcat :moves)
+                    (map :defense)
+                    (map stats/defense-score)
+                    average)]))
+
+(defn attach-tank-body
+  [axie]
+  (assoc axie :tank-body (round (tank-body axie) 3)))
 
 (defn calc-price
   [axie]
@@ -146,5 +176,6 @@
           attach-purity
           attach-next-breed
           attach-pending-exp
-          attach-dps-score
-          attach-tank-score))
+          attach-tank-body
+          attach-dps-tiers
+          attach-tank-tiers))

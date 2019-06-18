@@ -4,7 +4,7 @@
     [cuerdas.core :refer [format]]
     [axiescope.subs :as subs]
     [axiescope.views.layout :refer [header footer]]
-    [axiescope.views.shared :refer [round]]
+    [axiescope.util :refer [round]]
     ))
 
 (defn panel

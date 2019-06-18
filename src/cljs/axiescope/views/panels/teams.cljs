@@ -4,7 +4,7 @@
     [reagent-table.core :as rt]
     [cuerdas.core :refer [format]]
     [axiescope.views.layout :refer [header footer]]
-    [axiescope.views.shared :refer [round axie-table-column-model axie-table-render-cell]]
+    [axiescope.views.shared :refer [axie-table-column-model axie-table-render-cell]]
     ))
 
 (defn panel
