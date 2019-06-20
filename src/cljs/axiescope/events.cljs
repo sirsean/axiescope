@@ -197,7 +197,7 @@
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)}
-   :dispatch [:cryptonator/fetch-ticker "eth-usd"]})
+   :dispatch [:axiescope.prices.auto-battle/fetch]})
 
 (defmethod set-active-panel :land-panel
   [{:keys [db]} [_ panel]]
@@ -371,6 +371,34 @@
     db))
 
 (rf/reg-event-fx
+  :axiescope.pay/auto-battle
+  (fn [{:keys [db]} [_ max-teams eth-value]]
+    {:blockchain/send-eth {:web3 (:web3 db)
+                           :from-addr (:eth-addr db)
+                           :to-addr "0x560ebafd8db62cbdb44b50539d65b48072b98277"
+                           :value (cljs-web3.core/to-wei eth-value :ether)
+                           :err-handler :contract/error
+                           :handler [:axiescope.paid/auto-battle max-teams]}}))
+
+(rf/reg-event-fx
+  :axiescope.paid/auto-battle
+  (fn [{:keys [db]} [_ max-teams txid]]
+    (println txid)
+    {:http-post {:url (format "%s/api/pay" api-host)
+                 :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))
+                           "Content-Type" "application/json"}
+                 :body {:product :auto-battle
+                        :txid txid
+                        :max-teams max-teams}
+                 :handler [:axiescope.payment-submitted/auto-battle]}}))
+
+(rf/reg-event-db
+  :axiescope.payment-submitted/auto-battle
+  (fn [db _]
+    (println "payment submitted")
+    db))
+
+(rf/reg-event-fx
   :axiescope.prices.family-tree/fetch
   (fn [{:keys [db]} _]
     {:db (-> db
@@ -384,6 +412,21 @@
     (-> db
         (assoc-in [:axiescope :prices :family-tree :loading?] false)
         (assoc-in [:axiescope :prices :family-tree :tiers] tiers))))
+
+(rf/reg-event-fx
+  :axiescope.prices.auto-battle/fetch
+  (fn [{:keys [db]} _]
+    {:db (-> db
+             (assoc-in [:axiescpoe :prices :auto-battle :loading?] false))
+     :http-get {:url (format "%s/api/prices/auto-battle" api-host)
+                :handler [:axiescope.prices.auto-battle/got]}}))
+
+(rf/reg-event-db
+  :axiescope.prices.auto-battle/got
+  (fn [db [_ tiers]]
+    (-> db
+        (assoc-in [:axiescope :prices :auto-battle :loading?] false)
+        (assoc-in [:axiescope :prices :auto-battle :tiers] tiers))))
 
 (rf/reg-event-fx
   :axiescope.family-tree.views/fetch
@@ -435,6 +478,34 @@
         (assoc-in [:axiescope :family-tree :axie-id] nil)
         (assoc-in [:axiescope :family-tree :loading?] false)
         (assoc-in [:axiescope :family-tree :tree] nil))))
+
+(rf/reg-event-fx
+  :axiescope.auto-battle.account/fetch
+  (fn [{:keys [db]} _]
+    {:http-get {:url (format "%s/api/account/auto-battle" api-host)
+                :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
+                :handler [:axiescope.auto-battle.account/got]
+                :err-handler [:axiescope.auto-battle.account/error]}}))
+
+(rf/reg-event-db
+  :axiescope.auto-battle.account/got
+  (fn [db [_ account]]
+    (-> db
+        (assoc-in [:axiescope :auto-battle :account] account))))
+
+(rf/reg-event-db
+  :axiescope.auto-battle.account/error
+  (fn [db _]
+    db))
+
+(rf/reg-event-fx
+  :axiescope.auto-battle/signup
+  (fn [{:keys [db]} _]
+    (let [token (get-in db [:auto-battle :token])]
+      {:http-post {:url (format "%s/api/auto-battle/signup" api-host)
+                   :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
+                   :body {:token token}
+                   :handler [:axiescope.auto-battle.account/got]}})))
 
 (rf/reg-event-fx
   :axie/set-id
@@ -714,17 +785,19 @@
 
 (rf/reg-event-fx
   :auto-battle/generate-token
-  (fn [{:keys [db]} _]
+  (fn [{:keys [db]} [_ {:keys [after-handlers]}]]
     {:blockchain/sign {:web3 (:web3 db)
                        :addr (:eth-addr db)
                        :data "0x4178696520496e66696e697479"
-                       :handler :auto-battle/got-token
+                       :handler [:auto-battle/got-token {:after-handlers after-handlers}]
                        :err-handler :contract/error}}))
 
-(rf/reg-event-db
+(rf/reg-event-fx
   :auto-battle/got-token
-  (fn [db [_ token]]
-    (assoc-in db [:auto-battle :token] token)))
+  (fn [{:keys [db]} [_ {:keys [after-handlers]} token]]
+    (cond-> {:db (assoc-in db [:auto-battle :token] token)}
+      (seq after-handlers)
+      (assoc :dispatch-n after-handlers))))
 
 (rf/reg-event-db
   :auto-battle/set-num-months

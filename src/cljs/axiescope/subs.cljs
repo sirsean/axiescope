@@ -50,6 +50,16 @@
     (get-in db [:axiescope :prices :family-tree :tiers] [])))
 
 (rf/reg-sub
+  :axiescope.prices.auto-battle/loading?
+  (fn [db]
+    (get-in db [:axiescope :prices :auto-battle :loading?] false)))
+
+(rf/reg-sub
+  :axiescope.prices.auto-battle/tiers
+  (fn [db]
+    (get-in db [:axiescope :prices :auto-battle :tiers] [])))
+
+(rf/reg-sub
   :axiescope.family-tree/views
   (fn [db]
     (get-in db [:axiescope :family-tree :views] [])))
@@ -73,6 +83,11 @@
   :axiescope.family-tree/tree
   (fn [db]
     (get-in db [:axiescope :family-tree :tree])))
+
+(rf/reg-sub
+  :axiescope.auto-battle/account
+  (fn [db]
+    (get-in db [:axiescope :auto-battle :account])))
 
 (rf/reg-sub
   :battle-simulator/attacker
