@@ -135,9 +135,16 @@
     (get-in db [:my-axies :sort-order] :desc)))
 
 (rf/reg-sub
-  :my-axies/raw-axies
+  :axies/unadjusted
   (fn [db]
-    (map adjust-axie (get-in db [:my-axies :axies]))))
+    (get-in db [:my-axies :axies] [])))
+
+(rf/reg-sub
+  :my-axies/raw-axies
+  (fn [_]
+    [(rf/subscribe [:axies/unadjusted])])
+  (fn [[axies]]
+    (map adjust-axie axies)))
 
 (rf/reg-sub
   :my-axies/count
@@ -401,9 +408,23 @@
     (get-in db [:search :loading?] false)))
 
 (rf/reg-sub
-  :search/raw-axies
+  :search/unadjusted
   (fn [db]
-    (map adjust-axie (get-in db [:search :axies]))))
+    (get-in db [:search :axies] [])))
+
+(rf/reg-sub
+  :search/deduped
+  (fn [_]
+    [(rf/subscribe [:search/unadjusted])])
+  (fn [[axies]]
+    (map-indexed (fn [i axie] (assoc axie :i i)) axies)))
+
+(rf/reg-sub
+  :search/raw-axies
+  (fn [_]
+    [(rf/subscribe [:search/deduped])])
+  (fn [[axies]]
+    (map adjust-axie axies)))
 
 (rf/reg-sub
   :search/filtered-axies

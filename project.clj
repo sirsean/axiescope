@@ -13,6 +13,7 @@
                  [cljs-await "1.0.2"]
                  [cljsjs/moment "2.24.0-0"]
                  [org.clojars.frozenlock/reagent-table "0.1.5"]
+                 [reagent-data-table "2.2.2"]
                  [clj-commons/secretary "1.2.4"]
                  [venantius/accountant "0.2.4"]]
 

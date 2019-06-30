@@ -1,9 +1,9 @@
 (ns axiescope.views.panels.multi-gifter
   (:require
     [re-frame.core :as rf]
-    [reagent-table.core :as rt]
+    [reagent-data-table.core :as rdt]
     [axiescope.views.layout :refer [header footer]]
-    [axiescope.views.shared :refer [axies-pager axie-sorter axie-table-column-model axie-table-render-cell]]
+    [axiescope.views.shared :refer [axies-pager axie-sorter axie-table-headers axie-row-render-fn]]
     ))
 
 (defn panel
@@ -50,16 +50,13 @@
          [:div.row
           [:div.col-xs-12.center-xs
            [:h2 "and then you can send any axies as gifts just by clicking the Gift button..."]
-           (let [axies (rf/subscribe [:my-axies/axies])]
+           (let [axies @(rf/subscribe [:my-axies/axies])]
              [:div.row
               [:div.col-xs-12
                [axie-sorter {:section :my-axies}]]
               [:div.col-xs-12
-               [rt/reagent-table
-                axies
-                {:table {:class "table table-striped"
-                         :style {:margin "0 auto"}}
-                 :column-model (conj axie-table-column-model {:header ""
-                                                              :key :gift-button})
-                 :render-cell axie-table-render-cell}]]])]]]])
+               [rdt/data-table
+                {:rows axies
+                 :headers (conj axie-table-headers [:gift-button ""])
+                 :td-render-fn axie-row-render-fn}]]])]]]])
      [footer]]))

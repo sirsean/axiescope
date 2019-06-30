@@ -2,9 +2,12 @@
   (:require
     [re-frame.core :as rf]
     [reagent-table.core :as rt]
+    [reagent-data-table.core :as rdt]
     [cuerdas.core :refer [format]]
     [clojure.string :as string]
     [axiescope.moves :as moves]
+    [axiescope.views.color :as color]
+    [axiescope.util :refer [round]]
     ))
 
 (defn show-axie
@@ -179,10 +182,7 @@
    {:key :image}
    {:header "Name"
     :key :name}
-   {:header "Class"
-    :key :class}
-   {:header "Purity"
-    :key :purity}
+   {:key :parts}
    {:header "Breeds"
     :key :breed-count}
    {:header "Attack"
@@ -191,12 +191,31 @@
     :key :defense}
    {:header "Atk+Def"
     :key :atk+def}
-   {:header "Tank Body"
-    :key :tank-body}
-   {:header "Tank Tiers"
-    :key :tank-tiers}
-   {:header "DPS Tiers"
-    :key :dps-tiers}])
+   {:header "Tank"
+    :key :tank-body}])
+
+(def axie-table-headers
+  [[:id "ID"]
+   [:image ""]
+   [:name "Name"]
+   [:parts ""]
+   [:breed-count "Breeds"]
+   [:attack "Attack"]
+   [:defense "Defense"]
+   [:atk+def "Atk+Def"]
+   [:tank-body "Tank"]])
+
+(defn feather
+  [id opts]
+  [:svg (merge {:width 16
+                :height 16
+                :fill "none"
+                :stroke "currentColor"
+                :stroke-width 4
+                :stroke-linecap "round"
+                :stroke-linejoin "round"}
+               opts)
+   [:use {:href (format "/img/feather-sprite.svg#%s" (name id))}]])
 
 (defn axie-table-render-cell
   [{:keys [key]} row _ _]
@@ -209,6 +228,23 @@
              value]
       :image [:img {:style {:width "100%"}
                     :src value}]
+      :parts (let [parts (:parts row)
+                   c (keyword (:class row))]
+               (when (seq parts)
+                 [:div {:style {:background-color (color/classes c)
+                                :padding "0.2em"
+                                :border-radius "0.2em"}}
+                  (for [p parts
+                        :let [c (keyword (:class p))
+                              m (-> p :moves first)]]
+                    [:div {:style {:display "inline-block"
+                                   :background-color (color/classes c)
+                                   :padding "0.2em"
+                                   :border-radius "0.2em"}}
+                     (if (some? m)
+                       [feather :circle]
+                       [feather :circle {:width 6 :height 6}])])
+                  "x"]))
       :team-name [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
                       :target "_blank"}
                   value]
@@ -219,20 +255,95 @@
                       "Gift"])
       value)))
 
+(defn parts-row
+  [{:keys [parts class]}]
+  (when (seq parts)
+    (let [c (keyword class)]
+      [:div {:style {:background-color (color/classes c)
+                     :padding "0.2em"
+                     :border-radius "0.2em"}}
+       (for [p parts
+             :let [c (keyword (:class p))
+                   m (-> p :moves first)]]
+         [:div {:key (:id p)
+                :style {:display "inline-block"
+                        :background-color (color/classes c)
+                        :vertical-align "top"
+                        :margin "0 1px"
+                        :padding "0.2em"
+                        :border-radius "0.2em"}}
+          (if (some? m)
+            (let [tank (-> p :id moves/tank-part-score)
+                  dps (-> p :id moves/dps-part-score)]
+              [:div {:style {:vertical-align "middle"}}
+               (when (pos? tank)
+                 [:div
+                  [feather
+                   :shield
+                   {:style {:margin-top "2px"
+                            :opacity (+ 0.2 (* tank 0.2))}}]])
+               (when (pos? dps)
+                 [:div
+                  [feather
+                   :crosshair
+                   {:style {:margin-top "2px"
+                            :opacity (+ 0.2 (* dps 0.2))}}]])
+               (when (and (zero? tank) (zero? dps))
+                 [feather
+                  :circle
+                  {:style {:margin-top "2px"
+                           :opacity 0.2}}])])
+            [:div {:style {:padding "1.5px 0"}}
+             [feather
+              :circle
+              {:style {:vertical-align "middle"
+                       :opacity 0.2}
+               :width 6
+               :height 6
+               :fill "currentColor"}]])])])))
+
+(defn axie-row-render-fn
+  [row key]
+  (let [value (get row key)]
+    (case key
+      :id [:td
+           [:a {:href (format "https://axieinfinity.com/axie/%s" value)
+                :target "_blank"}
+            value]]
+      :name [:td {:style {:max-width "80px"}}
+             [:a {:href (format "/axie/%s" (get row :id))}
+              value]]
+      :image [:td {:style {:max-width "20px"}}
+              [:img {:style {:width "100%"}
+                     :src value}]]
+      :price [:td {:style {:max-width "50px"}}
+              [:span (round value 8)]]
+      :parts [:td {:style {:max-width "70px"}}
+              [parts-row row]]
+      :team-name [:td
+                  [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
+                       :target "_blank"}
+                   value]]
+      :gift-button [:td
+                    (let [to-addr @(rf/subscribe [:multi-gifter/to-addr])]
+                      [:button
+                       {:disabled (string/blank? to-addr)
+                        :on-click #(rf/dispatch [:multi-gifter/send to-addr (:id row)])}
+                       "Gift"])]
+      [:td value])))
+
 (defn my-axies-table
-  [{:keys [section sub column-model extra-sort-fields]
+  [{:keys [section sub headers extra-sort-fields]
     :or {section :my-axies
-         column-model axie-table-column-model
+         headers axie-table-headers
          extra-sort-fields []}}]
-  (let [axies (rf/subscribe [sub])]
+  (let [axies @(rf/subscribe [sub])]
     [:div.row
      [:div.col-xs-12
       [axie-sorter {:section section
                     :extra-fields extra-sort-fields}]]
      [:div.col-xs-12
-      [rt/reagent-table
-       axies
-       {:table {:class "table table-striped"
-                :style {:margin "0 auto"}}
-        :column-model column-model
-        :render-cell axie-table-render-cell}]]]))
+      [rdt/data-table
+       {:headers headers
+        :rows axies
+        :td-render-fn axie-row-render-fn}]]]))

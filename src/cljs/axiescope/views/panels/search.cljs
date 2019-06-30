@@ -2,7 +2,7 @@
   (:require
     [re-frame.core :as rf]
     [axiescope.views.layout :refer [header footer]]
-    [axiescope.views.shared :refer [axies-pager axie-table-column-model my-axies-table]]
+    [axiescope.views.shared :refer [axies-pager axie-table-headers my-axies-table]]
     ))
 
 (defn search-filter
@@ -46,9 +46,8 @@
          [my-axies-table {:section :search
                           :sub :search/axies
                           :extra-sort-fields [["Price" :price]]
-                          :column-model (conj axie-table-column-model
-                                              {:header "Price"
-                                               :key :price})}]]
+                          :headers (conj axie-table-headers
+                                         [:price "Price"])}]]
         [:div.col-xs-12
          [axies-pager :search]]])
      [footer]]))

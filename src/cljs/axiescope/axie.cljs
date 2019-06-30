@@ -124,8 +124,8 @@
 (defn tank-body
   [{:keys [stats parts]}]
   (apply weighted-average
-         [0.40 (stats/hp-score (:hp stats))
-          0.20 (stats/speed-score (:speed stats))
+         [0.60 (stats/hp-score (:hp stats))
+          #_#_0.20 (stats/speed-score (:speed stats))
           0.40 (->> parts
                     (mapcat :moves)
                     (map :defense)

@@ -1,15 +1,15 @@
 (ns axiescope.views.panels.multi-assigned
   (:require
     [re-frame.core :as rf]
-    [reagent-table.core :as rt]
+    [reagent-data-table.core :as rdt]
     [axiescope.views.layout :refer [header footer]]
-    [axiescope.views.shared :refer [axie-table-column-model axie-table-render-cell]]
+    [axiescope.views.shared :refer [axie-table-headers axie-row-render-fn]]
     ))
 
 (defn panel
   []
   (let [loading? @(rf/subscribe [:teams/loading?])
-        axies (rf/subscribe [:teams/multi-assigned-axies])]
+        axies @(rf/subscribe [:teams/multi-assigned-axies])]
     [:div.container
      [header {:title "Multi-Assigned Axies"
               :bars [:my-axies :teams]}]
@@ -20,17 +20,14 @@
        [:div.row
         [:div.col-xs-12.center-xs
          [:em "loading..."]]]
-       (if (empty? @axies)
+       (if (empty? axies)
          [:div.row
           [:div.col-xs-12.center-xs
            [:em "you have no axies assigned to multiple teams"]]]
          [:div.row
           [:div.col-xs-12
-           [rt/reagent-table
-            axies
-            {:table {:class "table table-striped"
-                     :style {:margin "0 auto"}}
-             :column-model (conj axie-table-column-model {:header "Team"
-                                                          :key :team-name})
-             :render-cell axie-table-render-cell}]]]))
+           [rdt/data-table
+            {:rows axies
+             :headers (conj axie-table-headers [:team-name "Team"])
+             :td-render-fn axie-row-render-fn}]]]))
      [footer]]))
