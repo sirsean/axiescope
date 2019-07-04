@@ -134,7 +134,7 @@
 
 (defn attach-tank-body
   [axie]
-  (assoc axie :tank-body (round (tank-body axie) 2)))
+  (assoc axie :tank-body (round (tank-body axie) 1)))
 
 (defn dps-body
   [{:keys [class stats parts]}]
@@ -158,7 +158,7 @@
 
 (defn attach-dps-body
   [axie]
-  (assoc axie :dps-body (round (dps-body axie) 2)))
+  (assoc axie :dps-body (round (dps-body axie) 1)))
 
 (defn calc-price
   [axie]
