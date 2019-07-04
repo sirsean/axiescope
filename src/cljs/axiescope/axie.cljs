@@ -134,7 +134,31 @@
 
 (defn attach-tank-body
   [axie]
-  (assoc axie :tank-body (round (tank-body axie) 3)))
+  (assoc axie :tank-body (round (tank-body axie) 2)))
+
+(defn dps-body
+  [{:keys [class stats parts]}]
+  (let [atk (->> parts
+                 (mapcat :moves)
+                 (map :attack)
+                 (map stats/attack-score)
+                 average)
+        acc (->> parts
+                 (mapcat :moves)
+                 (map :accuracy)
+                 (map stats/accuracy-score)
+                 average)
+        score (/ (* atk acc) 4)
+        stat-score (case class
+                     ("aquatic" "bird") (+ score (-> stats :speed stats/speed-score (/ 5)))
+                     ("beast" "bug") (+ score (-> stats :morale stats/morale-score (/ 5)))
+                     ("reptile" "plant") (+ score (-> stats :skill stats/skill-score (/ 5)))
+                     0)]
+    (* stat-score 0.85)))
+
+(defn attach-dps-body
+  [axie]
+  (assoc axie :dps-body (round (dps-body axie) 2)))
 
 (defn calc-price
   [axie]
@@ -177,5 +201,6 @@
           attach-next-breed
           attach-pending-exp
           attach-tank-body
+          attach-dps-body
           attach-dps-tiers
           attach-tank-tiers))

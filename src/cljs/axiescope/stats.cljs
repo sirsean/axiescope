@@ -54,25 +54,22 @@
     [0 0] 1
     0))
 
-;;define('ATK_RANGES',[
-;;    '5' => range(28, 31),
-;;    '4' => range(21, 27),
-;;    '3' => range(17, 20),
-;;    '2' => range(10, 16),
-;;    '1' => range(0, 9)
-;;]);
-;;
-;;define('DEF_RANGES',[
-;;    '5' => range(17, 24),
-;;    '4' => range(13, 16),
-;;    '3' => range(9, 12),
-;;    '2' => range(1, 8),
-;;    '1' => range(0, 0)
-;;]);
-;;define('ACC_RANGES',[
-;;    '5' => range(90, 100),
-;;    '4' => range(82, 89),
-;;    '3' => range(78, 81),
-;;    '2' => range(70, 77),
-;;    '1' => range(60, 69)
-;;]);
+(defn attack-score
+  [attack]
+  (condp in-range attack
+    [28 31] 5
+    [21 27] 4
+    [17 20] 3
+    [10 16] 2
+    [0 9] 1
+    0))
+
+(defn accuracy-score
+  [accuracy]
+  (condp in-range accuracy
+    [90 100] 5
+    [82 89] 4
+    [78 81] 3
+    [70 77] 2
+    [60 69] 1
+    0))

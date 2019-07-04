@@ -139,6 +139,7 @@
                      ["Defense" :defense]
                      ["Atk+Def" :atk+def]
                      ["Tank Body" :tank-body]
+                     ["DPS Body" :dps-body]
                      ["Tank Tiers" :tank-tiers]
                      ["DPS Tiers" :dps-tiers]])
             (map (fn [[title k]]
@@ -203,7 +204,8 @@
    [:attack "Attack"]
    [:defense "Defense"]
    [:atk+def "Atk+Def"]
-   [:tank-body "Tank"]])
+   [:tank-body "Tank"]
+   [:dps-body "DPS"]])
 
 (defn feather
   [id opts]
