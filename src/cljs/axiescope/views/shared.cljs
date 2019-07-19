@@ -208,61 +208,12 @@
    [:tank-body "Tank"]
    [:dps-body "DPS"]])
 
-(defn feather
-  [id opts]
-  [:svg (merge {:width 16
-                :height 16
-                :fill "none"
-                :stroke "currentColor"
-                :stroke-width 4
-                :stroke-linecap "round"
-                :stroke-linejoin "round"}
-               opts)
-   [:use {:href (format "/img/feather-sprite.svg#%s" (name id))}]])
-
-(defn axie-table-render-cell
-  [{:keys [key]} row _ _]
-  (let [value (get row key)]
-    (case key
-      :id [:a {:href (format "https://axieinfinity.com/axie/%s" value)
-               :target "_blank"}
-           value]
-      :name [:a {:href (format "/axie/%s" (get row :id))}
-             value]
-      :image [:img {:style {:width "100%"}
-                    :src value}]
-      :parts (let [parts (:parts row)
-                   c (keyword (:class row))]
-               (when (seq parts)
-                 [:div {:style {:background-color (color/classes c)
-                                :padding "0.2em"
-                                :border-radius "0.2em"}}
-                  (for [p parts
-                        :let [c (keyword (:class p))
-                              m (-> p :moves first)]]
-                    [:div {:style {:display "inline-block"
-                                   :background-color (color/classes c)
-                                   :padding "0.2em"
-                                   :border-radius "0.2em"}}
-                     (if (some? m)
-                       [feather :circle]
-                       [feather :circle {:width 6 :height 6}])])
-                  "x"]))
-      :team-name [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
-                      :target "_blank"}
-                  value]
-      :gift-button (let [to-addr @(rf/subscribe [:multi-gifter/to-addr])]
-                     [:button
-                      {:disabled (string/blank? to-addr)
-                       :on-click #(rf/dispatch [:multi-gifter/send to-addr (:id row)])}
-                      "Gift"])
-      value)))
-
 (defn parts-row
   [{:keys [parts class]}]
   (when (seq parts)
     (let [c (keyword class)]
-      [:div {:style {:background-color (color/classes c)
+      [:div {:style {:width "100%"
+                     :background-color (color/classes c)
                      :padding "0.2em"
                      :border-radius "0.2em"}}
        (for [p parts
@@ -272,6 +223,7 @@
                 :style {:display "inline-block"
                         :background-color (color/classes c)
                         :vertical-align "top"
+                        :width "18px"
                         :margin "0 1px"
                         :padding "0.2em"
                         :border-radius "0.2em"}}
@@ -280,30 +232,24 @@
                   dps (-> p :id moves/dps-part-score)]
               [:div {:style {:vertical-align "middle"}}
                (when (pos? tank)
-                 [:div
-                  [feather
-                   :shield
-                   {:style {:margin-top "2px"
-                            :opacity (+ 0.2 (* tank 0.2))}}]])
+                 [:div {:style {:height "30px"
+                                :opacity (+ 0.2 (* tank 0.2))}}
+                  [:div tank]
+                  [:div {:style {:font-size "0.5em"}}
+                   "Tank"]])
                (when (pos? dps)
-                 [:div
-                  [feather
-                   :crosshair
-                   {:style {:margin-top "2px"
-                            :opacity (+ 0.2 (* dps 0.2))}}]])
+                 [:div {:style {:height "30px"
+                                :opacity (+ 0.2 (* dps 0.2))}}
+                  [:div dps]
+                  [:div {:style {:font-size "0.5em"}}
+                   "DPS"]])
                (when (and (zero? tank) (zero? dps))
-                 [feather
-                  :circle
-                  {:style {:margin-top "2px"
-                           :opacity 0.2}}])])
-            [:div {:style {:padding "1.5px 0"}}
-             [feather
-              :circle
-              {:style {:vertical-align "middle"
-                       :opacity 0.2}
-               :width 6
-               :height 6
-               :fill "currentColor"}]])])])))
+                 [:div {:style {:height "30px"
+                                :opacity 0.2}}
+                  "0"])])
+            [:div {:style {:height "30px"
+                           :opacity 0.2}}
+             "0"])])])))
 
 (defn axie-row-render-fn
   [row key]
@@ -321,7 +267,7 @@
                      :src value}]]
       :price [:td {:style {:max-width "50px"}}
               [:span (round value 8)]]
-      :parts [:td {:style {:max-width "70px"}}
+      :parts [:td {:style {:max-width "80px"}}
               [parts-row row]]
       :team-name [:td
                   [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
