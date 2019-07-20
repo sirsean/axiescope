@@ -102,23 +102,41 @@
 
 (defn sort-key-button
   [section title sort-key active-sort-key]
-  [:button
-   {:style {:border-radius "0.3em"
-            :padding "0.35em"
-            :margin "0 0.1em"}
-    :disabled (= sort-key active-sort-key)
-    :on-click #(rf/dispatch [(keyword section :set-sort-key) sort-key])}
-   title])
+  (let [active? (= sort-key active-sort-key)]
+    [:button
+     {:style {:padding "4px 8px"
+              :margin "0 0.1em"
+              :background-color (if active?
+                                  "#2277bb"
+                                  "#bcd6ea")
+              :color (if active?
+                       "white"
+                       "black")
+              :border "none"
+              :outline "none"
+              :border-radius "1em"}
+      :disabled active?
+      :on-click #(rf/dispatch [(keyword section :set-sort-key) sort-key])}
+     title]))
 
 (defn sort-order-button
   [section order active-order]
-  [:button
-   {:style {:border-radius "0.3em"
-            :padding "0.35em"
-            :margin "0 0.1em"}
-    :disabled (= order active-order)
-    :on-click #(rf/dispatch [(keyword section :set-sort-order) order])}
-   (name order)])
+  (let [active? (= order active-order)]
+    [:button
+     {:style {:padding "4px 8px"
+              :margin "0 0.1em"
+              :background-color (if active?
+                                  "#2277bb"
+                                  "#bcd6ea")
+              :color (if active?
+                       "white"
+                       "black")
+              :border "none"
+              :outline "none"
+              :border-radius "1em"}
+      :disabled active?
+      :on-click #(rf/dispatch [(keyword section :set-sort-order) order])}
+     (name order)]))
 
 (defn axie-sorter
   [{:keys [section extra-fields]
@@ -133,6 +151,7 @@
         "sort by:"]
        (->> extra-fields
             (concat [["ID" :id]
+                     ["Name" :name]
                      ["Class" :class]
                      ["Purity" :purity]
                      ["Breeds" :breed-count]
@@ -212,7 +231,8 @@
   [{:keys [parts class]}]
   (when (seq parts)
     (let [c (keyword class)]
-      [:div {:style {:width "100%"
+      [:div {:style {:width "185px"
+                     :display "inline-block"
                      :background-color (color/classes c)
                      :padding "0.2em"
                      :border-radius "0.2em"}}
@@ -267,12 +287,42 @@
                      :src value}]]
       :price [:td {:style {:max-width "50px"}}
               [:span (round value 8)]]
-      :parts [:td {:style {:max-width "80px"}}
+      :parts [:td {:style {:max-width "200px"
+                           :text-align "center"}}
               [parts-row row]]
       :team-name [:td
                   [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
                        :target "_blank"}
                    value]]
+
+      :sire-selector
+      (let [axie-id (get row :id)
+            selected? (get row :selected-sire?)]
+        [:td
+         [:button
+          {:style {:background-color (if selected?
+                                       "#2277bb"
+                                       "#bcd6ea")
+                   :color (if selected?
+                            "white"
+                            "black")
+                   :padding "4px 8px"
+                   :border "none"
+                   :outline "none"
+                   :border-radius "1em"}
+           :on-click #(rf/dispatch [:breedable/select-sire axie-id])}
+          "Sire"]])
+
+      :matron-selector
+      (let [sire-id @(rf/subscribe [:breedable/sire-id])
+            axie-id (get row :id)]
+        [:td
+         (if (some? sire-id)
+           [:a {:href (format "https://freakitties.github.io/axie/calc.html?sireId=%s&matronId=%s" sire-id axie-id)
+                :target "_blank"}
+            "Calc Breed"]
+           [:em "select a sire"])])
+
       :gift-button [:td
                     (let [to-addr @(rf/subscribe [:multi-gifter/to-addr])]
                       [:button

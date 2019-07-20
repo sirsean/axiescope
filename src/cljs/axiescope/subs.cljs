@@ -184,15 +184,52 @@
          (take page-size))))
 
 (rf/reg-sub
+  :breedable/axies
+  (fn [_]
+    [(rf/subscribe [:my-axies/raw-axies])])
+  (fn [[axies]]
+    (->> axies
+         (filter :breedable))))
+
+(rf/reg-sub
+  :breedable/sire-id
+  (fn [db]
+    (get-in db [:breedable :sire-id])))
+
+(rf/reg-sub
+  :breedable/total
+  (fn [_]
+    [(rf/subscribe [:breedable/axies])])
+  (fn [[axies]]
+    (count axies)))
+
+(rf/reg-sub
+  :breedable/offset
+  (fn [db]
+    (get-in db [:breedable :offset] 0)))
+
+(rf/reg-sub
+  :breedable/page-size
+  (fn [db]
+    (get-in db [:breedable :page-size] 25)))
+
+(rf/reg-sub
   :my-axies/breedable
   (fn [_]
-    [(rf/subscribe [:my-axies/raw-axies])
-     (rf/subscribe [:my-axies/sort-key])])
-  (fn [[axies sort-key]]
+    [(rf/subscribe [:breedable/axies])
+     (rf/subscribe [:my-axies/sort-key])
+     (rf/subscribe [:my-axies/sort-order])
+     (rf/subscribe [:breedable/offset])
+     (rf/subscribe [:breedable/page-size])
+     (rf/subscribe [:breedable/sire-id])])
+  (fn [[axies sort-key sort-order offset page-size sire-id]]
     (->> axies
          (sort-by sort-key)
-         reverse
-         (filter :breedable))))
+         ((if (= :asc sort-order) identity reverse))
+         (drop offset)
+         (take page-size)
+         (map (fn [{:keys [id] :as axie}]
+                (assoc axie :selected-sire? (= id sire-id)))))))
 
 (rf/reg-sub
   :teams/loading?

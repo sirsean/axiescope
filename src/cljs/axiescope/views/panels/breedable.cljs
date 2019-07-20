@@ -2,8 +2,20 @@
   (:require
     [re-frame.core :as rf]
     [axiescope.views.layout :refer [header footer]]
-    [axiescope.views.shared :refer [my-axies-table]]
+    [axiescope.views.shared :refer [axies-pager my-axies-table]]
     ))
+
+(def breedable-headers
+  [[:id "ID"]
+   [:image ""]
+   [:name "Name"]
+   [:parts ""]
+   [:breed-count "Breeds"]
+   [:atk+def "Atk+Def"]
+   [:tank-body "Tank"]
+   [:dps-body "DPS"]
+   [:sire-selector "Sire"]
+   [:matron-selector "Matron"]])
 
 (defn panel
   []
@@ -15,5 +27,10 @@
        [:div.row
         [:div.col-xs-12.center-xs
          [:em "loading..."]]]
-       [my-axies-table {:sub :my-axies/breedable}])
+       [:div.row
+        [:div.col-xs-12
+         [my-axies-table {:sub :my-axies/breedable
+                          :headers breedable-headers}]]
+        [:div.col-xs-12
+         [axies-pager :breedable]]])
      [footer]]))

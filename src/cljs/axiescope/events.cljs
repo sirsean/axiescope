@@ -984,6 +984,16 @@
   (fn [db [_ sort-order]]
     (assoc-in db [:valuation :sort-order] sort-order)))
 
+(rf/reg-event-db
+  :breedable/select-sire
+  (fn [db [_ sire-id]]
+    (assoc-in db [:breedable :sire-id] sire-id)))
+
+(rf/reg-event-db
+  :breedable/set-offset
+  (fn [db [_ offset]]
+    (assoc-in db [:breedable :offset] offset)))
+
 ;; TODO create teams
 ;; POST https://api.axieinfinity.com/v1/battle/teams/create
 
