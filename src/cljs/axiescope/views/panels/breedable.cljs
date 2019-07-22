@@ -14,6 +14,7 @@
    [:atk+def "Atk+Def"]
    [:tank-body "Tank"]
    [:dps-body "DPS"]
+   [:support-body "Support"]
    [:sire-selector "Sire"]
    [:matron-selector "Matron"]])
 

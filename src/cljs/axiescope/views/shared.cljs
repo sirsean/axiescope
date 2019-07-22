@@ -160,6 +160,7 @@
                      ["Atk+Def" :atk+def]
                      ["Tank Body" :tank-body]
                      ["DPS Body" :dps-body]
+                     ["Support Body" :support-body]
                      ["Tank Tiers" :tank-tiers]
                      ["DPS Tiers" :dps-tiers]])
             (map (fn [[title k]]
@@ -197,24 +198,6 @@
          {:on-click #(rf/dispatch [(keyword section :set-offset) (+ offset page-size)])}
          "Next"])]]))
 
-(def axie-table-column-model
-  [{:header "ID"
-    :key :id}
-   {:key :image}
-   {:header "Name"
-    :key :name}
-   {:key :parts}
-   {:header "Breeds"
-    :key :breed-count}
-   {:header "Attack"
-    :key :attack}
-   {:header "Defense"
-    :key :defense}
-   {:header "Atk+Def"
-    :key :atk+def}
-   {:header "Tank"
-    :key :tank-body}])
-
 (def axie-table-headers
   [[:id "ID"]
    [:image ""]
@@ -225,7 +208,8 @@
    [:defense "Defense"]
    [:atk+def "Atk+Def"]
    [:tank-body "Tank"]
-   [:dps-body "DPS"]])
+   [:dps-body "DPS"]
+   [:support-body "Support"]])
 
 (defn parts-row
   [{:keys [parts class]}]

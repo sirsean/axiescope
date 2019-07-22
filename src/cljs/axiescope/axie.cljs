@@ -108,6 +108,17 @@
                                (map moves/tank-part-score)
                                (apply +))))
 
+(defn support-tiers
+  [{:keys [parts]}]
+  (->> parts
+       (map :id)
+       (map moves/support-part-score)
+       (apply +)))
+
+(defn attach-support-tiers
+  [axie]
+  (assoc axie :support-tiers (support-tiers axie)))
+
 (defn average
   [nums]
   (if (empty? nums)
@@ -122,15 +133,17 @@
                 (partition 2 args))))
 
 (defn tank-body
-  [{:keys [stats parts]}]
-  (apply weighted-average
-         [0.60 (stats/hp-score (:hp stats))
-          #_#_0.20 (stats/speed-score (:speed stats))
-          0.40 (->> parts
-                    (mapcat :moves)
-                    (map :defense)
-                    (map stats/defense-score)
-                    average)]))
+  [{:keys [stats parts] :as axie}]
+  (if (moves/shortcake? axie)
+    0
+    (apply weighted-average
+           [0.60 (stats/hp-score (:hp stats))
+            #_#_0.20 (stats/speed-score (:speed stats))
+            0.40 (->> parts
+                      (mapcat :moves)
+                      (map :defense)
+                      (map stats/defense-score)
+                      average)])))
 
 (defn attach-tank-body
   [axie]
@@ -159,6 +172,17 @@
 (defn attach-dps-body
   [axie]
   (assoc axie :dps-body (round (dps-body axie) 1)))
+
+(defn support-body
+  [{:keys [stats] :as axie}]
+  (weighted-average
+    0.75 (* (support-tiers axie) (/ 5 16))
+    0.10 (stats/hp-score (:hp stats))
+    0.15 (stats/speed-score (:speed stats))))
+
+(defn attach-support-body
+  [axie]
+  (assoc axie :support-body (round (support-body axie) 1)))
 
 (defn calc-price
   [axie]
@@ -201,6 +225,8 @@
           attach-next-breed
           attach-pending-exp
           attach-tank-body
+          attach-tank-tiers
           attach-dps-body
           attach-dps-tiers
-          attach-tank-tiers))
+          attach-support-body
+          attach-support-tiers))

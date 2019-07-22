@@ -1,5 +1,13 @@
 (ns axiescope.moves)
 
+(defn shortcake?
+  [axie]
+  (contains? (->> axie
+                  :parts
+                  (map :id)
+                  set)
+             "horn-strawberry-shortcake"))
+
 (defn tank-part-score
   [part-id]
   (case part-id
@@ -164,4 +172,26 @@
     "horn-watermelon" 1
     "horn-antenna" 1
     "horn-caterpillars" 1
+    0))
+
+(defn support-part-score
+  [part-id]
+  (case part-id
+    "horn-strawberry-shortcake" 4
+    "mouth-silence-whisper" 4
+    "mouth-doubletalk" 4
+    "tail-shrimp" 4
+    "tail-yam" 4
+    "tail-grass-snake" 4
+    "back-scarab" 4
+
+    "back-risky-beast" 3
+    "tail-snake-jar" 3
+    "back-tri-feather" 3
+    "back-ronin" 3
+    "back-kingfisher" 3
+    "tail-the-last-one" 3
+    "tail-hare" 3
+    "horn-parasite" 3
+
     0))

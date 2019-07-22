@@ -25,7 +25,7 @@
     [axiescope.views.panels.land :as land]
     [axiescope.views.panels.lineage :as lineage]
     [axiescope.views.layout :refer [header footer]]
-    [axiescope.views.shared :refer [axies-pager axie-sorter sort-key-button sort-order-button axie-table-column-model my-axies-table]]
+    [axiescope.views.shared :refer [axies-pager axie-sorter sort-key-button sort-order-button my-axies-table]]
     ))
 
 (defn home-panel []
