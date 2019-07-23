@@ -66,11 +66,14 @@
            (let [{:keys [max-teams until]} account]
              [:div.row
               [:div.col-xs-3.end-xs
-               (if (some? max-teams)
+               ;; TODO: temporarily unlimited
+               (if (and false (some? max-teams))
                  max-teams
                  "Unlimited")]
               [:div.col-xs-9.end-xs
-               (if (and (some? until)
+               ;; TODO: temporarily no expiration
+               (if (and false
+                        (some? until)
                         (not= 3 max-teams))
                  until
                  "Forever")]])]])
@@ -86,10 +89,11 @@
                                :border "none"
                                :outline "none"
                                :border-radius "1.8em"}}
-              "Signup"]]
-          [:div.col-xs-12.center-xs
-           [:p "After you've signed up, then you can upgrade if you want."]]])
+              "Signup"]]])
        [:div.row {:style {:margin-top "6em"}}
+        [:div.col-xs-12.center-xs
+         [:strong "Now free! Unlimited teams! For a limited time only?"]]]
+       #_[:div.row {:style {:margin-top "6em"}}
         [:div.col-xs-12.center-xs
          [:div.row {:style {:margin "0.45em 0"
                             :padding-bottom "0.2em"
@@ -125,8 +129,10 @@
       [:div.col-xs-6
        [:p "Each team can battle once every four hours, up to 3 times per 12 hours. That means that in order to maximize your exp, you need to log in multiple times per day and send each team to battle over and over."]
       [:p (format "That is a lot of work! I can do it automatically for you, so you can maximize your exp with no work at all.")]
-      [:p "If you're new to the game, I want to help you out. That's why there's a free tier! I will auto-battle your first few teams for free. All you have to do is wait for the exp to roll in."]
-      [:p "Once you've got more teams, that tells me one of two things has happened: you've spent some money on axies, or you've gained enough exp to breed a bunch of axies for yourself. I think that means you can afford to maintain your investment. That's why it costs more to auto-battle more teams (also my computer has to do more work). You should be able to afford it by selling off some of your cheaper axies."]
-      [:p "The auto-battles cost less than the value of the exp you get ... not to mention the value of your time."]
-      [:p "Note! I can't take money from your ETH account, so you can sign up for one month, but I can't automatically renew. You'll have to come in and renew manually in a month. If you forget, you will automatically fall back to the free tier and get your first three teams auto-battled."]]])
+      [:p "I need you to log into axiescope, so I know who you are."]
+      [:p "And I need you to calculate your Axie Infinity bearer token, so I can act as you when I send your teams into battle."]
+      [:p "My computer will remember that token, so I can continue to send your axies to battle with no input from you."]
+      [:p "That means you have to trust me not to do anything bad with your token. I promise I won't, and have no interest in doing that, and no incentive to do that. But, you know, you still have to believe me."]
+      [:p "That's up to you."]
+      ]])
    [footer]])
