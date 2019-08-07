@@ -76,7 +76,18 @@
                         (some? until)
                         (not= 3 max-teams))
                  until
-                 "Forever")]])]])
+                 "Forever")]])
+           [:div.row
+            [:div.col-xs-12.center-xs
+             [:button {:on-click #(rf/dispatch [:axiescope.auto-battle/delete])
+                       :style {:padding "0.6em"
+                               :font-size "0.8em"
+                               :background-color "#2277bb"
+                               :color "white"
+                               :border "none"
+                               :outline "none"
+                               :border-radius "1.8em"}}
+              "Deactivate Account"]]]]])
        (when (and logged-in? (nil? account))
          [:div.row
           [:div.col-xs-12.center-xs

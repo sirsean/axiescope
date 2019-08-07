@@ -23,9 +23,10 @@
         (doall
           (for [t teams]
             [:div.col-xs-4 {:key (:team-id t)
-                            :style {:padding "20px"}}
+                            :style {:padding "6px 20px"}}
              [:div.row
-              [:div.col-xs-12
+              [:div.col-xs-12 {:style {:border-top "1px solid #bcd6ea"
+                                       :padding-top "16px"}}
                [:a {:href (format "https://axieinfinity.com/team/%s" (:team-id t))
                     :target "_blank"}
                 [:strong (:name t)]]]]
@@ -48,21 +49,24 @@
                 [:div.col-xs-2.end-xs
                  {:style (if (<= 4 tank-body)
                            {:color "green"
-                            :font-weight "bold"}
+                            :font-weight "bold"
+                            :font-size "1.2em"}
                            {:color "#444444"
                             :font-size "0.9em"})}
                  tank-body]
                 [:div.col-xs-2.end-xs
                  {:style (if (<= 4 dps-body)
                            {:color "green"
-                            :font-weight "bold"}
+                            :font-weight "bold"
+                            :font-size "1.2em"}
                            {:color "#444444"
                             :font-size "0.9em"})}
                  dps-body]
                 [:div.col-xs-2.end-xs
                  {:style (if (<= 3 support-body)
                            {:color "green"
-                            :font-weight "bold"}
+                            :font-weight "bold"
+                            :font-size "1.2em"}
                            {:color "#444444"
                             :font-size "0.9em"})}
                  support-body]])]))])

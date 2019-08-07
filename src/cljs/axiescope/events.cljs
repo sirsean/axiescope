@@ -62,6 +62,25 @@
                     (conj handler (transform-keys ->kebab-case-keyword result))))})))
 
 (rf/reg-fx
+  :http-delete
+  (fn [{:keys [url handler err-handler response-format headers]
+        :or {response-format :json}}]
+    (println :http-delete response-format url)
+    (ajax/DELETE
+      url
+      {:response-format response-format
+       :keywords? true
+       :headers headers
+       :format :json
+       :error-handler (fn [err]
+                        (if err-handler
+                          (rf/dispatch (conj err-handler err))
+                          (println "error" err)))
+       :handler (fn [result]
+                  (rf/dispatch
+                    (conj handler (transform-keys ->kebab-case-keyword result))))})))
+
+(rf/reg-fx
   :blockchain/enable
   (fn [{:keys [eth handlers]}]
     (go
@@ -506,6 +525,20 @@
                    :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
                    :body {:token token}
                    :handler [:axiescope.auto-battle.account/got]}})))
+
+(rf/reg-event-fx
+  :axiescope.auto-battle/delete
+  (fn [{:keys [db]} _]
+    {:http-delete {:url (format "%s/api/auto-battle/deactivate" api-host)
+                   :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
+                   :handler [:axiescope.auto-battle/deleted]}}))
+
+(rf/reg-event-fx
+  :axiescope.auto-battle/deleted
+  (fn [{:keys [db]} _]
+    {:db (-> db
+             (assoc-in [:axiescope :auto-battle :account] nil))
+     :dispatch [:axiescope.auto-battle.account/fetch]}))
 
 (rf/reg-event-fx
   :axie/set-id
