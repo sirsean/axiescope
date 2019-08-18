@@ -62,7 +62,8 @@
                              ["Tank Tiers" :tank-tiers]
                              ["Tank Body" :tank-body]
                              ["DPS Tiers" :dps-tiers]
-                             ["DPS Body" :dps-body]]]]]
+                             ["DPS Body" :dps-body]
+                             ["Support Body" :support-body]]]]]
      (when (= 2 (:stage axie))
        [:div.row {:style {:margin-top "1.8em"}}
         [:div.col-xs-6.end-xs [:strong "To Petite"]]
