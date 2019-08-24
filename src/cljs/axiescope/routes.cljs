@@ -29,6 +29,9 @@
   (defroute "/breedable" []
     (rf/dispatch [::events/set-active-panel :breedable-panel]))
 
+  (defroute "/breed/calc/:sire-id/:matron-id" {:keys [sire-id matron-id]}
+    (rf/dispatch [::events/set-active-panel :breed-calc-panel sire-id matron-id]))
+
   (defroute "/teams" []
     (rf/dispatch [::events/set-active-panel :teams-panel]))
 

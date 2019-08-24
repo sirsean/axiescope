@@ -136,14 +136,18 @@
   [{:keys [stats parts] :as axie}]
   (if (moves/shortcake? axie)
     0
-    (apply weighted-average
-           [0.60 (stats/hp-score (:hp stats))
-            #_#_0.20 (stats/speed-score (:speed stats))
-            0.40 (->> parts
-                      (mapcat :moves)
-                      (map :defense)
-                      (map stats/defense-score)
-                      average)])))
+    (let [moves (filter
+                  some?
+                  (concat
+                    (mapcat :moves parts)
+                    (map :move parts)))]
+      (apply weighted-average
+             [0.60 (stats/hp-score (:hp stats))
+              #_#_0.20 (stats/speed-score (:speed stats))
+              0.40 (->> moves
+                        (map :defense)
+                        (map stats/defense-score)
+                        average)]))))
 
 (defn attach-tank-body
   [axie]
@@ -151,13 +155,16 @@
 
 (defn dps-body
   [{:keys [class stats parts]}]
-  (let [atk (->> parts
-                 (mapcat :moves)
+  (let [moves (filter
+                some?
+                (concat
+                  (mapcat :moves parts)
+                  (map :move parts)))
+        atk (->> moves
                  (map :attack)
                  (map stats/attack-score)
                  average)
-        acc (->> parts
-                 (mapcat :moves)
+        acc (->> moves
                  (map :accuracy)
                  (map stats/accuracy-score)
                  average)
@@ -209,6 +216,33 @@
 (defn merge-stats
   [{:keys [stats] :as axie}]
   (merge stats axie))
+
+(defn base-stats
+  [class]
+  (case class
+    "aquatic" {:hp 39 :speed 39 :skill 35 :morale 27}
+    "beast" {:hp 31 :speed 35 :skill 31 :morale 43}
+    "bird" {:hp 27 :speed 43 :skill 35 :morale 35}
+    "bug" {:hp 35 :speed 31 :skill 35 :morale 39}
+    "plant" {:hp 43 :speed 31 :skill 31 :morale 35}
+    "reptile" {:hp 39 :speed 35 :skill 31 :morale 35}
+    {}))
+
+(defn parts->stats
+  [parts]
+  (->> parts
+       (reduce
+         (fn [stats part]
+           (merge-with + stats
+                       (case (:class part)
+                         "bird" {:speed 3 :morale 1}
+                         "bug" {:morale 3 :hp 1}
+                         "aquatic" {:speed 3 :hp 1}
+                         "beast" {:morale 3 :speed 1}
+                         "reptile" {:hp 3 :speed 1}
+                         "plant" {:hp 3 :morale 1}
+                         {})))
+         {})))
 
 (defn adjust-axie
   [axie]

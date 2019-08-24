@@ -2,10 +2,12 @@
   (:require
    [re-frame.core :as rf]
    [clojure.string :as string]
+   [clojure.set :refer [rename-keys]]
    [cljsjs.moment]
    [cljs-web3.core :as web3]
    [axiescope.axie :refer [adjust-axie attach-purity]]
-   [axiescope.battle :as battle]))
+   [axiescope.battle :as battle]
+   [axiescope.genes :as genes]))
 
 (rf/reg-sub
   :identity
@@ -192,9 +194,9 @@
          (filter :breedable))))
 
 (rf/reg-sub
-  :breedable/sire-id
+  :breedable/sire
   (fn [db]
-    (get-in db [:breedable :sire-id])))
+    (get-in db [:breedable :sire])))
 
 (rf/reg-sub
   :breedable/total
@@ -221,15 +223,19 @@
      (rf/subscribe [:my-axies/sort-order])
      (rf/subscribe [:breedable/offset])
      (rf/subscribe [:breedable/page-size])
-     (rf/subscribe [:breedable/sire-id])])
-  (fn [[axies sort-key sort-order offset page-size sire-id]]
+     (rf/subscribe [:breedable/sire])
+     (rf/subscribe [:breed-calc/quick])])
+  (fn [[axies sort-key sort-order offset page-size sire quick-db]]
     (->> axies
          (sort-by sort-key)
          ((if (= :asc sort-order) identity reverse))
          (drop offset)
          (take page-size)
          (map (fn [{:keys [id] :as axie}]
-                (assoc axie :selected-sire? (= id sire-id)))))))
+                (assoc axie
+                       :can-breed-with-sire? (genes/can-breed? sire axie)
+                       :quick-calc (get quick-db #{(:id sire) id})
+                       :selected-sire? (= id (:id sire))))))))
 
 (rf/reg-sub
   :teams/loading?
@@ -771,3 +777,70 @@
                            :avg-price (/ (apply + mv) (count mv))))))
            (sort-by sort-key)
            ((if (= :asc sort-order) identity reverse))))))
+
+(rf/reg-sub
+  :body-parts
+  (fn [db]
+    (get-in db [:body-parts] [])))
+
+(rf/reg-sub
+  :body-parts/name-map
+  (fn [db]
+    (get-in db [:name->body-part])))
+
+(rf/reg-sub
+  :breed-calc
+  (fn [db]
+    (get db :breed-calc)))
+
+(rf/reg-sub
+  :breed-calc/sire
+  (fn [_]
+    [(rf/subscribe [:breed-calc])])
+  (fn [[breed-calc]]
+    (get breed-calc :sire)))
+
+(rf/reg-sub
+  :breed-calc/matron
+  (fn [_]
+    [(rf/subscribe [:breed-calc])])
+  (fn [[breed-calc]]
+    (get breed-calc :matron)))
+
+(rf/reg-sub
+  :breed-calc/can-breed?
+  (fn [[_ sire matron]]
+    [(rf/subscribe [:identity sire])
+     (rf/subscribe [:identity matron])])
+  (fn [[sire matron]]
+    (genes/can-breed? sire matron)))
+
+(rf/reg-sub
+  :breed-calc/prediction
+  (fn [[_ sire matron]]
+    [(rf/subscribe [:body-parts/name-map])
+     (rf/subscribe [:identity sire])
+     (rf/subscribe [:identity matron])])
+  (fn [[body-parts sire matron]]
+    (genes/predict-breed body-parts sire matron)))
+
+(rf/reg-sub
+  :breed-calc/predict-score
+  (fn [[_ sire matron]]
+    [(rf/subscribe [:breed-calc/prediction sire matron])])
+  (fn [[prediction]]
+    (genes/predict-score prediction)))
+
+(rf/reg-sub
+  :breed-calc/quick
+  (fn [db]
+    (get db :breed-calc/quick)))
+
+(rf/reg-sub
+  :breed-calc/quick-calc
+  (fn [[_ sire-id matron-id]]
+    [(rf/subscribe [:breed-calc/quick])
+     (rf/subscribe [:identity sire-id])
+     (rf/subscribe [:identity matron-id])])
+  (fn [[quick-db sire-id matron-id]]
+    (get quick-db #{sire-id matron-id})))

@@ -1,21 +1,23 @@
 (ns axiescope.events
   (:require
-   [re-frame.core :as rf]
-   [district0x.re-frame.interval-fx]
-   [cljs-web3.core]
-   [cljs-web3.eth]
-   [cljs-web3.personal]
-   [clojure.string :as string]
-   [cuerdas.core :refer [format]]
-   [cljs-await.core :refer [await]]
-   [cljs.core.async :refer [<!]]
-   [camel-snake-kebab.core :refer [->kebab-case-keyword]]
-   [camel-snake-kebab.extras :refer [transform-keys]]
-   [ajax.core :as ajax]
-   [cljsjs.moment]
-   [axiescope.config :refer [api-host]]
-   [axiescope.db :as db]
-   )
+    [clojure.set :refer [rename-keys]]
+    [re-frame.core :as rf]
+    [district0x.re-frame.interval-fx]
+    [cljs-web3.core]
+    [cljs-web3.eth]
+    [cljs-web3.personal]
+    [clojure.string :as string]
+    [cuerdas.core :refer [format]]
+    [cljs-await.core :refer [await]]
+    [cljs.core.async :refer [<!]]
+    [camel-snake-kebab.core :refer [->kebab-case-keyword]]
+    [camel-snake-kebab.extras :refer [transform-keys]]
+    [ajax.core :as ajax]
+    [cljsjs.moment]
+    [axiescope.config :refer [api-host]]
+    [axiescope.genes :as genes]
+    [axiescope.db :as db]
+    )
   (:require-macros
     [cljs.core.async.macros :refer [go]]
     ))
@@ -165,8 +167,16 @@
 (defmethod set-active-panel :breedable-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
+   :dispatch [:body-parts/fetch]
    :blockchain/enable {:eth (:eth db)
                        :handlers [:my-axies/fetch]}})
+
+(defmethod set-active-panel :breed-calc-panel
+  [{:keys [db]} [_ panel sire-id matron-id]]
+  {:db (assoc db :active-panel panel)
+   :dispatch-n [[:body-parts/fetch]
+                [::fetch-axie sire-id {:handler :breed-calc/set-sire}]
+                [::fetch-axie matron-id {:handler :breed-calc/set-matron}]]})
 
 (defmethod set-active-panel :teams-panel
   [{:keys [db]} [_ panel]]
@@ -541,6 +551,31 @@
      :dispatch [:axiescope.auto-battle.account/fetch]}))
 
 (rf/reg-event-fx
+  :body-parts/fetch
+  (fn [{:keys [db]} _]
+    (cond-> {}
+      (nil? (:body-parts db))
+      (merge
+        {:http-get {:url  "https://axieinfinity.com/api/v2/body-parts?withMoveDetails=true"
+                    :handler [:body-parts/got]}}))))
+
+(rf/reg-event-db
+  :body-parts/got
+  (fn [db [_ body-parts]]
+    (-> db
+        (assoc :body-parts body-parts)
+        (assoc :name->body-part
+               (->> body-parts
+                    (group-by :type)
+                    (map (fn [[type parts]]
+                           [(keyword type)
+                            (->> parts
+                                 (map (fn [{:keys [name] :as part}]
+                                        [name (rename-keys part {:part-id :id})]))
+                                 (into {}))]))
+                    (into {}))))))
+
+(rf/reg-event-fx
   :axie/set-id
   (fn [{:keys [db]} [_ axie-id {:keys [handler]}]]
     {:db (-> db
@@ -642,6 +677,12 @@
   :my-axies/got-page
   (fn [{:keys [db]} [_ {:keys [total-axies axies]}]]
     {:db (-> db
+             (update-in [:axie :db]
+                        merge
+                        (->> axies
+                             (map (fn [{:keys [id] :as axie}]
+                                    [(str id) axie]))
+                             (into {})))
              (assoc-in [:my-axies :total] total-axies)
              (update-in [:my-axies :axies] concat axies))
      :dispatch [:my-axies/fetch-page total-axies]}))
@@ -1019,13 +1060,36 @@
 
 (rf/reg-event-db
   :breedable/select-sire
-  (fn [db [_ sire-id]]
-    (assoc-in db [:breedable :sire-id] sire-id)))
+  (fn [db [_ sire]]
+    (assoc-in db [:breedable :sire] sire)))
 
 (rf/reg-event-db
   :breedable/set-offset
   (fn [db [_ offset]]
     (assoc-in db [:breedable :offset] offset)))
+
+(rf/reg-event-db
+  :breed-calc/set-sire
+  (fn [db [_ axie]]
+    (assoc-in db [:breed-calc :sire] axie)))
+
+(rf/reg-event-db
+  :breed-calc/set-matron
+  (fn [db [_ axie]]
+    (assoc-in db [:breed-calc :matron] axie)))
+
+(rf/reg-event-db
+  :breed-calc/quick-calc
+  (fn [db [_ sire matron]]
+    (cond-> db
+      (nil? (get-in db [:breed-calc/quick #{(:id sire) (:id matron)}]))
+      (assoc-in
+        [:breed-calc/quick #{(:id sire) (:id matron)}]
+        (-> (genes/predict-breed
+              (:name->body-part db)
+              sire
+              matron)
+            genes/predict-score)))))
 
 ;; TODO create teams
 ;; POST https://api.axieinfinity.com/v1/battle/teams/create

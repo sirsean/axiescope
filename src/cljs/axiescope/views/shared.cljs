@@ -223,7 +223,8 @@
                      :border-radius "0.2em"}}
        (for [p parts
              :let [c (keyword (:class p))
-                   m (-> p :moves first)]]
+                   m (or (-> p :moves first)
+                         (:move p))]]
          [:div {:key (:id p)
                 :style {:display "inline-block"
                         :background-color (color/classes c)
@@ -295,17 +296,32 @@
                    :border "none"
                    :outline "none"
                    :border-radius "1em"}
-           :on-click #(rf/dispatch [:breedable/select-sire axie-id])}
+           :on-click #(rf/dispatch [:breedable/select-sire row])}
           "Sire"]])
 
       :matron-selector
-      (let [sire-id @(rf/subscribe [:breedable/sire-id])
+      (let [sire @(rf/subscribe [:breedable/sire])
             axie-id (get row :id)]
         [:td
-         (if (some? sire-id)
-           [:a {:href (format "https://freakitties.github.io/axie/calc.html?sireId=%s&matronId=%s" sire-id axie-id)
-                :target "_blank"}
-            "Calc Breed"]
+         (if (some? sire)
+           (if (:can-breed-with-sire? row)
+             [:div
+              [:div
+               (if (some? (:quick-calc row))
+                 [:span
+                  (round (:tank-body (:quick-calc row)) 2)
+                  " | "
+                  (round (:dps-body (:quick-calc row)) 2)
+                  " | "
+                  (round (:support-body (:quick-calc row)) 2)]
+                 [:a {:on-click #(rf/dispatch [:breed-calc/quick-calc sire row])
+                      :href "#"}
+                  "Predict"])]
+              [:div
+               [:a {:style {:font-size "0.8em"}
+                    :href (format "/breed/calc/%s/%s" (:id sire) axie-id)}
+                "View Prediction"]]]
+             [:span "-"])
            [:em "select a sire"])])
 
       :gift-button [:td
