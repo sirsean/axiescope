@@ -14,6 +14,7 @@
     [axiescope.views.panels.gallery :as gallery]
     [axiescope.views.panels.my-axies :as my-axies]
     [axiescope.views.panels.teams :as teams]
+    [axiescope.views.panels.team-builder :as team-builder]
     [axiescope.views.panels.breedable :as breedable]
     [axiescope.views.panels.breed-calc :as breed-calc]
     [axiescope.views.panels.unassigned :as unassigned]
@@ -52,6 +53,8 @@
             "Breedable"]]
       [:li [:a {:href "/teams"}
             "Teams"]]
+      [:li [:a {:href "/team-builder"}
+            "Team Builder"]]
       [:li [:a {:href "/unassigned"}
             "Unassigned Axies"]]
       [:li [:a {:href "/multi-assigned"}
@@ -83,6 +86,7 @@
     :breedable-panel [breedable/panel]
     :breed-calc-panel [breed-calc/panel]
     :teams-panel [teams/panel]
+    :team-builder-panel [team-builder/panel]
     :unassigned-panel [unassigned/panel]
     :multi-assigned-panel [multi-assigned/panel]
     :morph-to-petite-panel [morph-to-petite/panel]

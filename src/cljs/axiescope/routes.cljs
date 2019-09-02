@@ -35,6 +35,9 @@
   (defroute "/teams" []
     (rf/dispatch [::events/set-active-panel :teams-panel]))
 
+  (defroute "/team-builder" []
+    (rf/dispatch [::events/set-active-panel :team-builder-panel]))
+
   (defroute "/unassigned" []
     (rf/dispatch [::events/set-active-panel :unassigned-panel]))
 

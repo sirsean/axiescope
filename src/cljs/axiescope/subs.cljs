@@ -593,6 +593,13 @@
     (get-in db [:auto-battle :token])))
 
 (rf/reg-sub
+  :auto-battle/has-token?
+  (fn [_]
+    [(rf/subscribe [:auto-battle/token])])
+  (fn [[token]]
+    (some? token)))
+
+(rf/reg-sub
   :auto-battle/until
   (fn [_]
     [(rf/subscribe [:time/now])
@@ -844,3 +851,40 @@
      (rf/subscribe [:identity matron-id])])
   (fn [[quick-db sire-id matron-id]]
     (get quick-db #{sire-id matron-id})))
+
+(rf/reg-sub
+  :team-builder
+  (fn [db]
+    (get db :team-builder {})))
+
+(rf/reg-sub
+  :team-builder/layout
+  (fn [_]
+    [(rf/subscribe [:team-builder])])
+  (fn [[tb]]
+    (get-in tb [:layout] :1tank-1dps-1support)))
+
+(rf/reg-sub
+  :team-builder/team-name
+  (fn [_]
+    [(rf/subscribe [:team-builder])])
+  (fn [[tb]]
+    (get-in tb [:team-name])))
+
+(rf/reg-sub
+  :team-builder/selected-axies
+  (fn [_]
+    [(rf/subscribe [:team-builder])])
+  (fn [[tb]]
+    (get-in tb [:axies] {})))
+
+(rf/reg-sub
+  :team-builder/can-create?
+  (fn [_]
+    [(rf/subscribe [:team-builder/team-name])
+     (rf/subscribe [:team-builder/selected-axies])])
+  (fn [[team-name axies]]
+    (and (not (string/blank? team-name))
+         (= 3 (count axies))
+         (every? some? (->> axies vals (map :id)))
+         (= 3 (->> axies vals (map :id) set count)))))

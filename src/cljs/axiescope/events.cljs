@@ -10,12 +10,13 @@
     [cuerdas.core :refer [format]]
     [cljs-await.core :refer [await]]
     [cljs.core.async :refer [<!]]
-    [camel-snake-kebab.core :refer [->kebab-case-keyword]]
+    [camel-snake-kebab.core :refer [->kebab-case-keyword ->camelCaseKeyword]]
     [camel-snake-kebab.extras :refer [transform-keys]]
     [ajax.core :as ajax]
     [cljsjs.moment]
     [axiescope.config :refer [api-host]]
     [axiescope.genes :as genes]
+    [axiescope.team-builder :as tb]
     [axiescope.db :as db]
     )
   (:require-macros
@@ -183,6 +184,13 @@
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
                        :handlers [:teams/fetch-teams]}})
+
+(defmethod set-active-panel :team-builder-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :blockchain/enable {:eth (:eth db)
+                       :handlers [:my-axies/fetch
+                                  :teams/fetch-teams]}})
 
 (defmethod set-active-panel :unassigned-panel
   [{:keys [db]} [_ panel]]
@@ -1091,41 +1099,82 @@
               matron)
             genes/predict-score)))))
 
-;; TODO create teams
-;; POST https://api.axieinfinity.com/v1/battle/teams/create
+(rf/reg-event-db
+  :team-builder/set-layout
+  (fn [db [_ layout]]
+    (assoc-in db [:team-builder :layout] layout)))
 
-;; How do I decide who goes where?
-;; How do I choose the move order?
-;; Can I make those manual for now, and just use this tool to make it easier to choose which axies are on the team?
-;; Also it would be nice to be able to edit existing teams more easily.
+(rf/reg-event-db
+  :team-builder/set-name
+  (fn [db [_ team-name]]
+    (assoc-in db [:team-builder :team-name] team-name)))
 
-;; Request URL: https://api.axieinfinity.com/v1/battle/teams/create
-;; 
-;; payload:
-;; {"from":"0x560ebafd8db62cbdb44b50539d65b48072b98277",
-;;  "name":"gong fu cha",
-;;  "fighters":[{"id":63910,
-;;               "position":5,
-;;               "moveSet":[{"index":1,"part":"horn"},
-;;                          {"index":2,"part":"mouth"},
-;;                          {"index":3,"part":"back"},
-;;                          {"index":4,"part":"tail"}]},
-;;              {"id":10140,
-;;               "position":8,
-;;               "moveSet":[{"index":1,"part":"horn"},
-;;                          {"index":2,"part":"mouth"},
-;;                          {"index":3,"part":"tail"},
-;;                          {"index":4,"part":"back"}]},
-;;              {"id":13977,
-;;               "position":1,
-;;               "moveSet":[{"index":1,"part":"tail"},
-;;                          {"index":2,"part":"back"},
-;;                          {"index":3,"part":"mouth"},
-;;                          {"index":4,"part":"horn"}]}]}
-;; 
-;; returns:
-;; {teamId: "e4cc1d1e-ca33-443d-ba4d-e649d65d08b0"}
-;; 
+(rf/reg-event-db
+  :team-builder/set-axie
+  (fn [db [_ index axie]]
+    (assoc-in db
+              [:team-builder :axies index]
+              (assoc axie :move-set (->> axie :parts (filter (comp seq :moves)) vec)))))
+
+(rf/reg-event-db
+  :team-builder/move-down
+  (fn [db [_ axie-index part-index]]
+    (let [parts (get-in db [:team-builder :axies axie-index :move-set])]
+      (cond-> db
+        (< (inc part-index) (count parts))
+        (update-in [:team-builder :axies axie-index :move-set]
+                   assoc
+                   (inc part-index) (nth parts part-index)
+                   part-index (nth parts (inc part-index)))))))
+
+(rf/reg-event-db
+  :team-builder/move-up
+  (fn [db [_ axie-index part-index]]
+    (let [parts (get-in db [:team-builder :axies axie-index :move-set])]
+      (cond-> db
+        (<= 0 (dec part-index))
+        (update-in [:team-builder :axies axie-index :move-set]
+                   assoc
+                   (dec part-index) (nth parts part-index)
+                   part-index (nth parts (dec part-index)))))))
+
+(rf/reg-event-fx
+  :team-builder/create
+  (fn [{:keys [db]} _]
+    (let [layout (get-in db [:team-builder :layout] :1tank-1dps-1support)
+          payload {:from (:eth-addr db)
+                   :name (get-in db [:team-builder :team-name])
+                   :fighters (->> (get-in db [:team-builder :axies])
+                                  (map (fn [[axie-index axie]]
+                                         {:id (:id axie)
+                                          :position (tb/team-position layout axie-index)
+                                          :move-set (map
+                                                      (fn [move move-index]
+                                                        {:index move-index
+                                                         :part (:type move)})
+                                                      (:move-set axie)
+                                                      (map inc (range)))})))}]
+      {:http-post {:url "https://api.axieinfinity.com/v1/battle/teams/create"
+                   :headers {"Authorization" (format "Bearer %s" (get-in db [:auto-battle :token]))}
+                   :body (transform-keys ->camelCaseKeyword payload)
+                   :handler [:team-builder/created]
+                   :err-handler [:team-builder/error]}})))
+
+(rf/reg-event-fx
+  :team-builder/created
+  (fn [{:keys [db]} [_ result]]
+    {:db (-> db
+             (assoc-in [:team-builder :team-name] nil)
+             (assoc-in [:team-builder :axies] nil))
+     :dispatch [:teams/fetch-teams true]}))
+
+(rf/reg-event-db
+  :team-builder/error
+  (fn [db [_ err]]
+    (println "failed to create team" err)
+    db))
+
+;; TODO update teams
 ;; POST https://api.axieinfinity.com/v1/battle/teams/update/e4cc1d1e-ca33-443d-ba4d-e649d65d08b0
 ;; 
 ;; {"from":"0x560ebafd8db62cbdb44b50539d65b48072b98277",
