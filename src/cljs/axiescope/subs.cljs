@@ -121,25 +121,38 @@
     (get-in db [:axie :id])))
 
 (rf/reg-sub
-  :my-axies/loading?
+  :my-axies
   (fn [db]
-    (get-in db [:my-axies :loading?])))
+    (get db :my-axies {})))
+
+(rf/reg-sub
+  :my-axies/loading?
+  (fn [_]
+    [(rf/subscribe [:my-axies])])
+  (fn [[my-axies]]
+    (get-in my-axies [:loading?])))
 
 
 (rf/reg-sub
   :my-axies/sort-key
-  (fn [db]
-    (get-in db [:my-axies :sort-key] :id)))
+  (fn [_]
+    [(rf/subscribe [:my-axies])])
+  (fn [[my-axies]]
+    (get-in my-axies [:sort-key] :id)))
 
 (rf/reg-sub
   :my-axies/sort-order
-  (fn [db]
-    (get-in db [:my-axies :sort-order] :desc)))
+  (fn [_]
+    [(rf/subscribe [:my-axies])])
+  (fn [[my-axies]]
+    (get-in my-axies [:sort-order] :desc)))
 
 (rf/reg-sub
   :axies/unadjusted
-  (fn [db]
-    (get-in db [:my-axies :axies] [])))
+  (fn [_]
+    [(rf/subscribe [:my-axies])])
+  (fn [[my-axies]]
+    (get-in my-axies [:axies] [])))
 
 (rf/reg-sub
   :my-axies/raw-axies
@@ -157,18 +170,24 @@
 
 (rf/reg-sub
   :my-axies/total
-  (fn [db]
-    (get-in db [:my-axies :total] "?")))
+  (fn [_]
+    [(rf/subscribe [:my-axies])])
+  (fn [[my-axies]]
+    (get-in my-axies [:total] "?")))
 
 (rf/reg-sub
   :my-axies/offset
-  (fn [db]
-    (get-in db [:my-axies :offset] 0)))
+  (fn [_]
+    [(rf/subscribe [:my-axies])])
+  (fn [[my-axies]]
+    (get-in my-axies [:offset] 0)))
 
 (rf/reg-sub
   :my-axies/page-size
-  (fn [db]
-    (get-in db [:my-axies :page-size] 100)))
+  (fn [_]
+    [(rf/subscribe [:my-axies])])
+  (fn [[my-axies]]
+    (get-in my-axies [:page-size] 100)))
 
 (rf/reg-sub
   :my-axies/axies
@@ -186,6 +205,11 @@
          (take page-size))))
 
 (rf/reg-sub
+  :breedable
+  (fn [db]
+    (get db :breedable {})))
+
+(rf/reg-sub
   :breedable/axies
   (fn [_]
     [(rf/subscribe [:my-axies/raw-axies])])
@@ -195,8 +219,10 @@
 
 (rf/reg-sub
   :breedable/sire
-  (fn [db]
-    (get-in db [:breedable :sire])))
+  (fn [_]
+    [(rf/subscribe [:breedable])])
+  (fn [bdb]
+    (get-in bdb [:sire])))
 
 (rf/reg-sub
   :breedable/total
@@ -207,13 +233,17 @@
 
 (rf/reg-sub
   :breedable/offset
-  (fn [db]
-    (get-in db [:breedable :offset] 0)))
+  (fn [_]
+    [(rf/subscribe [:breedable])])
+  (fn [[bdb]]
+    (get-in bdb [:offset] 0)))
 
 (rf/reg-sub
   :breedable/page-size
-  (fn [db]
-    (get-in db [:breedable :page-size] 25)))
+  (fn [_]
+    [(rf/subscribe [:breedable])])
+  (fn [[bdb]]
+    (get-in bdb [:page-size] 25)))
 
 (rf/reg-sub
   :my-axies/breedable
@@ -238,14 +268,23 @@
                        :selected-sire? (= id (:id sire))))))))
 
 (rf/reg-sub
-  :teams/loading?
+  :teams
   (fn [db]
-    (get-in db [:teams :loading?])))
+    (get db :teams {})))
+
+(rf/reg-sub
+  :teams/loading?
+  (fn [_]
+    [(rf/subscribe [:teams])])
+  (fn [[tdb]]
+    (get-in tdb [:loading?])))
 
 (rf/reg-sub
   :teams/raw-teams
-  (fn [db]
-    (get-in db [:teams :teams])))
+  (fn [_]
+    [(rf/subscribe [:teams])])
+  (fn [[tdb]]
+    (get-in tdb [:teams])))
 
 (rf/reg-sub
   :teams/count
@@ -256,13 +295,17 @@
 
 (rf/reg-sub
   :teams/total
-  (fn [db]
-    (get-in db [:teams :total] "?")))
+  (fn [_]
+    [(rf/subscribe [:teams])])
+  (fn [[tdb]]
+    (get-in tdb [:total] "?")))
 
 (rf/reg-sub
   :teams/axie-id->activity-points
-  (fn [db]
-    (get-in db [:teams :axie-id->activity-points] {})))
+  (fn [_]
+    [(rf/subscribe [:teams])])
+  (fn [[tdb]]
+    (get-in tdb [::axie-id->activity-points] {})))
 
 (rf/reg-sub
   :axie/db

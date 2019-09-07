@@ -6,9 +6,9 @@
 
 (defn loading-bar
   [numer denom color]
-  (let [percent (max 7 (if (and numer denom (not= "?" denom))
-                         (* 100 (/ numer denom))
-                         0))]
+  (let [percent (max 10 (if (and numer denom (not= "?" denom))
+                          (* 100 (/ numer denom))
+                          0))]
       [:div {:style {:background-color color
                      :color "white"
                      :border-radius "0.15em"

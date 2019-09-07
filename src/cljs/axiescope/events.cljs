@@ -183,7 +183,8 @@
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [:teams/fetch-teams]}})
+                       :handlers [:my-axies/fetch
+                                  :teams/fetch-teams]}})
 
 (defmethod set-active-panel :team-builder-panel
   [{:keys [db]} [_ panel]]
@@ -810,11 +811,8 @@
       {:db (-> db
                (assoc-in [:teams :total] total)
                (update-in [:teams :teams] concat teams))
-       :dispatch-n (-> [[:teams/fetch-teams-page total]
-                        [:teams/fetch-activity-points axie-ids]]
-                       (concat (map (fn [axie-id]
-                                      [::fetch-axie axie-id])
-                                    axie-ids)))})))
+       :dispatch-n (-> [[:teams/fetch-teams-page total]])})))
+
 (rf/reg-event-fx
   :teams/got-teams
   (fn [{:keys [db]} [_ teams]]

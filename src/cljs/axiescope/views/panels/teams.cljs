@@ -13,7 +13,7 @@
         teams @(rf/subscribe [:teams/teams])]
     [:div.container
      [header {:title "Teams"
-              :bars [:teams]}]
+              :bars [:my-axies :teams]}]
      (if (and loading?
               (<= (count teams) 20))
        [:div.row
