@@ -221,7 +221,7 @@
   :breedable/sire
   (fn [_]
     [(rf/subscribe [:breedable])])
-  (fn [bdb]
+  (fn [[bdb]]
     (get-in bdb [:sire])))
 
 (rf/reg-sub
