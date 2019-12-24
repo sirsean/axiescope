@@ -11,6 +11,12 @@
   (defroute "/" []
     (rf/dispatch [::events/set-active-panel :home-panel]))
 
+  (defroute "/card-rankings/vote" []
+    (rf/dispatch [::events/set-active-panel :card-rankings-vote-panel]))
+
+  (defroute "/card-rankings" []
+    (rf/dispatch [::events/set-active-panel :card-rankings-panel]))
+
   (defroute "/battle-simulator" []
     (rf/dispatch [::events/set-active-panel :battle-simulator-panel]))
 

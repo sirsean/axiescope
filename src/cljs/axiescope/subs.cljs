@@ -931,3 +931,29 @@
          (= 3 (count axies))
          (every? some? (->> axies vals (map :id)))
          (= 3 (->> axies vals (map :id) set count)))))
+
+(rf/reg-sub
+  :card-rankings
+  (fn [db]
+    (get db :card-rankings {})))
+
+(rf/reg-sub
+  :card-rankings/loading?
+  (fn [_]
+    [(rf/subscribe [:card-rankings])])
+  (fn [[cr]]
+    (get cr :loading? false)))
+
+(rf/reg-sub
+  :card-rankings/rankings
+  (fn [_]
+    [(rf/subscribe [:card-rankings])])
+  (fn [[cr]]
+    (get-in cr [:rankings])))
+
+(rf/reg-sub
+  :card-rankings/pair
+  (fn [_]
+    [(rf/subscribe [:card-rankings])])
+  (fn [[cr]]
+    (get-in cr [:pair])))

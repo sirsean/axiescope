@@ -237,6 +237,16 @@
    :blockchain/enable {:eth (:eth db)}
    :dispatch [:axiescope.prices.auto-battle/fetch]})
 
+(defmethod set-active-panel :card-rankings-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :dispatch [:card-rankings/fetch]})
+
+(defmethod set-active-panel :card-rankings-vote-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :dispatch [:card-rankings/fetch {:after-handlers [[:card-rankings/next-pair]]}]})
+
 (defmethod set-active-panel :land-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
@@ -1171,6 +1181,42 @@
   (fn [db [_ err]]
     (println "failed to create team" err)
     db))
+
+(rf/reg-event-fx
+  :card-rankings/fetch
+  (fn [{:keys [db]} [_ after-handlers]]
+    {:db (-> db
+             (assoc-in [:card-rankings :loading?] true))
+     :http-get {:url (format "%s/api/card-rankings" api-host)
+                :handler [:card-rankings/got after-handlers]}}))
+
+(rf/reg-event-fx
+  :card-rankings/got
+  (fn [{:keys [db]} [_ {:keys [after-handlers]} rankings]]
+    {:db (-> db
+             (assoc-in [:card-rankings :loading?] false)
+             (assoc-in [:card-rankings :rankings] rankings))
+     :dispatch-n (or after-handlers [])}))
+
+(rf/reg-event-db
+  :card-rankings/next-pair
+  (fn [db _]
+    (-> db
+        (assoc-in [:card-rankings :pair]
+                  (->> (get-in db [:card-rankings :rankings] [])
+                       shuffle
+                       (take 2))))))
+
+(rf/reg-event-fx
+  :card-rankings/vote
+  (fn [{:keys [db]} [_ winner loser]]
+    {:http-post {:url (format "%s/api/card-rankings/%s/%s" api-host winner loser)
+                 :handler [:card-rankings/voted]}}))
+
+(rf/reg-event-fx
+  :card-rankings/voted
+  (fn [_ _]
+    {:dispatch [:card-rankings/next-pair]}))
 
 ;; TODO update teams
 ;; POST https://api.axieinfinity.com/v1/battle/teams/update/e4cc1d1e-ca33-443d-ba4d-e649d65d08b0

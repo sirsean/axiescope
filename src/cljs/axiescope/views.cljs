@@ -26,6 +26,8 @@
     [axiescope.views.panels.auto-battle :as auto-battle]
     [axiescope.views.panels.land :as land]
     [axiescope.views.panels.lineage :as lineage]
+    [axiescope.views.panels.card-rankings :as card-rankings]
+    [axiescope.views.panels.card-rankings-vote :as card-rankings-vote]
     [axiescope.views.layout :refer [header footer]]
     [axiescope.views.shared :refer [axies-pager axie-sorter sort-key-button sort-order-button my-axies-table]]
     ))
@@ -41,13 +43,17 @@
    [:div.row
     [:div.col-xs-12
      [:ul.tools-list
-      [:li [:a {:href "/battle-simulator"}
+      [:li [:a {:href "/card-rankings"}
+            "Card Rankings"]]
+      [:li [:a {:href "/auto-battle"}
+            "Auto-Battle"]]
+      #_[:li [:a {:href "/battle-simulator"}
             "Battle Simulator"]]
       [:li [:a {:href "/axie"}
             "Axie Evaluator"]]
       [:li [:a {:href "/my-axies"}
             "My Axies"]]
-      [:li [:a {:href "/gallery"}
+      #_[:li [:a {:href "/gallery"}
             "Gallery"]]
       [:li [:a {:href "/breedable"}
             "Breedable"]]
@@ -67,9 +73,7 @@
             "Multi-Gifter"]]
       [:li [:a {:href "/search"}
             "Search"]]
-      [:li [:a {:href "/auto-battle"}
-            "Auto-Battle"]]
-      [:li [:a {:href "/land"}
+      #_[:li [:a {:href "/land"}
             "Land"]]
       #_[:li [:a {:href "/lineage"}
             "Axie Lineage"]]]]]
@@ -99,6 +103,8 @@
     :land-market-panel [land/land-market-panel]
     :land-valuation-panel [land/land-valuation-panel]
     :lineage-panel [lineage/panel]
+    :card-rankings-panel [card-rankings/panel]
+    :card-rankings-vote-panel [card-rankings-vote/panel]
     [home-panel]))
 
 (defn show-panel
