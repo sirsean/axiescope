@@ -42,41 +42,6 @@
     (some? account)))
 
 (rf/reg-sub
-  :axiescope.prices.family-tree/loading?
-  (fn [db]
-    (get-in db [:axiescope :prices :family-tree :loading?] false)))
-
-(rf/reg-sub
-  :axiescope.prices.family-tree/tiers
-  (fn [db]
-    (get-in db [:axiescope :prices :family-tree :tiers] [])))
-
-(rf/reg-sub
-  :axiescope.family-tree/views
-  (fn [db]
-    (get-in db [:axiescope :family-tree :views] [])))
-
-(rf/reg-sub
-  :axiescope.family-tree/loading?
-  (fn [db]
-    (get-in db [:axiescope :family-tree :loading?] false)))
-
-(rf/reg-sub
-  :axiescope.family-tree/error
-  (fn [db]
-    (get-in db [:axiescope :family-tree :error] nil)))
-
-(rf/reg-sub
-  :axiescope.family-tree/axie-id
-  (fn [db]
-    (get-in db [:axiescope :family-tree :axie-id])))
-
-(rf/reg-sub
-  :axiescope.family-tree/tree
-  (fn [db]
-    (get-in db [:axiescope :family-tree :tree])))
-
-(rf/reg-sub
   :battle-simulator/attacker
   (fn [db]
     (get-in db [:battle-simulator :attacker])))
@@ -306,48 +271,6 @@
     (-> axie-db
         (get axie-id)
         adjust-axie)))
-
-(defn family-axie
-  [axie]
-  (-> axie
-      attach-purity
-      (select-keys [:id :name :image :title :class
-                    :sire-id :matron-id :purity])))
-
-(defn generate-family-tree
-  [axie-db {:keys [sire-id matron-id] :as axie}]
-  (cond-> axie
-    (and (some? sire-id) (not (zero? sire-id)))
-    (assoc :sire (generate-family-tree
-                   axie-db
-                   (family-axie (get axie-db (str sire-id)))))
-    (and (some? matron-id) (not (zero? matron-id)))
-    (assoc :matron (generate-family-tree
-                     axie-db
-                     (family-axie (get axie-db (str matron-id)))))))
-
-(rf/reg-sub
-  :axie/family-tree
-  (fn [[_ axie-id]]
-    [(rf/subscribe [:axie/db])
-     (rf/subscribe [:identity axie-id])])
-  (fn [[axie-db axie-id]]
-    (generate-family-tree
-      axie-db
-      (family-axie (get axie-db (str axie-id))))))
-
-(rf/reg-sub
-  :axie/family-tree-expansions
-  (fn [db]
-    (get-in db [:axie :family-tree-expansions] {})))
-
-(rf/reg-sub
-  :axie/family-tree-expanded?
-  (fn [[_ axie-id]]
-    [(rf/subscribe [:axie/family-tree-expansions])
-     (rf/subscribe [:identity axie-id])])
-  (fn [[expansions axie-id]]
-    (get expansions (str axie-id))))
 
 (defn team-can-battle?
   [{:keys [team-members]}]

@@ -74,9 +74,6 @@
   (defroute "/land/valuation" []
     (rf/dispatch [::events/set-active-panel :land-valuation-panel]))
 
-  (defroute "/lineage" []
-    (rf/dispatch [::events/set-active-panel :lineage-panel]))
-
   (accountant/configure-navigation!
     {:nav-handler secretary/dispatch!
      :path-exists? secretary/locate-route

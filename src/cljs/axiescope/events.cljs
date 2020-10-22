@@ -259,12 +259,6 @@
    :dispatch [:land/login {:after-handlers [[:land/fetch-items]
                                             [:land/fetch-market]]}]})
 
-(defmethod set-active-panel :lineage-panel
-  [{:keys [db]} [_ panel]]
-  {:db (assoc db :active-panel panel)
-   :blockchain/enable {:eth (:eth db)
-                       :handlers [:axiescope.prices.family-tree/fetch]}})
-
 (rf/reg-event-fx
   ::set-active-panel
   (fn [cofx [_ active-panel :as event]]
@@ -383,99 +377,6 @@
     db))
 
 (rf/reg-event-fx
-  :axiescope.pay/family-tree
-  (fn [{:keys [db]} [_ eth-value]]
-    {:blockchain/send-eth {:web3 (:web3 db)
-                           :from-addr (:eth-addr db)
-                           :to-addr "0x560ebafd8db62cbdb44b50539d65b48072b98277"
-                           :value (cljs-web3.core/to-wei eth-value :ether)
-                           :err-handler :contract/error
-                           :handler :axiescope.paid/family-tree}}))
-
-(rf/reg-event-fx
-  :axiescope.paid/family-tree
-  (fn [{:keys [db]} [_ txid]]
-    (println txid)
-    {:http-post {:url (format "%s/api/pay" api-host)
-                 :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))
-                           "Content-Type" "application/json"}
-                 :body {:product :family-tree
-                        :txid txid}
-                 :handler [:axiescope.payment-submitted/family-tree]}}))
-
-(rf/reg-event-db
-  :axiescope.payment-submitted/family-tree
-  (fn [db _]
-    (println "payment submitted")
-    db))
-
-(rf/reg-event-fx
-  :axiescope.prices.family-tree/fetch
-  (fn [{:keys [db]} _]
-    {:db (-> db
-             (assoc-in [:axiescope :prices :family-tree :loading?] true))
-     :http-get {:url (format "%s/api/prices/family-tree" api-host)
-                :handler [:axiescope.prices.family-tree/got]}}))
-
-(rf/reg-event-db
-  :axiescope.prices.family-tree/got
-  (fn [db [_ tiers]]
-    (-> db
-        (assoc-in [:axiescope :prices :family-tree :loading?] false)
-        (assoc-in [:axiescope :prices :family-tree :tiers] tiers))))
-
-(rf/reg-event-fx
-  :axiescope.family-tree.views/fetch
-  (fn [{:keys [db]} _]
-    {:http-get {:url (format "%s/api/family-tree/views" api-host)
-                :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
-                :handler [:axiescope.family-tree.views/got]}}))
-
-(rf/reg-event-db
-  :axiescope.family-tree.views/got
-  (fn [db [_ views]]
-    (assoc-in db [:axiescope :family-tree :views] views)))
-
-(rf/reg-event-fx
-  :axiescope.family-tree/fetch
-  (fn [{:keys [db]} [_ axie-id]]
-    {:db (-> db
-             (assoc-in [:axiescope :family-tree :axie-id] axie-id)
-             (assoc-in [:axiescope :family-tree :error] nil)
-             (assoc-in [:axiescope :family-tree :loading?] true)
-             (assoc-in [:axiescope :family-tree :tree] nil))
-     :http-get {:url (format "%s/api/family-tree/%s" api-host axie-id)
-                :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
-                :handler [:axiescope.family-tree/got]
-                :err-handler [:axiescope.family-tree/error]}}))
-
-(rf/reg-event-fx
-  :axiescope.family-tree/got
-  (fn [{:keys [db]} [_ tree]]
-    {:db (-> db
-             (assoc-in [:axiescope :family-tree :loading?] false)
-             (assoc-in [:axiescope :family-tree :tree] tree))
-     :dispatch-n [[:axiescope.account/fetch]
-                  [:axiescope.family-tree.views/fetch]]}))
-
-(rf/reg-event-fx
-  :axiescope.family-tree/error
-  (fn [{:keys [db]} [_ err]]
-    (println err)
-    (println (:status err) (:status-text err))
-    {:db (-> db
-             (assoc-in [:axiescope :family-tree :loading?] false)
-             (assoc-in [:axiescope :family-tree :error] err))}))
-
-(rf/reg-event-db
-  :axiescope.family-tree/clear
-  (fn [db _]
-    (-> db
-        (assoc-in [:axiescope :family-tree :axie-id] nil)
-        (assoc-in [:axiescope :family-tree :loading?] false)
-        (assoc-in [:axiescope :family-tree :tree] nil))))
-
-(rf/reg-event-fx
   :body-parts/fetch
   (fn [{:keys [db]} _]
     (cond-> {}
@@ -505,7 +406,6 @@
   (fn [{:keys [db]} [_ axie-id {:keys [handler]}]]
     {:db (-> db
              (assoc-in [:axie :loading?] true)
-             (assoc-in [:axie :family-tree-expansions] {(str axie-id) true})
              (assoc-in [:axie :id] (str axie-id)))
      :dispatch [::fetch-axie axie-id {:force? true
                                       :handler handler}]}))
@@ -674,11 +574,6 @@
 
        (and (some? matron-id) (not (zero? matron-id)))
        (conj [::fetch-axie matron-id {:handler :axie/fetch-parents}]))}))
-
-(rf/reg-event-db
-  :axie/family-tree-expand
-  (fn [db [_ axie-id]]
-    (update-in db [:axie :family-tree-expansions (str axie-id)] not)))
 
 (rf/reg-event-fx
   :battle-simulator/simulate

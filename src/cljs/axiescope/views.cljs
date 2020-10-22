@@ -23,7 +23,6 @@
     [axiescope.views.panels.multi-gifter :as multi-gifter]
     [axiescope.views.panels.search :as search]
     [axiescope.views.panels.land :as land]
-    [axiescope.views.panels.lineage :as lineage]
     [axiescope.views.panels.card-rankings :as card-rankings]
     [axiescope.views.panels.card-rankings-vote :as card-rankings-vote]
     [axiescope.views.panels.cards :as cards]
@@ -71,9 +70,7 @@
       #_[:li [:a {:href "/search"}
             "Search"]]
       #_[:li [:a {:href "/land"}
-            "Land"]]
-      #_[:li [:a {:href "/lineage"}
-            "Axie Lineage"]]]]]
+            "Land"]]]]]
    [footer]])
 
 (defn get-panel
@@ -97,7 +94,6 @@
     :land-items-panel [land/land-items-panel]
     :land-market-panel [land/land-market-panel]
     :land-valuation-panel [land/land-valuation-panel]
-    :lineage-panel [lineage/panel]
     :card-rankings-panel [card-rankings/panel]
     :card-rankings-vote-panel [card-rankings-vote/panel]
     :cards-panel [cards/panel]
