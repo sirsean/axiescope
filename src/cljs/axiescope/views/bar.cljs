@@ -33,22 +33,6 @@
         :on-click #(rf/dispatch [:my-axies/fetch true])}
        "Reload"]]]))
 
-(defn teams-bar
-  []
-  (let [loading? @(rf/subscribe [:teams/loading?])
-        num-teams @(rf/subscribe [:teams/count])
-        total-teams @(rf/subscribe [:teams/total])]
-    [:div.row.middle-xs {:style {:margin-bottom "0.1em"}}
-     [:div.col-xs-1.end-xs
-      [:span "Teams"]]
-     [:div.col-xs-10
-      [loading-bar num-teams total-teams "#6cc000"]]
-     [:div.col-xs-1.end-xs
-      [:button
-       {:disabled loading?
-        :on-click #(rf/dispatch [:teams/fetch-teams true])}
-       "Reload"]]]))
-
 (defn items-bar
   []
   (let [loading? @(rf/subscribe [:land/items-loading?])

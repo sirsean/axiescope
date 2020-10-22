@@ -172,13 +172,6 @@
                 [::fetch-axie sire-id {:handler :breed-calc/set-sire}]
                 [::fetch-axie matron-id {:handler :breed-calc/set-matron}]]})
 
-(defmethod set-active-panel :teams-panel
-  [{:keys [db]} [_ panel]]
-  {:db (assoc db :active-panel panel)
-   :blockchain/enable {:eth (:eth db)
-                       :handlers [:my-axies/fetch
-                                  :teams/fetch-teams]}})
-
 (defmethod set-active-panel :morph-to-petite-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
@@ -485,68 +478,6 @@
        (and (some? matron-id) (not (zero? matron-id)))
        (conj [::fetch-axie matron-id {:handler :axie/fetch-parents}]))}))
 
-(rf/reg-event-fx
-  :teams/fetch-teams
-  (fn [{:keys [db]} [_ force?]]
-    (if (or (-> db :teams :teams nil?)
-            force?)
-      {:db (-> db
-               (assoc-in [:teams :loading?] true)
-               (assoc-in [:teams :teams] []))
-       :dispatch [:teams/fetch-teams-page]}
-      {})))
-
-(rf/reg-event-fx
-  :teams/fetch-teams-page
-  (fn [{:keys [db]} [_ total]]
-    (let [teams (get-in db [:teams :teams])]
-      (if (or (nil? total)
-              (< (count teams) total))
-        {:http-get {:url (format "https://api.axieinfinity.com/v1/battle/teams/?address=%s&offset=%s&count=47&no_limit=1"
-                                 (:eth-addr db) (count teams))
-                    :handler [:teams/got-teams-page]}}
-
-        {:dispatch [:teams/got-teams teams]}))))
-
-(rf/reg-event-fx
-  :teams/got-teams-page
-  (fn [{:keys [db]} [_ {:keys [total teams]}]]
-    (let [axie-ids (->> teams (mapcat :team-members) (map :axie-id))]
-      {:db (-> db
-               (assoc-in [:teams :total] total)
-               (update-in [:teams :teams] concat teams))
-       :dispatch-n (-> [[:teams/fetch-teams-page total]])})))
-
-(rf/reg-event-fx
-  :teams/got-teams
-  (fn [{:keys [db]} [_ teams]]
-      {:db (-> db
-               (assoc-in [:teams :loading?] false)
-               (assoc-in [:teams :teams] teams))}))
-
-(rf/reg-event-fx
-  :teams/fetch-activity-points
-  (fn [{:keys [db]} [_ axie-ids]]
-    {:http-get {:url (format "https://api.axieinfinity.com/v1/battle/battle/activity-point?%s"
-                             (->> axie-ids
-                                  (filter some?)
-                                  (map (partial format "axieId=%s"))
-                                  (string/join "&")))
-                :handler [:teams/got-activity-points]}}))
-
-(rf/reg-event-db
-  :teams/got-activity-points
-  (fn [db [_ points]]
-    (let [ap-map (reduce
-                   (fn [m {:keys [axie-id activity-point]}]
-                     (assoc m axie-id activity-point))
-                   {}
-                   points)]
-      (-> db
-          (update-in [:teams :axie-id->activity-points]
-                     merge
-                     ap-map)))))
-
 (rf/reg-event-db
   :multi-gifter/set-to-addr
   (fn [db [_ to-addr]]
@@ -850,30 +781,3 @@
   (fn [db [_ search]]
     (-> db
         (assoc-in [:cards :search] search))))
-
-;; TODO update teams
-;; POST https://api.axieinfinity.com/v1/battle/teams/update/e4cc1d1e-ca33-443d-ba4d-e649d65d08b0
-;; 
-;; {"from":"0x560ebafd8db62cbdb44b50539d65b48072b98277",
-;;  "name":"gong fu cha",
-;;  "fighters":[{"id":63910,
-;;               "position":5,
-;;               "moveSet":[{"index":1,"part":"horn"},
-;;                          {"index":2,"part":"mouth"},
-;;                          {"index":3,"part":"back"},
-;;                          {"index":4,"part":"tail"}]},
-;;              {"id":10140,
-;;               "position":7,
-;;               "moveSet":[{"index":1,"part":"horn"},
-;;                          {"index":2,"part":"mouth"},
-;;                          {"index":3,"part":"tail"},
-;;                          {"index":4,"part":"back"}]},
-;;              {"id":13977,
-;;               "position":1,
-;;               "moveSet":[{"index":1,"part":"tail"},
-;;                          {"index":2,"part":"back"},
-;;                          {"index":3,"part":"mouth"},
-;;                          {"index":4,"part":"horn"}]}]}
-;; 
-;; returns:
-;; {teamId: "e4cc1d1e-ca33-443d-ba4d-e649d65d08b0"}

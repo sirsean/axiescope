@@ -11,7 +11,6 @@
    (let [bars (set bars)]
      [:div.col-xs-12
       (when (:my-axies bars) [bar/my-axies-bar])
-      (when (:teams bars) [bar/teams-bar])
       (when (:items bars) [bar/items-bar])
       (when (:market bars) [bar/market-bar])])
    [:div.col-xs-12.center-xs

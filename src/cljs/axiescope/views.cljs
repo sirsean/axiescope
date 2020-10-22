@@ -11,7 +11,6 @@
     [axiescope.moves :as moves]
     [axiescope.views.panels.axie :as axie]
     [axiescope.views.panels.my-axies :as my-axies]
-    [axiescope.views.panels.teams :as teams]
     [axiescope.views.panels.breedable :as breedable]
     [axiescope.views.panels.breed-calc :as breed-calc]
     [axiescope.views.panels.morph-to-petite :as morph-to-petite]
@@ -46,8 +45,6 @@
             "My Axies"]]
       [:li [:a {:href "/breedable"}
             "Breedable"]]
-      #_[:li [:a {:href "/teams"}
-            "Teams"]]
       [:li [:a {:href "/morph-to-petite"}
             "Morph to Petite"]]
       [:li [:a {:href "/morph-to-adult"}
@@ -66,7 +63,6 @@
     :my-axies-panel [my-axies/panel]
     :breedable-panel [breedable/panel]
     :breed-calc-panel [breed-calc/panel]
-    :teams-panel [teams/panel]
     :morph-to-petite-panel [morph-to-petite/panel]
     :morph-to-adult-panel [morph-to-adult/panel]
     :multi-gifter-panel [multi-gifter/panel]

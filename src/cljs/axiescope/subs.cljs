@@ -199,46 +199,6 @@
                        :selected-sire? (= id (:id sire))))))))
 
 (rf/reg-sub
-  :teams
-  (fn [db]
-    (get db :teams {})))
-
-(rf/reg-sub
-  :teams/loading?
-  (fn [_]
-    [(rf/subscribe [:teams])])
-  (fn [[tdb]]
-    (get-in tdb [:loading?])))
-
-(rf/reg-sub
-  :teams/raw-teams
-  (fn [_]
-    [(rf/subscribe [:teams])])
-  (fn [[tdb]]
-    (get-in tdb [:teams])))
-
-(rf/reg-sub
-  :teams/count
-  (fn [_]
-    [(rf/subscribe [:teams/raw-teams])])
-  (fn [[teams]]
-    (count teams)))
-
-(rf/reg-sub
-  :teams/total
-  (fn [_]
-    [(rf/subscribe [:teams])])
-  (fn [[tdb]]
-    (get-in tdb [:total] "?")))
-
-(rf/reg-sub
-  :teams/axie-id->activity-points
-  (fn [_]
-    [(rf/subscribe [:teams])])
-  (fn [[tdb]]
-    (get-in tdb [::axie-id->activity-points] {})))
-
-(rf/reg-sub
   :axie/db
   (fn [db]
     (get-in db [:axie :db] {})))
@@ -252,54 +212,6 @@
     (-> axie-db
         (get axie-id)
         adjust-axie)))
-
-(defn team-can-battle?
-  [{:keys [team-members]}]
-  (and (= 3 (count team-members))
-       (every? (comp (partial <= 240) :activity-points) team-members)))
-
-(defn team-ready-in
-  [{:keys [team-members]}]
-  (->> team-members
-       (map :activity-points)
-       (apply min)
-       (- 240)))
-
-(rf/reg-sub
-  :teams/teams
-  (fn [_]
-    [(rf/subscribe [:teams/raw-teams])
-     (rf/subscribe [:teams/axie-id->activity-points])
-     (rf/subscribe [:axie/db])])
-  (fn [[teams axie-id->activity-points axie-db]]
-    (->> teams
-         (map (fn [team]
-                (-> team
-                    (update :team-members
-                            (partial map (fn [{:keys [axie-id] :as a}]
-                                           (assoc a
-                                                  :axie (adjust-axie (get axie-db (str axie-id)))
-                                                  :activity-points (axie-id->activity-points axie-id)))))
-                    ((fn [t]
-                       (assoc t
-                              :ready? (team-can-battle? t)
-                              :ready-in (team-ready-in t)))))))
-         (sort-by :ready-in))))
-
-(rf/reg-sub
-  :teams/team-axies
-  (fn [[_ team-id]]
-    [(rf/subscribe [:identity team-id])
-     (rf/subscribe [:teams/raw-teams])
-     (rf/subscribe [:axie/db])])
-  (fn [[team-id teams axie-db]]
-    (->> teams
-         (filter (fn [t] (= team-id (:team-id t))))
-         first
-         :team-members
-         (map (comp str :axie-id))
-         (map axie-db)
-         (map adjust-axie))))
 
 (rf/reg-sub
   :my-axies/larva
