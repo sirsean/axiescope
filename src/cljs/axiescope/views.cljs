@@ -10,7 +10,6 @@
     [axiescope.events :as events]
     [axiescope.moves :as moves]
     [axiescope.views.panels.axie :as axie]
-    [axiescope.views.panels.battle-simulator :as battle-simulator]
     [axiescope.views.panels.my-axies :as my-axies]
     [axiescope.views.panels.teams :as teams]
     [axiescope.views.panels.breedable :as breedable]
@@ -43,8 +42,6 @@
             "Cards"]]
       [:li [:a {:href "/card-rankings"}
             "Card Rankings"]]
-      #_[:li [:a {:href "/battle-simulator"}
-            "Battle Simulator"]]
       [:li [:a {:href "/axie"}
             "Axie Evaluator"]]
       [:li [:a {:href "/my-axies"}
@@ -71,7 +68,6 @@
   [panel]
   (case panel
     :home-panel [home-panel]
-    :battle-simulator-panel [battle-simulator/panel]
     :axie-panel [axie/panel]
     :my-axies-panel [my-axies/panel]
     :breedable-panel [breedable/panel]

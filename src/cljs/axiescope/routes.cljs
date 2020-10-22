@@ -20,9 +20,6 @@
   (defroute "/card-rankings" []
     (rf/dispatch [::events/set-active-panel :card-rankings-panel]))
 
-  (defroute "/battle-simulator" []
-    (rf/dispatch [::events/set-active-panel :battle-simulator-panel]))
-
   (defroute "/axie" []
     (rf/dispatch [::events/set-active-panel :axie-panel]))
 

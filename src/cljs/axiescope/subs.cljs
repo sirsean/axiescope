@@ -42,25 +42,6 @@
     (some? account)))
 
 (rf/reg-sub
-  :battle-simulator/attacker
-  (fn [db]
-    (get-in db [:battle-simulator :attacker])))
-
-(rf/reg-sub
-  :battle-simulator/defender
-  (fn [db]
-    (get-in db [:battle-simulator :defender])))
-
-(rf/reg-sub
-  :battle-simulator/simulation
-  (fn [_]
-    [(rf/subscribe [:battle-simulator/attacker])
-     (rf/subscribe [:battle-simulator/defender])])
-  (fn [[attacker defender]]
-    (when (and attacker defender)
-      (battle/simulate attacker defender))))
-
-(rf/reg-sub
   :axie/loading?
   (fn [db]
     (get-in db [:axie :loading?])))

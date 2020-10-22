@@ -500,23 +500,6 @@
        (conj [::fetch-axie matron-id {:handler :axie/fetch-parents}]))}))
 
 (rf/reg-event-fx
-  :battle-simulator/simulate
-  (fn [{:keys [db]} [_ atk-id def-id]]
-    {:db db
-     :dispatch-n [[::fetch-axie atk-id {:handler :battle-simulator/got-attacker}]
-                  [::fetch-axie def-id {:handler :battle-simulator/got-defender}]]}))
-
-(rf/reg-event-db
-  :battle-simulator/got-attacker
-  (fn [db [_ axie]]
-    (assoc-in db [:battle-simulator :attacker] axie)))
-
-(rf/reg-event-db
-  :battle-simulator/got-defender
-  (fn [db [_ axie]]
-    (assoc-in db [:battle-simulator :defender] axie)))
-
-(rf/reg-event-fx
   :teams/fetch-teams
   (fn [{:keys [db]} [_ force?]]
     (if (or (-> db :teams :teams nil?)
