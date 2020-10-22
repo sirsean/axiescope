@@ -38,12 +38,6 @@
   (defroute "/teams" []
     (rf/dispatch [::events/set-active-panel :teams-panel]))
 
-  (defroute "/unassigned" []
-    (rf/dispatch [::events/set-active-panel :unassigned-panel]))
-
-  (defroute "/multi-assigned" []
-    (rf/dispatch [::events/set-active-panel :multi-assigned-panel]))
-
   (defroute "/morph-to-petite" []
     (rf/dispatch [::events/set-active-panel :morph-to-petite-panel]))
 

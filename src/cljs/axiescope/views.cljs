@@ -14,8 +14,6 @@
     [axiescope.views.panels.teams :as teams]
     [axiescope.views.panels.breedable :as breedable]
     [axiescope.views.panels.breed-calc :as breed-calc]
-    [axiescope.views.panels.unassigned :as unassigned]
-    [axiescope.views.panels.multi-assigned :as multi-assigned]
     [axiescope.views.panels.morph-to-petite :as morph-to-petite]
     [axiescope.views.panels.morph-to-adult :as morph-to-adult]
     [axiescope.views.panels.multi-gifter :as multi-gifter]
@@ -50,10 +48,6 @@
             "Breedable"]]
       #_[:li [:a {:href "/teams"}
             "Teams"]]
-      #_[:li [:a {:href "/unassigned"}
-            "Unassigned Axies"]]
-      #_[:li [:a {:href "/multi-assigned"}
-            "Multi-Assigned Axies"]]
       [:li [:a {:href "/morph-to-petite"}
             "Morph to Petite"]]
       [:li [:a {:href "/morph-to-adult"}
@@ -73,8 +67,6 @@
     :breedable-panel [breedable/panel]
     :breed-calc-panel [breed-calc/panel]
     :teams-panel [teams/panel]
-    :unassigned-panel [unassigned/panel]
-    :multi-assigned-panel [multi-assigned/panel]
     :morph-to-petite-panel [morph-to-petite/panel]
     :morph-to-adult-panel [morph-to-adult/panel]
     :multi-gifter-panel [multi-gifter/panel]

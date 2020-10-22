@@ -179,20 +179,6 @@
                        :handlers [:my-axies/fetch
                                   :teams/fetch-teams]}})
 
-(defmethod set-active-panel :unassigned-panel
-  [{:keys [db]} [_ panel]]
-  {:db (assoc db :active-panel panel)
-   :blockchain/enable {:eth (:eth db)
-                       :handlers [:my-axies/fetch
-                                  :teams/fetch-teams]}})
-
-(defmethod set-active-panel :multi-assigned-panel
-  [{:keys [db]} [_ panel]]
-  {:db (assoc db :active-panel panel)
-   :blockchain/enable {:eth (:eth db)
-                       :handlers [:my-axies/fetch
-                                  :teams/fetch-teams]}})
-
 (defmethod set-active-panel :morph-to-petite-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)

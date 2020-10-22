@@ -302,55 +302,6 @@
          (map adjust-axie))))
 
 (rf/reg-sub
-  :teams/assigned-axie-ids
-  (fn [_]
-    [(rf/subscribe [:teams/raw-teams])])
-  (fn [[teams]]
-    (->> teams
-         (mapcat :team-members)
-         (map :axie-id)
-         set)))
-
-(defn adult?
-  [{:keys [stage]}]
-  (= stage 4))
-
-(rf/reg-sub
-  :teams/unassigned-axies
-  (fn [_]
-    [(rf/subscribe [:my-axies/raw-axies])
-     (rf/subscribe [:teams/assigned-axie-ids])
-     (rf/subscribe [:my-axies/sort-key])])
-  (fn [[axies assigned? sort-key]]
-    (->> axies
-         (remove (comp assigned? :id))
-         (filter adult?)
-         (sort-by sort-key)
-         reverse)))
-
-(rf/reg-sub
-  :teams/multi-assigned-axies
-  (fn [_]
-    [(rf/subscribe [:teams/teams])])
-  (fn [[teams]]
-    (->> teams
-         (mapcat (fn [{:keys [team-id name team-members]}]
-                   (->> team-members
-                        (map (fn [{:keys [axie-id axie]}]
-                               [axie-id {:team-id team-id
-                                         :team-name name
-                                         :axie axie}])))))
-         (reduce (fn [a->ts [axie-id t]]
-                   (update a->ts axie-id conj t)) {})
-         (filter (fn [[_ ts]] (< 1 (count ts))))
-         (mapcat (fn [[_ ts]]
-                   (->> ts
-                        (map (fn [{:keys [axie team-id team-name]}]
-                               (assoc axie
-                                      :team-id team-id
-                                      :team-name team-name)))))))))
-
-(rf/reg-sub
   :my-axies/larva
   (fn [_]
     [(rf/subscribe [:time/now])
