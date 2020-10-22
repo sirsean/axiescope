@@ -14,7 +14,6 @@
     [axiescope.views.panels.gallery :as gallery]
     [axiescope.views.panels.my-axies :as my-axies]
     [axiescope.views.panels.teams :as teams]
-    [axiescope.views.panels.team-builder :as team-builder]
     [axiescope.views.panels.breedable :as breedable]
     [axiescope.views.panels.breed-calc :as breed-calc]
     [axiescope.views.panels.unassigned :as unassigned]
@@ -23,7 +22,6 @@
     [axiescope.views.panels.morph-to-adult :as morph-to-adult]
     [axiescope.views.panels.multi-gifter :as multi-gifter]
     [axiescope.views.panels.search :as search]
-    [axiescope.views.panels.auto-battle :as auto-battle]
     [axiescope.views.panels.land :as land]
     [axiescope.views.panels.lineage :as lineage]
     [axiescope.views.panels.card-rankings :as card-rankings]
@@ -48,8 +46,6 @@
             "Cards"]]
       [:li [:a {:href "/card-rankings"}
             "Card Rankings"]]
-      #_[:li [:a {:href "/auto-battle"}
-            "Auto-Battle"]]
       #_[:li [:a {:href "/battle-simulator"}
             "Battle Simulator"]]
       [:li [:a {:href "/axie"}
@@ -62,8 +58,6 @@
             "Breedable"]]
       #_[:li [:a {:href "/teams"}
             "Teams"]]
-      #_[:li [:a {:href "/team-builder"}
-            "Team Builder"]]
       #_[:li [:a {:href "/unassigned"}
             "Unassigned Axies"]]
       #_[:li [:a {:href "/multi-assigned"}
@@ -93,14 +87,12 @@
     :breedable-panel [breedable/panel]
     :breed-calc-panel [breed-calc/panel]
     :teams-panel [teams/panel]
-    :team-builder-panel [team-builder/panel]
     :unassigned-panel [unassigned/panel]
     :multi-assigned-panel [multi-assigned/panel]
     :morph-to-petite-panel [morph-to-petite/panel]
     :morph-to-adult-panel [morph-to-adult/panel]
     :multi-gifter-panel [multi-gifter/panel]
     :search-panel [search/panel]
-    :auto-battle-panel [auto-battle/panel]
     :land-panel [land/land-panel]
     :land-items-panel [land/land-items-panel]
     :land-market-panel [land/land-market-panel]

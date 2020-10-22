@@ -52,16 +52,6 @@
     (get-in db [:axiescope :prices :family-tree :tiers] [])))
 
 (rf/reg-sub
-  :axiescope.prices.auto-battle/loading?
-  (fn [db]
-    (get-in db [:axiescope :prices :auto-battle :loading?] false)))
-
-(rf/reg-sub
-  :axiescope.prices.auto-battle/tiers
-  (fn [db]
-    (get-in db [:axiescope :prices :auto-battle :tiers] [])))
-
-(rf/reg-sub
   :axiescope.family-tree/views
   (fn [db]
     (get-in db [:axiescope :family-tree :views] [])))
@@ -85,11 +75,6 @@
   :axiescope.family-tree/tree
   (fn [db]
     (get-in db [:axiescope :family-tree :tree])))
-
-(rf/reg-sub
-  :axiescope.auto-battle/account
-  (fn [db]
-    (get-in db [:axiescope :auto-battle :account])))
 
 (rf/reg-sub
   :battle-simulator/attacker
@@ -597,60 +582,6 @@
          (take page-size))))
 
 (rf/reg-sub
-  :auto-battle/price-tiers
-  (fn [_]
-    [{:max-teams 3 :dollars-per-month 0}
-     {:max-teams 10 :dollars-per-month 3}
-     {:max-teams 30 :dollars-per-month 6}
-     {:max-teams 100 :dollars-per-month 10}
-     {:max-teams nil :dollars-per-month 20}]))
-
-(rf/reg-sub
-  :auto-battle/current-tier-index
-  (fn [db]
-    (get-in db [:auto-battle :current-tier-index] 0)))
-
-(rf/reg-sub
-  :auto-battle/current-tier
-  (fn [_]
-    [(rf/subscribe [:auto-battle/price-tiers])
-     (rf/subscribe [:auto-battle/current-tier-index])])
-  (fn [[tiers index]]
-    (nth tiers index)))
-
-(rf/reg-sub
-  :auto-battle/dollars-per-month
-  (fn [_]
-    [(rf/subscribe [:auto-battle/current-tier])])
-  (fn [[tier]]
-    (:dollars-per-month tier)))
-
-(rf/reg-sub
-  :auto-battle/num-months
-  (fn [db]
-    (get-in db [:auto-battle :num-months] 1)))
-
-(rf/reg-sub
-  :auto-battle/token
-  (fn [db]
-    (get-in db [:auto-battle :token])))
-
-(rf/reg-sub
-  :auto-battle/has-token?
-  (fn [_]
-    [(rf/subscribe [:auto-battle/token])])
-  (fn [[token]]
-    (some? token)))
-
-(rf/reg-sub
-  :auto-battle/until
-  (fn [_]
-    [(rf/subscribe [:time/now])
-     (rf/subscribe [:auto-battle/num-months])])
-  (fn [[now num-months]]
-    (.add (js/moment now) num-months "months")))
-
-(rf/reg-sub
   :cryptonator/ticker
   (fn [db [_ ticker]]
     (get-in db [:cryptonator ticker])))
@@ -894,43 +825,6 @@
      (rf/subscribe [:identity matron-id])])
   (fn [[quick-db sire-id matron-id]]
     (get quick-db #{sire-id matron-id})))
-
-(rf/reg-sub
-  :team-builder
-  (fn [db]
-    (get db :team-builder {})))
-
-(rf/reg-sub
-  :team-builder/layout
-  (fn [_]
-    [(rf/subscribe [:team-builder])])
-  (fn [[tb]]
-    (get-in tb [:layout] :1tank-1dps-1support)))
-
-(rf/reg-sub
-  :team-builder/team-name
-  (fn [_]
-    [(rf/subscribe [:team-builder])])
-  (fn [[tb]]
-    (get-in tb [:team-name])))
-
-(rf/reg-sub
-  :team-builder/selected-axies
-  (fn [_]
-    [(rf/subscribe [:team-builder])])
-  (fn [[tb]]
-    (get-in tb [:axies] {})))
-
-(rf/reg-sub
-  :team-builder/can-create?
-  (fn [_]
-    [(rf/subscribe [:team-builder/team-name])
-     (rf/subscribe [:team-builder/selected-axies])])
-  (fn [[team-name axies]]
-    (and (not (string/blank? team-name))
-         (= 3 (count axies))
-         (every? some? (->> axies vals (map :id)))
-         (= 3 (->> axies vals (map :id) set count)))))
 
 (rf/reg-sub
   :card-rankings

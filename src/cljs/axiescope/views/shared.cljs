@@ -7,7 +7,6 @@
     [clojure.string :as string]
     [axiescope.moves :as moves]
     [axiescope.views.color :as color]
-    [axiescope.team-builder :as tb]
     [axiescope.util :refer [round]]
     ))
 
@@ -273,24 +272,6 @@
                            :opacity 0.2}}
              "0"])])])))
 
-(defn team-builder-axie-select-button
-  [axie selected-axies index layout]
-  (let [selected? (= (:id axie) (get-in selected-axies [index :id]))]
-    [:button
-     {:style {:background-color (if selected?
-                                  "#2277bb"
-                                  "#bcd6ea")
-              :color (if selected?
-                       "white"
-                       "black")
-              :padding "4px 8px"
-              :margin "0 1px"
-              :border "none"
-              :outline "none"
-              :border-radius "1em"}
-      :on-click #(rf/dispatch [:team-builder/set-axie index axie])}
-     (tb/team-role layout index)]))
-
 (defn axie-row-render-fn
   [row key]
   (let [value (get row key)]
@@ -357,27 +338,6 @@
                 "View Prediction"]]]
              [:span "-"])
            [:em "select a sire"])])
-
-      :team-builder
-      (let [selected? false
-            selected-axies @(rf/subscribe [:team-builder/selected-axies])
-            layout @(rf/subscribe [:team-builder/layout])]
-        [:td
-         [team-builder-axie-select-button
-          row
-          selected-axies
-          0
-          layout]
-         [team-builder-axie-select-button
-          row
-          selected-axies
-          1
-          layout]
-         [team-builder-axie-select-button
-          row
-          selected-axies
-          2
-          layout]])
 
       :gift-button [:td
                     (let [to-addr @(rf/subscribe [:multi-gifter/to-addr])]

@@ -16,7 +16,6 @@
     [cljsjs.moment]
     [axiescope.config :refer [api-host]]
     [axiescope.genes :as genes]
-    [axiescope.team-builder :as tb]
     [axiescope.db :as db]
     )
   (:require-macros
@@ -186,13 +185,6 @@
                        :handlers [:my-axies/fetch
                                   :teams/fetch-teams]}})
 
-(defmethod set-active-panel :team-builder-panel
-  [{:keys [db]} [_ panel]]
-  {:db (assoc db :active-panel panel)
-   :blockchain/enable {:eth (:eth db)
-                       :handlers [:my-axies/fetch
-                                  :teams/fetch-teams]}})
-
 (defmethod set-active-panel :unassigned-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
@@ -230,12 +222,6 @@
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
                        :handlers [:search/fetch]}})
-
-(defmethod set-active-panel :auto-battle-panel
-  [{:keys [db]} [_ panel]]
-  {:db (assoc db :active-panel panel)
-   :blockchain/enable {:eth (:eth db)}
-   :dispatch [:axiescope.prices.auto-battle/fetch]})
 
 (defmethod set-active-panel :card-rankings-panel
   [{:keys [db]} [_ panel]]
@@ -424,34 +410,6 @@
     db))
 
 (rf/reg-event-fx
-  :axiescope.pay/auto-battle
-  (fn [{:keys [db]} [_ max-teams eth-value]]
-    {:blockchain/send-eth {:web3 (:web3 db)
-                           :from-addr (:eth-addr db)
-                           :to-addr "0x560ebafd8db62cbdb44b50539d65b48072b98277"
-                           :value (cljs-web3.core/to-wei eth-value :ether)
-                           :err-handler :contract/error
-                           :handler [:axiescope.paid/auto-battle max-teams]}}))
-
-(rf/reg-event-fx
-  :axiescope.paid/auto-battle
-  (fn [{:keys [db]} [_ max-teams txid]]
-    (println txid)
-    {:http-post {:url (format "%s/api/pay" api-host)
-                 :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))
-                           "Content-Type" "application/json"}
-                 :body {:product :auto-battle
-                        :txid txid
-                        :max-teams max-teams}
-                 :handler [:axiescope.payment-submitted/auto-battle]}}))
-
-(rf/reg-event-db
-  :axiescope.payment-submitted/auto-battle
-  (fn [db _]
-    (println "payment submitted")
-    db))
-
-(rf/reg-event-fx
   :axiescope.prices.family-tree/fetch
   (fn [{:keys [db]} _]
     {:db (-> db
@@ -465,21 +423,6 @@
     (-> db
         (assoc-in [:axiescope :prices :family-tree :loading?] false)
         (assoc-in [:axiescope :prices :family-tree :tiers] tiers))))
-
-(rf/reg-event-fx
-  :axiescope.prices.auto-battle/fetch
-  (fn [{:keys [db]} _]
-    {:db (-> db
-             (assoc-in [:axiescpoe :prices :auto-battle :loading?] false))
-     :http-get {:url (format "%s/api/prices/auto-battle" api-host)
-                :handler [:axiescope.prices.auto-battle/got]}}))
-
-(rf/reg-event-db
-  :axiescope.prices.auto-battle/got
-  (fn [db [_ tiers]]
-    (-> db
-        (assoc-in [:axiescope :prices :auto-battle :loading?] false)
-        (assoc-in [:axiescope :prices :auto-battle :tiers] tiers))))
 
 (rf/reg-event-fx
   :axiescope.family-tree.views/fetch
@@ -531,48 +474,6 @@
         (assoc-in [:axiescope :family-tree :axie-id] nil)
         (assoc-in [:axiescope :family-tree :loading?] false)
         (assoc-in [:axiescope :family-tree :tree] nil))))
-
-(rf/reg-event-fx
-  :axiescope.auto-battle.account/fetch
-  (fn [{:keys [db]} _]
-    {:http-get {:url (format "%s/api/account/auto-battle" api-host)
-                :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
-                :handler [:axiescope.auto-battle.account/got]
-                :err-handler [:axiescope.auto-battle.account/error]}}))
-
-(rf/reg-event-db
-  :axiescope.auto-battle.account/got
-  (fn [db [_ account]]
-    (-> db
-        (assoc-in [:axiescope :auto-battle :account] account))))
-
-(rf/reg-event-db
-  :axiescope.auto-battle.account/error
-  (fn [db _]
-    db))
-
-(rf/reg-event-fx
-  :axiescope.auto-battle/signup
-  (fn [{:keys [db]} _]
-    (let [token (get-in db [:auto-battle :token])]
-      {:http-post {:url (format "%s/api/auto-battle/signup" api-host)
-                   :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
-                   :body {:token token}
-                   :handler [:axiescope.auto-battle.account/got]}})))
-
-(rf/reg-event-fx
-  :axiescope.auto-battle/delete
-  (fn [{:keys [db]} _]
-    {:http-delete {:url (format "%s/api/auto-battle/deactivate" api-host)
-                   :headers {"Authorization" (format "Bearer %s" (get-in db [:axiescope :token]))}
-                   :handler [:axiescope.auto-battle/deleted]}}))
-
-(rf/reg-event-fx
-  :axiescope.auto-battle/deleted
-  (fn [{:keys [db]} _]
-    {:db (-> db
-             (assoc-in [:axiescope :auto-battle :account] nil))
-     :dispatch [:axiescope.auto-battle.account/fetch]}))
 
 (rf/reg-event-fx
   :body-parts/fetch
@@ -879,32 +780,6 @@
     db))
 
 (rf/reg-event-fx
-  :auto-battle/generate-token
-  (fn [{:keys [db]} [_ {:keys [after-handlers]}]]
-    {:blockchain/sign {:web3 (:web3 db)
-                       :addr (:eth-addr db)
-                       :data "0x4178696520496e66696e697479"
-                       :handler [:auto-battle/got-token {:after-handlers after-handlers}]
-                       :err-handler :contract/error}}))
-
-(rf/reg-event-fx
-  :auto-battle/got-token
-  (fn [{:keys [db]} [_ {:keys [after-handlers]} token]]
-    (cond-> {:db (assoc-in db [:auto-battle :token] token)}
-      (seq after-handlers)
-      (assoc :dispatch-n after-handlers))))
-
-(rf/reg-event-db
-  :auto-battle/set-num-months
-  (fn [db [_ num-months]]
-    (assoc-in db [:auto-battle :num-months] num-months)))
-
-(rf/reg-event-db
-  :auto-battle/set-current-tier-index
-  (fn [db [_ index]]
-    (assoc-in db [:auto-battle :current-tier-index] index)))
-
-(rf/reg-event-fx
   :cryptonator/fetch-ticker
   (fn [_ [_ ticker]]
     {:http-get {:url (format "https://api.cryptonator.com/api/ticker/%s"
@@ -1111,81 +986,6 @@
               sire
               matron)
             genes/predict-score)))))
-
-(rf/reg-event-db
-  :team-builder/set-layout
-  (fn [db [_ layout]]
-    (assoc-in db [:team-builder :layout] layout)))
-
-(rf/reg-event-db
-  :team-builder/set-name
-  (fn [db [_ team-name]]
-    (assoc-in db [:team-builder :team-name] team-name)))
-
-(rf/reg-event-db
-  :team-builder/set-axie
-  (fn [db [_ index axie]]
-    (assoc-in db
-              [:team-builder :axies index]
-              (assoc axie :move-set (->> axie :parts (filter (comp seq :moves)) vec)))))
-
-(rf/reg-event-db
-  :team-builder/move-down
-  (fn [db [_ axie-index part-index]]
-    (let [parts (get-in db [:team-builder :axies axie-index :move-set])]
-      (cond-> db
-        (< (inc part-index) (count parts))
-        (update-in [:team-builder :axies axie-index :move-set]
-                   assoc
-                   (inc part-index) (nth parts part-index)
-                   part-index (nth parts (inc part-index)))))))
-
-(rf/reg-event-db
-  :team-builder/move-up
-  (fn [db [_ axie-index part-index]]
-    (let [parts (get-in db [:team-builder :axies axie-index :move-set])]
-      (cond-> db
-        (<= 0 (dec part-index))
-        (update-in [:team-builder :axies axie-index :move-set]
-                   assoc
-                   (dec part-index) (nth parts part-index)
-                   part-index (nth parts (dec part-index)))))))
-
-(rf/reg-event-fx
-  :team-builder/create
-  (fn [{:keys [db]} _]
-    (let [layout (get-in db [:team-builder :layout] :1tank-1dps-1support)
-          payload {:from (:eth-addr db)
-                   :name (get-in db [:team-builder :team-name])
-                   :fighters (->> (get-in db [:team-builder :axies])
-                                  (map (fn [[axie-index axie]]
-                                         {:id (:id axie)
-                                          :position (tb/team-position layout axie-index)
-                                          :move-set (map
-                                                      (fn [move move-index]
-                                                        {:index move-index
-                                                         :part (:type move)})
-                                                      (:move-set axie)
-                                                      (map inc (range)))})))}]
-      {:http-post {:url "https://api.axieinfinity.com/v1/battle/teams/create"
-                   :headers {"Authorization" (format "Bearer %s" (get-in db [:auto-battle :token]))}
-                   :body (transform-keys ->camelCaseKeyword payload)
-                   :handler [:team-builder/created]
-                   :err-handler [:team-builder/error]}})))
-
-(rf/reg-event-fx
-  :team-builder/created
-  (fn [{:keys [db]} [_ result]]
-    {:db (-> db
-             (assoc-in [:team-builder :team-name] nil)
-             (assoc-in [:team-builder :axies] nil))
-     :dispatch [:teams/fetch-teams true]}))
-
-(rf/reg-event-db
-  :team-builder/error
-  (fn [db [_ err]]
-    (println "failed to create team" err)
-    db))
 
 (rf/reg-event-fx
   :card-rankings/fetch

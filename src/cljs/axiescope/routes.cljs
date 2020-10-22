@@ -44,9 +44,6 @@
   (defroute "/teams" []
     (rf/dispatch [::events/set-active-panel :teams-panel]))
 
-  (defroute "/team-builder" []
-    (rf/dispatch [::events/set-active-panel :team-builder-panel]))
-
   (defroute "/unassigned" []
     (rf/dispatch [::events/set-active-panel :unassigned-panel]))
 
@@ -64,9 +61,6 @@
 
   (defroute "/search" []
     (rf/dispatch [::events/set-active-panel :search-panel]))
-
-  (defroute "/auto-battle" []
-    (rf/dispatch [::events/set-active-panel :auto-battle-panel]))
 
   (defroute "/land" []
     (rf/dispatch [::events/set-active-panel :land-panel]))
