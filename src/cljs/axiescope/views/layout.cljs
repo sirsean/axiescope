@@ -10,9 +10,7 @@
   [:div.row
    (let [bars (set bars)]
      [:div.col-xs-12
-      (when (:my-axies bars) [bar/my-axies-bar])
-      (when (:items bars) [bar/items-bar])
-      (when (:market bars) [bar/market-bar])])
+      (when (:my-axies bars) [bar/my-axies-bar])])
    [:div.col-xs-12.center-xs
     [:h1 title]]])
 

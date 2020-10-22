@@ -32,35 +32,3 @@
        {:disabled loading?
         :on-click #(rf/dispatch [:my-axies/fetch true])}
        "Reload"]]]))
-
-(defn items-bar
-  []
-  (let [loading? @(rf/subscribe [:land/items-loading?])
-        num-items @(rf/subscribe [:land/items-count])
-        total-items @(rf/subscribe [:land/total-items])]
-    [:div.row.middle-xs {:style {:margin-bottom "0.1em"}}
-     [:div.col-xs-1.end-xs
-      [:span "My Items"]]
-     [:div.col-xs-10
-      [loading-bar num-items total-items "#c88ae0"]]
-     [:div.col-xs-1.end-xs
-      [:button
-       {:disabled loading?
-        :on-click #(rf/dispatch [:land/fetch-items true])}
-       "Reload"]]]))
-
-(defn market-bar
-  []
-  (let [loading? @(rf/subscribe [:land/market-loading?])
-        num-items @(rf/subscribe [:land/market-count])
-        total-items @(rf/subscribe [:land-market/total])]
-    [:div.row.middle-xs {:style {:margin-bottom "0.1em"}}
-     [:div.col-xs-1.end-xs
-      [:span "Market"]]
-     [:div.col-xs-10
-      [loading-bar num-items total-items "#c88ae0"]]
-     [:div.col-xs-1.end-xs
-      [:button
-       {:disabled loading?
-        :on-click #(rf/dispatch [:land/fetch-market true])}
-       "Reload"]]]))
