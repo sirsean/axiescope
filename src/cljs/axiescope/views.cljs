@@ -11,7 +11,6 @@
     [axiescope.moves :as moves]
     [axiescope.views.panels.axie :as axie]
     [axiescope.views.panels.battle-simulator :as battle-simulator]
-    [axiescope.views.panels.gallery :as gallery]
     [axiescope.views.panels.my-axies :as my-axies]
     [axiescope.views.panels.teams :as teams]
     [axiescope.views.panels.breedable :as breedable]
@@ -50,8 +49,6 @@
             "Axie Evaluator"]]
       [:li [:a {:href "/my-axies"}
             "My Axies"]]
-      #_[:li [:a {:href "/gallery"}
-            "Gallery"]]
       [:li [:a {:href "/breedable"}
             "Breedable"]]
       #_[:li [:a {:href "/teams"}
@@ -77,7 +74,6 @@
     :battle-simulator-panel [battle-simulator/panel]
     :axie-panel [axie/panel]
     :my-axies-panel [my-axies/panel]
-    :gallery-panel [gallery/panel]
     :breedable-panel [breedable/panel]
     :breed-calc-panel [breed-calc/panel]
     :teams-panel [teams/panel]

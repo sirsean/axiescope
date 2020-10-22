@@ -32,9 +32,6 @@
   (defroute "/my-axies" []
     (rf/dispatch [::events/set-active-panel :my-axies-panel]))
 
-  (defroute "/gallery" []
-    (rf/dispatch [::events/set-active-panel :gallery-panel]))
-
   (defroute "/breedable" []
     (rf/dispatch [::events/set-active-panel :breedable-panel]))
 
