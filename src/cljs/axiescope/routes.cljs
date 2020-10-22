@@ -59,9 +59,6 @@
   (defroute "/multi-gifter" []
     (rf/dispatch [::events/set-active-panel :multi-gifter-panel]))
 
-  (defroute "/search" []
-    (rf/dispatch [::events/set-active-panel :search-panel]))
-
   (defroute "/land" []
     (rf/dispatch [::events/set-active-panel :land-panel]))
 

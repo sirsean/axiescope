@@ -49,22 +49,6 @@
         :on-click #(rf/dispatch [:teams/fetch-teams true])}
        "Reload"]]]))
 
-(defn search-bar
-  []
-  (let [loading? @(rf/subscribe [:search/loading?])
-        num-axies @(rf/subscribe [:search/count])
-        total-axies @(rf/subscribe [:search/total])]
-    [:div.row.middle-xs {:style {:margin-bottom "0.1em"}}
-     [:div.col-xs-1.end-xs
-      [:span "Search"]]
-     [:div.col-xs-10
-      [loading-bar num-axies total-axies "#c88ae0"]]
-     [:div.col-xs-1.end-xs
-      [:button
-       {:disabled loading?
-        :on-click #(rf/dispatch [:search/fetch true])}
-       "Reload"]]]))
-
 (defn items-bar
   []
   (let [loading? @(rf/subscribe [:land/items-loading?])

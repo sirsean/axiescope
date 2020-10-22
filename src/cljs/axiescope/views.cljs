@@ -21,7 +21,6 @@
     [axiescope.views.panels.morph-to-petite :as morph-to-petite]
     [axiescope.views.panels.morph-to-adult :as morph-to-adult]
     [axiescope.views.panels.multi-gifter :as multi-gifter]
-    [axiescope.views.panels.search :as search]
     [axiescope.views.panels.land :as land]
     [axiescope.views.panels.card-rankings :as card-rankings]
     [axiescope.views.panels.card-rankings-vote :as card-rankings-vote]
@@ -67,8 +66,6 @@
             "Morph to Adult"]]
       [:li [:a {:href "/multi-gifter"}
             "Multi-Gifter"]]
-      #_[:li [:a {:href "/search"}
-            "Search"]]
       #_[:li [:a {:href "/land"}
             "Land"]]]]]
    [footer]])
@@ -89,7 +86,6 @@
     :morph-to-petite-panel [morph-to-petite/panel]
     :morph-to-adult-panel [morph-to-adult/panel]
     :multi-gifter-panel [multi-gifter/panel]
-    :search-panel [search/panel]
     :land-panel [land/land-panel]
     :land-items-panel [land/land-items-panel]
     :land-market-panel [land/land-market-panel]
