@@ -247,6 +247,11 @@
   {:db (assoc db :active-panel panel)
    :dispatch [:card-rankings/fetch {:after-handlers [[:card-rankings/next-pair]]}]})
 
+(defmethod set-active-panel :cards-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :dispatch [:cards/fetch]})
+
 (defmethod set-active-panel :land-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
@@ -1217,6 +1222,46 @@
   :card-rankings/voted
   (fn [_ _]
     {:dispatch [:card-rankings/next-pair]}))
+
+(rf/reg-event-fx
+  :cards/fetch
+  (fn [{:keys [db]} [_ after-handlers]]
+    {:db (-> db
+             (assoc-in [:cards :loading?] true))
+     :http-get {:url (format "%s/api/cards" api-host)
+                :handler [:cards/got after-handlers]}}))
+
+(rf/reg-event-fx
+  :cards/got
+  (fn [{:keys [db]} [_ {:keys [after-handlers]} cards]]
+    {:db (-> db
+             (assoc-in [:cards :loading?] false)
+             (assoc-in [:cards :all] cards))
+     :dispatch-n (or after-handlers [])}))
+
+(rf/reg-event-db
+  :cards/set-sort-key
+  (fn [db [_ sort-key]]
+    (-> db
+        (assoc-in [:cards :sort-key] sort-key))))
+
+(rf/reg-event-db
+  :cards/set-sort-order
+  (fn [db [_ sort-order]]
+    (-> db
+        (assoc-in [:cards :sort-order] sort-order))))
+
+(rf/reg-event-db
+  :cards/set-selector
+  (fn [db [_ selector]]
+    (-> db
+        (assoc-in [:cards :selector] selector))))
+
+(rf/reg-event-db
+  :cards/set-search
+  (fn [db [_ search]]
+    (-> db
+        (assoc-in [:cards :search] search))))
 
 ;; TODO update teams
 ;; POST https://api.axieinfinity.com/v1/battle/teams/update/e4cc1d1e-ca33-443d-ba4d-e649d65d08b0

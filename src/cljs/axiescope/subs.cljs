@@ -957,3 +957,77 @@
     [(rf/subscribe [:card-rankings])])
   (fn [[cr]]
     (get-in cr [:pair])))
+
+(rf/reg-sub
+  :cards
+  (fn [db]
+    (get db :cards {})))
+
+(rf/reg-sub
+  :cards/loading?
+  (fn [_]
+    [(rf/subscribe [:cards])])
+  (fn [[c]]
+    (get c :loading? false)))
+
+(rf/reg-sub
+  :cards/all
+  (fn [_]
+    [(rf/subscribe [:cards])])
+  (fn [[c]]
+    (get c :all {})))
+
+(rf/reg-sub
+  :cards/sort-key
+  (fn [_]
+    [(rf/subscribe [:cards])])
+  (fn [[c]]
+    (get c :sort-key :id)))
+
+(rf/reg-sub
+  :cards/sort-order
+  (fn [_]
+    [(rf/subscribe [:cards])])
+  (fn [[c]]
+    (get c :sort-order :desc)))
+
+(rf/reg-sub
+  :cards/selector
+  (fn [_]
+    [(rf/subscribe [:cards])])
+  (fn [[c]]
+    (get c :selector :all)))
+
+(rf/reg-sub
+  :cards/search
+  (fn [_]
+    [(rf/subscribe [:cards])])
+  (fn [[c]]
+    (get c :search "")))
+
+(rf/reg-sub
+  :cards/list
+  (fn [_]
+    [(rf/subscribe [:cards/all])
+     (rf/subscribe [:cards/sort-key])
+     (rf/subscribe [:cards/sort-order])
+     (rf/subscribe [:cards/selector])
+     (rf/subscribe [:cards/search])])
+  (fn [[all sort-key sort-order selector search]]
+    (->> all
+         vals
+         (filter
+           (fn [card]
+             (or (string/blank? search)
+                 (string/includes?
+                   (string/lower-case (:skill-name card))
+                   (string/lower-case search))
+                 (string/includes?
+                   (string/lower-case (:part-name card))
+                   (string/lower-case search)))))
+         (filter
+           (fn [card]
+             (or (= :all selector)
+                 (string/includes? (:id card) (name selector)))))
+         (sort-by sort-key)
+         ((if (= :asc sort-order) identity reverse)))))

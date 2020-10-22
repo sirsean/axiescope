@@ -28,6 +28,7 @@
     [axiescope.views.panels.lineage :as lineage]
     [axiescope.views.panels.card-rankings :as card-rankings]
     [axiescope.views.panels.card-rankings-vote :as card-rankings-vote]
+    [axiescope.views.panels.cards :as cards]
     [axiescope.views.layout :refer [header footer]]
     [axiescope.views.shared :refer [axies-pager axie-sorter sort-key-button sort-order-button my-axies-table]]
     ))
@@ -43,9 +44,11 @@
    [:div.row
     [:div.col-xs-12
      [:ul.tools-list
+      [:li [:a {:href "/cards"}
+            "Cards"]]
       [:li [:a {:href "/card-rankings"}
             "Card Rankings"]]
-      [:li [:a {:href "/auto-battle"}
+      #_[:li [:a {:href "/auto-battle"}
             "Auto-Battle"]]
       #_[:li [:a {:href "/battle-simulator"}
             "Battle Simulator"]]
@@ -57,13 +60,13 @@
             "Gallery"]]
       [:li [:a {:href "/breedable"}
             "Breedable"]]
-      [:li [:a {:href "/teams"}
+      #_[:li [:a {:href "/teams"}
             "Teams"]]
-      [:li [:a {:href "/team-builder"}
+      #_[:li [:a {:href "/team-builder"}
             "Team Builder"]]
-      [:li [:a {:href "/unassigned"}
+      #_[:li [:a {:href "/unassigned"}
             "Unassigned Axies"]]
-      [:li [:a {:href "/multi-assigned"}
+      #_[:li [:a {:href "/multi-assigned"}
             "Multi-Assigned Axies"]]
       [:li [:a {:href "/morph-to-petite"}
             "Morph to Petite"]]
@@ -71,7 +74,7 @@
             "Morph to Adult"]]
       [:li [:a {:href "/multi-gifter"}
             "Multi-Gifter"]]
-      [:li [:a {:href "/search"}
+      #_[:li [:a {:href "/search"}
             "Search"]]
       #_[:li [:a {:href "/land"}
             "Land"]]
@@ -105,6 +108,7 @@
     :lineage-panel [lineage/panel]
     :card-rankings-panel [card-rankings/panel]
     :card-rankings-vote-panel [card-rankings-vote/panel]
+    :cards-panel [cards/panel]
     [home-panel]))
 
 (defn show-panel

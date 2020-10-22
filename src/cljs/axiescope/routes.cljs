@@ -11,6 +11,9 @@
   (defroute "/" []
     (rf/dispatch [::events/set-active-panel :home-panel]))
 
+  (defroute "/cards" []
+    (rf/dispatch [::events/set-active-panel :cards-panel]))
+
   (defroute "/card-rankings/vote" []
     (rf/dispatch [::events/set-active-panel :card-rankings-vote-panel]))
 

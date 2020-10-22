@@ -140,43 +140,54 @@
       :on-click #(rf/dispatch [(keyword section :set-sort-order) order])}
      (name order)]))
 
-(defn axie-sorter
-  [{:keys [section extra-fields only-field-keys]
+(defn sorter
+  [{:keys [section fields only-field-keys]
     :or {section :my-axies
-         extra-fields []
+         fields []
          only-field-keys nil}}]
   (let [sort-key @(rf/subscribe [(keyword section :sort-key)])
         sort-order @(rf/subscribe [(keyword section :sort-order)])]
     [:div.row
      [:div.col-xs-12.center-xs
-      [:p
-       [:span {:style {:padding-right "0.3em"}}
-        "sort by:"]
-       (->> extra-fields
-            (concat [["ID" :id]
-                     ["Name" :name]
-                     ["Class" :class]
-                     ["Purity" :purity]
-                     ["Breeds" :breed-count]
-                     ["Attack" :attack]
-                     ["Defense" :defense]
-                     ["Atk+Def" :atk+def]
-                     ["Tank Body" :tank-body]
-                     ["DPS Body" :dps-body]
-                     ["Support Body" :support-body]
-                     ["Tank Tiers" :tank-tiers]
-                     ["DPS Tiers" :dps-tiers]])
-            (filter (fn [[_ k]]
-                      (or (nil? only-field-keys)
-                          (only-field-keys k))))
-            (map (fn [[title k]]
-                   ^{:key k}
-                   [sort-key-button section title k sort-key])))
+      {:style {:margin "0.4em"}}
+      [:span {:style {:padding-right "0.3em"}}
+       "sort by:"]
+      (->> fields
+           (filter (fn [[_ k]]
+                     (or (nil? only-field-keys)
+                         (only-field-keys k))))
+           (map (fn [[title k]]
+                  ^{:key k}
+                  [sort-key-button section title k sort-key])))]
+     [:div.col-xs-12.center-xs
+      {:style {:margin "0.4em"}}
        [:span {:style {:padding-left "0.6em"
                        :padding-right "0.3em"}}
         "order:"]
        [sort-order-button section :asc sort-order]
-       [sort-order-button section :desc sort-order]]]]))
+       [sort-order-button section :desc sort-order]]]))
+
+(defn axie-sorter
+  [{:keys [section extra-fields only-field-keys]
+    :or {section :my-axies
+         extra-fields []
+         only-field-keys nil}}]
+  [sorter {:section section
+           :only-field-keys only-field-keys
+           :fields (concat [["ID" :id]
+                            ["Name" :name]
+                            ["Class" :class]
+                            ["Purity" :purity]
+                            ["Breeds" :breed-count]
+                            ["Attack" :attack]
+                            ["Defense" :defense]
+                            ["Atk+Def" :atk+def]
+                            ["Tank Body" :tank-body]
+                            ["DPS Body" :dps-body]
+                            ["Support Body" :support-body]
+                            ["Tank Tiers" :tank-tiers]
+                            ["DPS Tiers" :dps-tiers]]
+                           extra-fields)}])
 
 (defn axies-pager
   [section]
