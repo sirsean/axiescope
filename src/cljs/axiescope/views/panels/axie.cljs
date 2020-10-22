@@ -6,6 +6,7 @@
     [cuerdas.core :refer [format]]
     [axiescope.views.layout :refer [header footer]]
     [axiescope.views.shared :refer [show-axie axie-info]]
+    [axiescope.views.card :as card]
     ))
 
 (defn panel
@@ -13,6 +14,7 @@
   (let [loading? @(rf/subscribe [:axie/loading?])
         axie-id @(rf/subscribe [:axie/axie-id])
         axie @(rf/subscribe [:axie/axie axie-id])
+        cards @(rf/subscribe [:axie/cards axie-id])
         axie-id-atom (r/atom axie-id)]
     [:div.container
      [header {:title "Axie Evaluator"}]
@@ -44,5 +46,10 @@
         [:div.col-xs-12.col-md-6
          [show-axie axie]]
         [:div.col-xs-12.col-md-6
-         [axie-info axie]]])
+         [axie-info axie]]
+        [:div.col-xs-12
+         [:div.row
+          (for [card cards]
+            ^{:key (:id card)}
+            [card/show card])]]])
      [footer]]))

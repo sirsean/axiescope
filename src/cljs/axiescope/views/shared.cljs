@@ -46,24 +46,12 @@
                              ["Purity" :purity]
                              ["Breeds" :breed-count]
                              ["Title" :title]
-                             ["Mystic" :num-mystic]
-                             ["Price" :price]
-                             ["EXP" :exp]
-                             ["Pending EXP" :pending-exp]
-                             ["Next Breed" :next-breed]]]]
+                             ["Mystic" :num-mystic]]]]
       [:div.col-xs-12.col-md-6
        [axie-stat-list axie [["HP" :hp]
                              ["Speed" :speed]
                              ["Skill" :skill]
-                             ["Morale" :morale]
-                             ["Attack" :attack]
-                             ["Defense" :defense]
-                             ["Atk+Def" :atk+def]
-                             ["Tank Tiers" :tank-tiers]
-                             ["Tank Body" :tank-body]
-                             ["DPS Tiers" :dps-tiers]
-                             ["DPS Body" :dps-body]
-                             ["Support Body" :support-body]]]]]
+                             ["Morale" :morale]]]]]
      (when (= 2 (:stage axie))
        [:div.row {:style {:margin-top "1.8em"}}
         [:div.col-xs-6.end-xs [:strong "To Petite"]]
@@ -73,33 +61,7 @@
        [:div.row {:style {:margin-top "1.8em"}}
         [:div.col-xs-6.end-xs [:strong "To Adult"]]
         [:div.col-xs-6
-         (.fromNow (:morph-to-adult axie))]])
-     [:div.row {:style {:margin-top "1.8em"}}
-      [:div.col-xs-12
-       [:div.row
-        [:div.col-xs-2 [:strong "type"]]
-        [:div.col-xs-2 [:strong "class"]]
-        [:div.col-xs-4 [:strong "name"]]
-        [:div.col-xs-1.end-xs [:strong "atk"]]
-        [:div.col-xs-1.end-xs [:strong "def"]]
-        [:div.col-xs-1.end-xs [:strong "tank"]]
-        [:div.col-xs-1.end-xs [:strong "dps"]]]
-       (for [p (:parts axie)]
-         [:div.row.middle-xs {:key (:id p)
-                              :style {:background-color (when (:mystic p) "#54b0e6")
-                                      :padding "0.2em 0"
-                                      :border-radius "0.25em"}}
-          [:div.col-xs-2 (:type p)]
-          [:div.col-xs-2 (:class p)]
-          [:div.col-xs-4 (:name p)]
-          [:div.col-xs-1.end-xs (-> p :moves first :attack)]
-          [:div.col-xs-1.end-xs (-> p :moves first :defense)]
-          [:div.col-xs-1.end-xs (some-> p :id moves/tank-part-score)]
-          [:div.col-xs-1.end-xs (some-> p :id moves/dps-part-score)]
-          (when-some [desc (-> p :moves first :effects first :description)]
-            [:div.col-xs-8.col-xs-offset-4
-             {:style {:font-size "0.7em"}}
-             desc])])]]]))
+         (.fromNow (:morph-to-adult axie))]])]))
 
 (defn sort-key-button
   [section title sort-key active-sort-key]

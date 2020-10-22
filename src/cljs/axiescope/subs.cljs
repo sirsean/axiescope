@@ -214,6 +214,18 @@
         adjust-axie)))
 
 (rf/reg-sub
+  :axie/cards
+  (fn [[_ axie-id]]
+    [(rf/subscribe [:axie/axie axie-id])
+     (rf/subscribe [:cards/all])])
+  (fn [[axie cards]]
+    (->> axie
+         :parts
+         (mapcat :abilities)
+         (map (comp keyword :id))
+         (keep (partial get cards)))))
+
+(rf/reg-sub
   :my-axies/larva
   (fn [_]
     [(rf/subscribe [:time/now])

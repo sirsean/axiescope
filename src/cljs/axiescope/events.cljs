@@ -2,6 +2,7 @@
   (:require
     [clojure.set :refer [rename-keys]]
     [re-frame.core :as rf]
+    [re-graph.core :as re-graph]
     [district0x.re-frame.interval-fx]
     [cljs-web3.core]
     [cljs-web3.eth]
@@ -150,7 +151,8 @@
 (defmethod set-active-panel :axie-panel
   [{:keys [db]} [_ panel axie-id]]
   {:db (assoc db :active-panel panel)
-   :dispatch [:axie/set-id axie-id]})
+   :dispatch-n [[:axie/set-id axie-id]
+                [:cards/fetch]]})
 
 (defmethod set-active-panel :my-axies-panel
   [{:keys [db]} [_ panel]]
@@ -353,8 +355,8 @@
     {:db (-> db
              (assoc-in [:axie :loading?] true)
              (assoc-in [:axie :id] (str axie-id)))
-     :dispatch [::fetch-axie axie-id {:force? true
-                                      :handler handler}]}))
+     :dispatch-n [[::fetch-axie axie-id {:force? true
+                                         :handler handler}]]}))
 
 (rf/reg-event-fx
   :my-axies/fetch
@@ -420,6 +422,120 @@
   (fn [db [_ offset]]
     (assoc-in db [:my-axies :offset] offset)))
 
+(def fetch-axie-query
+  "query GetAxieDetail($axieId: ID!) {
+  axie(axieId: $axieId) {
+    ...AxieDetail
+    __typename
+  }
+}
+fragment AxieDetail on Axie {
+  id
+  image
+  class
+  name
+  genes
+  owner
+  birthDate
+  bodyShape
+  class
+  sireId
+  sireClass
+  matronId
+  matronClass
+  stage
+  title
+  breedCount
+  level
+  figure {
+    atlas
+    model
+    image
+    __typename
+  }
+  parts {
+    ...AxiePart
+    __typename
+  }
+  stats {
+    ...AxieStats
+    __typename
+  }
+  auction {
+    ...AxieAuction
+    __typename
+  }
+  ownerProfile {
+    name
+    __typename
+  }
+  battleInfo {
+    ...AxieBattleInfo
+    __typename
+  }
+  children {
+    id
+    name
+    class
+    image
+    title
+    stage
+    __typename
+  }
+  __typename
+}
+fragment AxieBattleInfo on AxieBattleInfo {
+  banned
+  banUntil
+  level
+  __typename
+}
+fragment AxiePart on AxiePart {
+  id
+  name
+  class
+  type
+  specialGenes
+  stage
+  abilities {
+    ...AxieCardAbility
+    __typename
+  }
+  __typename
+}
+fragment AxieCardAbility on AxieCardAbility {
+  id
+  name
+  attack
+  defense
+  energy
+  description
+  backgroundUrl
+  effectIconUrl
+  __typename
+}
+fragment AxieStats on AxieStats {
+  hp
+  speed
+  skill
+  morale
+  __typename
+}
+fragment AxieAuction on Auction {
+  startingPrice
+  endingPrice
+  startingTimestamp
+  endingTimestamp
+  duration
+  timeLeft
+  currentPrice
+  currentPriceUSD
+  suggestedPrice
+  seller
+  listingIndex
+  __typename
+}")
+
 (rf/reg-event-fx
   ::fetch-axie
   (fn [{:keys [db]} [_ axie-id {:keys [force? handler]}]]
@@ -427,8 +543,10 @@
       (cond
         (or (nil? axie)
             force?)
-        {:http-get {:url (format "https://axieinfinity.com/api/v2/axies/%s?lang=en" axie-id)
-                    :handler [:axie/got handler]}}
+        {:dispatch [::re-graph/query
+                    fetch-axie-query
+                    {:axieId axie-id}
+                    [:axie/got handler]]}
 
         (and (some? axie) (some? handler))
         {:dispatch [handler axie]}
@@ -438,24 +556,14 @@
 
 (rf/reg-event-fx
   :axie/got
-  (fn [{:keys [db]} [_ handler axie]]
-    (cond->
-      {:db (-> db
-               (assoc-in [:axie :loading?] false)
-               (assoc-in [:axie :db (str (:id axie))] axie))}
-      (some? handler)
-      (merge {:dispatch [handler axie]}))))
-
-(rf/reg-event-fx
-  :axie/fetch-parents
-  (fn [{:keys [db]} [_ {:keys [sire-id matron-id]}]]
-    {:dispatch-n
-     (cond-> []
-       (and (some? sire-id) (not (zero? sire-id)))
-       (conj [::fetch-axie sire-id {:handler :axie/fetch-parents}])
-
-       (and (some? matron-id) (not (zero? matron-id)))
-       (conj [::fetch-axie matron-id {:handler :axie/fetch-parents}]))}))
+  (fn [{:keys [db]} [_ handler {:keys [data]}]]
+    (let [axie (transform-keys ->kebab-case-keyword (:axie data))]
+      (cond->
+        {:db (-> db
+                 (assoc-in [:axie :loading?] false)
+                 (assoc-in [:axie :db (str (:id axie))] axie))}
+        (some? handler)
+        (merge {:dispatch [handler axie]})))))
 
 (rf/reg-event-db
   :multi-gifter/set-to-addr

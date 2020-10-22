@@ -2,6 +2,7 @@
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as re-frame]
+   [re-graph.core :as re-graph]
    [axiescope.events :as events]
    [axiescope.views :as views]
    [axiescope.config :as config]
@@ -20,6 +21,11 @@
 
 (defn ^:export init []
   (routes/app-routes)
+  (re-frame/dispatch [::re-graph/init
+                      {:ws {:url nil}
+                       :http {:url "https://axieinfinity.com/graphql-server/graphql"
+                              :impl {}
+                              :supported-operations #{:query :mutate}}}])
   (re-frame/dispatch-sync [::events/initialize-db])
   (dev-setup)
   (mount-root))
