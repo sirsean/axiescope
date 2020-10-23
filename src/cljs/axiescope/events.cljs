@@ -158,7 +158,8 @@
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
-                       :handlers [:my-axies/fetch]}})
+                       :handlers [:my-axies/fetch
+                                  :card-rankings/fetch]}})
 
 (defmethod set-active-panel :breedable-panel
   [{:keys [db]} [_ panel]]

@@ -88,9 +88,20 @@
 (rf/reg-sub
   :my-axies/raw-axies
   (fn [_]
-    [(rf/subscribe [:axies/unadjusted])])
-  (fn [[axies]]
-    (map adjust-axie axies)))
+    [(rf/subscribe [:axies/unadjusted])
+     (rf/subscribe [:card-rankings/id->rating])])
+  (fn [[axies id->rating]]
+    (->> axies
+         (map adjust-axie)
+         (map (fn [axie]
+                (let [rating (->> axie
+                                  :parts
+                                  (mapcat :abilities)
+                                  (map :id)
+                                  (map keyword)
+                                  (map id->rating)
+                                  (reduce +))]
+                  (assoc axie :elo (- rating 4000))))))))
 
 (rf/reg-sub
   :my-axies/count
@@ -342,6 +353,16 @@
     [(rf/subscribe [:card-rankings])])
   (fn [[cr]]
     (get-in cr [:rankings])))
+
+(rf/reg-sub
+  :card-rankings/id->rating
+  (fn [_]
+    [(rf/subscribe [:card-rankings/rankings])])
+  (fn [[rankings]]
+    (->> rankings
+         (map (fn [{:keys [id rating]}]
+                [(keyword id) rating]))
+         (into {}))))
 
 (rf/reg-sub
   :card-rankings/pair
