@@ -250,10 +250,6 @@
       :parts [:td {:style {:max-width "200px"
                            :text-align "center"}}
               [parts-row row]]
-      :team-name [:td
-                  [:a {:href (format "https://axieinfinity.com/team/%s" (get row :team-id))
-                       :target "_blank"}
-                   value]]
 
       :sire-selector
       (let [axie-id (get row :id)
