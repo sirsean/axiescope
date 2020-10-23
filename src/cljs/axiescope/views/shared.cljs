@@ -142,12 +142,8 @@
                             ["Breeds" :breed-count]
                             ["Attack" :attack]
                             ["Defense" :defense]
-                            ["Atk+Def" :atk+def]
-                            ["Tank Body" :tank-body]
-                            ["DPS Body" :dps-body]
-                            ["Support Body" :support-body]
-                            ["Tank Tiers" :tank-tiers]
-                            ["DPS Tiers" :dps-tiers]]
+                            ["Energy" :energy]
+                            ["Atk+Def" :atk+def]]
                            extra-fields)}])
 
 (defn axies-pager
@@ -180,14 +176,11 @@
   [[:id "ID"]
    [:image ""]
    [:name "Name"]
-   [:parts ""]
    [:breed-count "Breeds"]
    [:attack "Attack"]
    [:defense "Defense"]
-   [:atk+def "Atk+Def"]
-   [:tank-body "Tank"]
-   [:dps-body "DPS"]
-   [:support-body "Support"]])
+   [:energy "Energy"]
+   [:atk+def "Atk+Def"]])
 
 (defn parts-row
   [{:keys [parts class]}]

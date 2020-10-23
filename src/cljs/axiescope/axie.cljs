@@ -70,7 +70,7 @@
   [axie]
   (->> axie
        :parts
-       (mapcat :moves)
+       (mapcat :abilities)
        (map :attack)
        (apply +)))
 
@@ -82,13 +82,25 @@
   [axie]
   (->> axie
        :parts
-       (mapcat :moves)
+       (mapcat :abilities)
        (map :defense)
        (apply +)))
 
 (defn attach-defense
   [axie]
   (assoc axie :defense (calc-defense axie)))
+
+(defn calc-energy
+  [axie]
+  (->> axie
+       :parts
+       (mapcat :abilities)
+       (map :energy)
+       (apply +)))
+
+(defn attach-energy
+  [axie]
+  (assoc axie :energy (calc-energy axie)))
 
 (defn attach-atk+def
   [{:keys [attack defense] :as axie}]
@@ -249,18 +261,10 @@
   (some-> axie
           merge-stats
           update-birth-date
-          attach-morphable
           attach-num-mystic
           attach-attack
           attach-defense
+          attach-energy
           attach-atk+def
           attach-price
-          attach-purity
-          attach-next-breed
-          attach-pending-exp
-          attach-tank-body
-          attach-tank-tiers
-          attach-dps-body
-          attach-dps-tiers
-          attach-support-body
-          attach-support-tiers))
+          attach-purity))

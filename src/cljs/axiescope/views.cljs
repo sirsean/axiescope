@@ -35,21 +35,31 @@
     [:div.col-xs-12
      [:ul.tools-list
       [:li [:a {:href "/cards"}
-            "Cards"]]
+            "Cards"]
+       [:ul
+        [:li "view/sort/filter all the available cards"]]]
       [:li [:a {:href "/card-rankings"}
-            "Card Rankings"]]
+            "Card Rankings"]
+       [:ul
+        [:li "community-based ELO ranking for all cards"]]]
       [:li [:a {:href "/axie"}
-            "Axie Evaluator"]]
+            "Axie Evaluator"]
+       [:ul
+        [:li "view a single axie"]]]
       [:li [:a {:href "/my-axies"}
-            "My Axies"]]
-      [:li [:a {:href "/breedable"}
+            "My Axies"]
+       [:ul
+        [:li "view all your axies"]]]
+      #_[:li [:a {:href "/breedable"}
             "Breedable"]]
-      [:li [:a {:href "/morph-to-petite"}
+      #_[:li [:a {:href "/morph-to-petite"}
             "Morph to Petite"]]
-      [:li [:a {:href "/morph-to-adult"}
+      #_[:li [:a {:href "/morph-to-adult"}
             "Morph to Adult"]]
       [:li [:a {:href "/multi-gifter"}
-            "Multi-Gifter"]]]]]
+            "Multi-Gifter"]
+       [:ul
+        [:li "send more than one axie to someone, with less clicking"]]]]]]
    [footer]])
 
 (defn get-panel

@@ -61,3 +61,8 @@ a:hover {
     padding: 0.3em;
     font-size: 1.2em;
 }
+
+.tools-list li > ul > li {
+    font-size: 0.8em;
+    padding: 0;
+}

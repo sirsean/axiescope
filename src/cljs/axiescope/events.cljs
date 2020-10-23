@@ -370,31 +370,100 @@
        :dispatch [:my-axies/fetch-page]}
       {})))
 
+(def fetch-my-axies-query
+  "query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
+  axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {
+    total
+    results {
+      ...AxieBrief
+      __typename
+    }
+    __typename
+  }
+}
+fragment AxieBrief on Axie {
+  id
+  name
+  stage
+  class
+  breedCount
+  image
+  title
+  stats {
+    ...AxieStats
+    __typename
+  }
+  parts {
+    ...AxiePart
+    __typename
+  }
+  __typename
+}
+fragment AxiePart on AxiePart {
+  id
+  name
+  class
+  type
+  specialGenes
+  stage
+  abilities {
+    ...AxieCardAbility
+    __typename
+  }
+  __typename
+}
+fragment AxieCardAbility on AxieCardAbility {
+  id
+  name
+  attack
+  defense
+  energy
+  description
+  backgroundUrl
+  effectIconUrl
+  __typename
+}
+fragment AxieStats on AxieStats {
+  hp
+  speed
+  skill
+  morale
+  __typename
+}")
+
 (rf/reg-event-fx
   :my-axies/fetch-page
   (fn [{:keys [db]} [_ total-axies]]
     (let [axies (get-in db [:my-axies :axies])]
       (if (or (nil? total-axies)
               (< (count axies) total-axies))
-        {:http-get {:url (format "https://axieinfinity.com/api/v2/addresses/%s/axies?a=1&offset=%s"
-                                 (:eth-addr db) (count axies))
-                    :handler [:my-axies/got-page]}}
-
+        {:dispatch [::re-graph/query
+                    fetch-my-axies-query
+                    {:owner (:eth-addr db)
+                     :sort  "IdDesc"
+                     :size  100
+                     :from  (count axies)}
+                    [:my-axies/got-page]]}
         {:dispatch [:my-axies/got axies]}))))
 
 (rf/reg-event-fx
   :my-axies/got-page
-  (fn [{:keys [db]} [_ {:keys [total-axies axies]}]]
-    {:db (-> db
-             (update-in [:axie :db]
-                        merge
-                        (->> axies
-                             (map (fn [{:keys [id] :as axie}]
-                                    [(str id) axie]))
-                             (into {})))
-             (assoc-in [:my-axies :total] total-axies)
-             (update-in [:my-axies :axies] concat axies))
-     :dispatch [:my-axies/fetch-page total-axies]}))
+  (fn [{:keys [db]} [_ {{{:keys [total results]} :axies} :data}]]
+    (let [axies (->> results
+                     (map (partial transform-keys ->kebab-case-keyword))
+                     (map (fn [a]
+                            (-> a
+                                (update :id long)))))]
+      {:db (-> db
+               (update-in [:axie :db]
+                          merge
+                          (->> axies
+                               (map (fn [{:keys [id] :as axie}]
+                                      [(str id) axie]))
+                               (into {})))
+               (assoc-in [:my-axies :total] total)
+               (update-in [:my-axies :axies] concat axies))
+       :dispatch [:my-axies/fetch-page total]})))
 
 (rf/reg-event-db
   :my-axies/got
