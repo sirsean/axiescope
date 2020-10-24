@@ -18,6 +18,7 @@
     [axiescope.config :refer [api-host]]
     [axiescope.genes :as genes]
     [axiescope.db :as db]
+    [axiescope.util :refer [ranking-type->key]]
     )
   (:require-macros
     [cljs.core.async.macros :refer [go]]
@@ -159,7 +160,9 @@
   {:db (assoc db :active-panel panel)
    :blockchain/enable {:eth (:eth db)
                        :handlers [:my-axies/fetch
-                                  :card-rankings/fetch]}})
+                                  [:card-rankings/fetch :all]
+                                  [:card-rankings/fetch :attack]
+                                  [:card-rankings/fetch :defense]]}})
 
 (defmethod set-active-panel :breedable-panel
   [{:keys [db]} [_ panel]]
@@ -194,14 +197,18 @@
                        :handlers [:my-axies/fetch]}})
 
 (defmethod set-active-panel :card-rankings-panel
-  [{:keys [db]} [_ panel]]
-  {:db (assoc db :active-panel panel)
-   :dispatch [:card-rankings/fetch]})
+  [{:keys [db]} [_ panel ranking-type]]
+  {:db (-> db
+           (assoc :active-panel panel)
+           (assoc-in [:card-rankings :ranking-type] ranking-type))
+   :dispatch [:card-rankings/fetch ranking-type]})
 
 (defmethod set-active-panel :card-rankings-vote-panel
-  [{:keys [db]} [_ panel]]
+  [{:keys [db]} [_ panel ranking-type]]
   {:db (assoc db :active-panel panel)
-   :dispatch [:card-rankings/fetch {:after-handlers [[:card-rankings/next-pair]]}]})
+   :dispatch [:card-rankings/fetch
+              ranking-type
+              [[:card-rankings/next-pair ranking-type]]]})
 
 (defmethod set-active-panel :cards-panel
   [{:keys [db]} [_ panel]]
@@ -700,41 +707,53 @@ fragment AxieAuction on Auction {
               matron)
             genes/predict-score)))))
 
+(defn ranking-type->url-path
+  [ranking-type]
+  (case ranking-type
+    :attack "/attack"
+    :defense "/defense"
+    :all "/all"))
+
 (rf/reg-event-fx
   :card-rankings/fetch
-  (fn [{:keys [db]} [_ after-handlers]]
+  (fn [{:keys [db]} [_ ranking-type after-handlers]]
     {:db (-> db
              (assoc-in [:card-rankings :loading?] true))
-     :http-get {:url (format "%s/api/card-rankings" api-host)
-                :handler [:card-rankings/got after-handlers]}}))
+     :http-get {:url (format "%s/api/card-rankings%s"
+                             api-host
+                             (ranking-type->url-path ranking-type))
+                :handler [:card-rankings/got ranking-type after-handlers]}}))
 
 (rf/reg-event-fx
   :card-rankings/got
-  (fn [{:keys [db]} [_ {:keys [after-handlers]} rankings]]
+  (fn [{:keys [db]} [_ ranking-type after-handlers rankings]]
     {:db (-> db
              (assoc-in [:card-rankings :loading?] false)
-             (assoc-in [:card-rankings :rankings] rankings))
+             (assoc-in [:card-rankings (ranking-type->key ranking-type)] rankings))
      :dispatch-n (or after-handlers [])}))
 
 (rf/reg-event-db
   :card-rankings/next-pair
-  (fn [db _]
+  (fn [db [_ ranking-type]]
     (-> db
         (assoc-in [:card-rankings :pair]
-                  (->> (get-in db [:card-rankings :rankings] [])
+                  (->> (get-in db [:card-rankings (ranking-type->key ranking-type)] [])
                        shuffle
                        (take 2))))))
 
 (rf/reg-event-fx
   :card-rankings/vote
-  (fn [{:keys [db]} [_ winner loser]]
-    {:http-post {:url (format "%s/api/card-rankings/%s/%s" api-host winner loser)
-                 :handler [:card-rankings/voted]}}))
+  (fn [{:keys [db]} [_ ranking-type winner loser]]
+    {:http-post {:url (format "%s/api/card-rankings%s/%s/%s"
+                              api-host
+                              (ranking-type->url-path ranking-type)
+                              winner loser)
+                 :handler [:card-rankings/voted ranking-type]}}))
 
 (rf/reg-event-fx
   :card-rankings/voted
-  (fn [_ _]
-    {:dispatch [:card-rankings/next-pair]}))
+  (fn [_ [_ ranking-type]]
+    {:dispatch [:card-rankings/next-pair ranking-type]}))
 
 (rf/reg-event-fx
   :cards/fetch

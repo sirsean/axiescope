@@ -144,7 +144,9 @@
                             ["Defense" :defense]
                             ["Energy" :energy]
                             ["Atk+Def" :atk+def]
-                            ["ELO" :elo]]
+                            ["Overall ELO" :all-rating]
+                            ["Atk ELO" :attack-rating]
+                            ["Def ELO" :defense-rating]]
                            extra-fields)}])
 
 (defn axies-pager
@@ -182,7 +184,9 @@
    [:defense "Defense"]
    [:energy "Energy"]
    [:atk+def "Atk+Def"]
-   [:elo "ELO"]])
+   [:all-rating "Overall ELO"]
+   [:attack-rating "Atk ELO"]
+   [:defense-rating "Def ELO"]])
 
 (defn parts-row
   [{:keys [parts class]}]
@@ -243,8 +247,12 @@
       :image [:td {:style {:max-width "20px"}}
               [:img {:style {:width "100%"}
                      :src value}]]
-      :elo [:td
-            [:span (round value 0)]]
+      :all-rating [:td
+                   [:span (round value 0)]]
+      :attack-rating [:td
+                      [:span (round value 0)]]
+      :defense-rating [:td
+                       [:span (round value 0)]]
       :price [:td {:style {:max-width "50px"}}
               [:span (round value 8)]]
       :parts [:td {:style {:max-width "200px"

@@ -14,11 +14,15 @@
   (defroute "/cards" []
     (rf/dispatch [::events/set-active-panel :cards-panel]))
 
-  (defroute "/card-rankings/vote" []
-    (rf/dispatch [::events/set-active-panel :card-rankings-vote-panel]))
+  (defroute "/card-rankings/vote/:ranking-type" [ranking-type]
+    (rf/dispatch [::events/set-active-panel
+                  :card-rankings-vote-panel
+                  (keyword ranking-type)]))
 
-  (defroute "/card-rankings" []
-    (rf/dispatch [::events/set-active-panel :card-rankings-panel]))
+  (defroute "/card-rankings/:ranking-type" [ranking-type]
+    (rf/dispatch [::events/set-active-panel
+                  :card-rankings-panel
+                  (keyword ranking-type)]))
 
   (defroute "/axie" []
     (rf/dispatch [::events/set-active-panel :axie-panel]))

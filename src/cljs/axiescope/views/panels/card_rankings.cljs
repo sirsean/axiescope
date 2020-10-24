@@ -3,6 +3,7 @@
     [re-frame.core :as rf]
     [reagent-data-table.core :as rdt]
     [accountant.core :as accountant]
+    [cuerdas.core :refer [format]]
     [axiescope.views.layout :refer [header footer]]
     [axiescope.util :refer [round]]
     ))
@@ -30,33 +31,48 @@
 
 (defn panel
   []
-  [:div.container
-   [header {:title "Card Rankings"}]
-   [:div.row
-    [:div.col-xs-12
+  (let [ranking-type @(rf/subscribe [:card-rankings/ranking-type])
+        loading? @(rf/subscribe [:card-rankings/loading?])
+        rankings @(rf/subscribe [:card-rankings/rankings ranking-type])]
+    [:div.container
+     [header {:title
+              (case ranking-type
+                :all "Card Rankings"
+                :attack "Attack Card Rankings"
+                :defense "Defense Card Rankings")}]
      [:div.row
-      [:div.col-xs-12.center-xs
-       [:p "Vote for what cards you think are better, to help the community come up with a shared ranking."]]
-      [:div.col-xs-12.center-xs
-       [:button {:on-click (fn [e]
-                             (.preventDefault e)
-                             (accountant/navigate! "/card-rankings/vote"))
-                 :style {:padding "0.9em"
-                         :margin "0.5em"
-                         :font-size "1.1em"
-                         :background-color "#2277bb"
-                         :color "white"
-                         :border "none"
-                         :outline "none"
-                         :border-radius "1.8em"}}
-        "Help By Voting!"]]]
-     (let [loading? @(rf/subscribe [:card-rankings/loading?])
-           rankings @(rf/subscribe [:card-rankings/rankings])]
+      [:div.col-xs-12
+       [:div.row
+        [:div.col-xs-12.center-xs
+         (case ranking-type
+           :all
+           [:p "Vote for what cards you think are better, to help the community come up with a shared ranking."]
+
+           :attack
+           [:p "Vote for the cards you think are better for attackers, to help the community come up with a shared ranking."]
+
+           :defense
+           [:p "Vote for the cards you think are better for defenders, to help the community come up with a shared ranking."])]
+        [:div.col-xs-12.center-xs
+         [:button {:on-click (fn [e]
+                               (.preventDefault e)
+                               (accountant/navigate!
+                                 (format "/card-rankings/vote/%s"
+                                         (name ranking-type))))
+                   :style {:padding "0.9em"
+                           :margin "0.5em"
+                           :font-size "1.1em"
+                           :background-color "#2277bb"
+                           :color "white"
+                           :border "none"
+                           :outline "none"
+                           :border-radius "1.8em"}}
+          "Help By Voting!"]]]
        (if loading?
          [:div.row
           [:div.col-xs-12.center-xs
            [:em "loading..."]]]
          [:div.row
           [:div.col-xs-12
-           [rankings-table rankings]]]))]]
-   [footer]])
+           [rankings-table rankings]]])]]
+     [footer]]))

@@ -38,10 +38,15 @@
             "Cards"]
        [:ul
         [:li "view/sort/filter all the available cards"]]]
-      [:li [:a {:href "/card-rankings"}
-            "Card Rankings"]
+      [:li "Card Rankings"
        [:ul
-        [:li "community-based ELO ranking for all cards"]]]
+        [:li "community-based ELO ranking"]
+        [:li [:a {:href "/card-rankings/all"}
+              "All Cards"]]
+        [:li [:a {:href "/card-rankings/attack"}
+              "Attack Rankings"]]
+        [:li [:a {:href "/card-rankings/defense"}
+              "Defense Rankings"]]]]
       [:li [:a {:href "/axie"}
             "Axie Evaluator"]
        [:ul

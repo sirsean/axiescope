@@ -6,6 +6,7 @@
    [cljsjs.moment]
    [cljs-web3.core :as web3]
    [axiescope.axie :refer [adjust-axie attach-purity]]
+   [axiescope.util :refer [ranking-type->key]]
    [axiescope.battle :as battle]
    [axiescope.genes :as genes]))
 
@@ -85,23 +86,33 @@
   (fn [[my-axies]]
     (get-in my-axies [:axies] [])))
 
+(defn sum-ratings
+  [axie id->rating]
+  (->
+    (->> axie
+         :parts
+         (mapcat :abilities)
+         (map :id)
+         (map keyword)
+         (map id->rating)
+         (reduce +))
+    (- 4000)))
+
 (rf/reg-sub
   :my-axies/raw-axies
   (fn [_]
     [(rf/subscribe [:axies/unadjusted])
-     (rf/subscribe [:card-rankings/id->rating])])
-  (fn [[axies id->rating]]
+     (rf/subscribe [:card-rankings/id->rating :all])
+     (rf/subscribe [:card-rankings/id->rating :attack])
+     (rf/subscribe [:card-rankings/id->rating :defense])])
+  (fn [[axies id->all-rating id->attack-rating id->defense-rating]]
     (->> axies
          (map adjust-axie)
          (map (fn [axie]
-                (let [rating (->> axie
-                                  :parts
-                                  (mapcat :abilities)
-                                  (map :id)
-                                  (map keyword)
-                                  (map id->rating)
-                                  (reduce +))]
-                  (assoc axie :elo (- rating 4000))))))))
+                (assoc axie
+                       :all-rating (sum-ratings axie id->all-rating)
+                       :attack-rating (sum-ratings axie id->attack-rating)
+                       :defense-rating (sum-ratings axie id->defense-rating)))))))
 
 (rf/reg-sub
   :my-axies/count
@@ -341,6 +352,13 @@
     (get db :card-rankings {})))
 
 (rf/reg-sub
+  :card-rankings/ranking-type
+  (fn [_]
+    [(rf/subscribe [:card-rankings])])
+  (fn [[cr]]
+    (get cr :ranking-type :all)))
+
+(rf/reg-sub
   :card-rankings/loading?
   (fn [_]
     [(rf/subscribe [:card-rankings])])
@@ -349,15 +367,16 @@
 
 (rf/reg-sub
   :card-rankings/rankings
-  (fn [_]
-    [(rf/subscribe [:card-rankings])])
-  (fn [[cr]]
-    (get-in cr [:rankings])))
+  (fn [[_ ranking-type]]
+    [(rf/subscribe [:card-rankings])
+     (rf/subscribe [:identity ranking-type])])
+  (fn [[cr ranking-type]]
+    (get cr (ranking-type->key ranking-type) [])))
 
 (rf/reg-sub
   :card-rankings/id->rating
-  (fn [_]
-    [(rf/subscribe [:card-rankings/rankings])])
+  (fn [[_ ranking-type]]
+    [(rf/subscribe [:card-rankings/rankings ranking-type])])
   (fn [[rankings]]
     (->> rankings
          (map (fn [{:keys [id rating]}]
