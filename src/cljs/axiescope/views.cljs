@@ -18,6 +18,9 @@
     [axiescope.views.panels.multi-gifter :as multi-gifter]
     [axiescope.views.panels.card-rankings :as card-rankings]
     [axiescope.views.panels.card-rankings-vote :as card-rankings-vote]
+    [axiescope.views.panels.combo-rankings :as combo-rankings]
+    [axiescope.views.panels.combo-rankings-add :as combo-rankings-add]
+    [axiescope.views.panels.combo-rankings-vote :as combo-rankings-vote]
     [axiescope.views.panels.cards :as cards]
     [axiescope.views.layout :refer [header footer]]
     [axiescope.views.shared :refer [axies-pager axie-sorter sort-key-button sort-order-button my-axies-table]]
@@ -46,7 +49,9 @@
         [:li [:a {:href "/card-rankings/attack"}
               "Attack Rankings"]]
         [:li [:a {:href "/card-rankings/defense"}
-              "Defense Rankings"]]]]
+              "Defense Rankings"]]
+        [:li [:a {:href "/combo-rankings"}
+              "Combo Rankings"]]]]
       [:li [:a {:href "/axie"}
             "Axie Evaluator"]
        [:ul
@@ -80,6 +85,9 @@
     :multi-gifter-panel [multi-gifter/panel]
     :card-rankings-panel [card-rankings/panel]
     :card-rankings-vote-panel [card-rankings-vote/panel]
+    :combo-rankings-panel [combo-rankings/panel]
+    :combo-rankings-add-panel [combo-rankings-add/panel]
+    :combo-rankings-vote-panel [combo-rankings-vote/panel]
     :cards-panel [cards/panel]
     [home-panel]))
 

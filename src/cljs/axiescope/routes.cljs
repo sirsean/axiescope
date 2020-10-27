@@ -24,6 +24,15 @@
                   :card-rankings-panel
                   (keyword ranking-type)]))
 
+  (defroute "/combo-rankings/vote" []
+    (rf/dispatch [::events/set-active-panel :combo-rankings-vote-panel]))
+
+  (defroute "/combo-rankings/add" []
+    (rf/dispatch [::events/set-active-panel :combo-rankings-add-panel]))
+
+  (defroute "/combo-rankings" []
+    (rf/dispatch [::events/set-active-panel :combo-rankings-panel]))
+
   (defroute "/axie" []
     (rf/dispatch [::events/set-active-panel :axie-panel]))
 

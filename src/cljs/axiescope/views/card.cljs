@@ -1,5 +1,6 @@
 (ns axiescope.views.card
   (:require
+    [re-frame.core :as rf]
     [cuerdas.core :refer [format]]
     ))
 
@@ -46,3 +47,43 @@
                    :right "36px"}}
     description]
    ])
+
+(defn search-box
+  []
+  [:div.row
+   [:div.col-xs-12.center-xs
+    [:input {:style {:margin "2em"
+                     :padding "0.5em"}
+             :type "text"
+             :placeholder "Search..."
+             :on-change (fn [e]
+                          (rf/dispatch [:cards/set-search (-> e .-target .-value)]))}]]])
+
+(defn selector-button
+  [section selector active-selector]
+  (let [active? (= selector active-selector)]
+    [:button
+     {:style {:padding "4px 8px"
+              :margin "0 0.1em"
+              :background-color (if active?
+                                  "#2277bb"
+                                  "#bcd6ea")
+              :color (if active?
+                       "white"
+                       "black")
+              :border "none"
+              :outline "none"
+              :border-radius "1em"}
+      :disabled active?
+      :on-click #(rf/dispatch [(keyword section :set-selector) selector])}
+     (name selector)]))
+
+(defn selectors
+  [section selectors]
+  (let [active-selector @(rf/subscribe [(keyword section :selector)])]
+  [:div.row
+   [:div.col-xs-12.center-xs
+    {:style {:margin "0.4em"}}
+    (for [selector selectors]
+      ^{:key selector}
+      [selector-button section selector active-selector])]]))

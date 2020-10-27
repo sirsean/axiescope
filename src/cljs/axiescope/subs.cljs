@@ -391,6 +391,56 @@
     (get-in cr [:pair])))
 
 (rf/reg-sub
+  :combo-rankings
+  (fn [db]
+    (get db :combo-rankings {})))
+
+(rf/reg-sub
+  :combo-rankings/loading?
+  (fn [_]
+    [(rf/subscribe [:combo-rankings])])
+  (fn [[cr]]
+    (get cr :loading? false)))
+
+(rf/reg-sub
+  :combo-rankings/rankings
+  (fn [_]
+    [(rf/subscribe [:combo-rankings])])
+  (fn [[cr]]
+    (get cr :rankings [])))
+
+(rf/reg-sub
+  :combo-rankings/id->rating
+  (fn [_]
+    [(rf/subscribe [:combo-rankings/rankings])])
+  (fn [[rankings]]
+    (->> rankings
+         (map (fn [{:keys [id rating]}]
+                [(keyword id) rating]))
+         (into {}))))
+
+(rf/reg-sub
+  :combo-rankings/pair
+  (fn [_]
+    [(rf/subscribe [:combo-rankings])])
+  (fn [[cr]]
+    (get cr :pair)))
+
+(rf/reg-sub
+  :combo-rankings/add-selections
+  (fn [_]
+    [(rf/subscribe [:combo-rankings])])
+  (fn [[cr]]
+    (get-in cr [:add :selected] {})))
+
+(rf/reg-sub
+  :combo-rankings/add-loading?
+  (fn [_]
+    [(rf/subscribe [:combo-rankings])])
+  (fn [[cr]]
+    (get-in cr [:add :loading?] false)))
+
+(rf/reg-sub
   :cards
   (fn [db]
     (get db :cards {})))

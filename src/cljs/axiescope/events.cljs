@@ -210,9 +210,34 @@
               ranking-type
               [[:card-rankings/next-pair ranking-type]]]})
 
-(defmethod set-active-panel :cards-panel
+(defmethod set-active-panel :combo-rankings-panel
   [{:keys [db]} [_ panel]]
   {:db (assoc db :active-panel panel)
+   :dispatch [:combo-rankings/fetch]})
+
+(defmethod set-active-panel :combo-rankings-vote-panel
+  [{:keys [db]} [_ panel]]
+  {:db (assoc db :active-panel panel)
+   :dispatch [:combo-rankings/fetch [[:combo-rankings/next-pair]]]})
+
+(defmethod set-active-panel :combo-rankings-add-panel
+  [{:keys [db]} [_ panel]]
+  {:db (-> db
+           (assoc :active-panel panel)
+           (update :cards dissoc :search)
+           (update :cards dissoc :selector)
+           (update :cards dissoc :sort-key)
+           (update :cards dissoc :sort-order))
+   :dispatch [:cards/fetch]})
+
+(defmethod set-active-panel :cards-panel
+  [{:keys [db]} [_ panel]]
+  {:db (-> db
+           (assoc :active-panel panel)
+           (update :cards dissoc :search)
+           (update :cards dissoc :selector)
+           (update :cards dissoc :sort-key)
+           (update :cards dissoc :sort-order))
    :dispatch [:cards/fetch]})
 
 (rf/reg-event-fx
@@ -754,6 +779,84 @@ fragment AxieAuction on Auction {
   :card-rankings/voted
   (fn [_ [_ ranking-type]]
     {:dispatch [:card-rankings/next-pair ranking-type]}))
+
+(rf/reg-event-fx
+  :combo-rankings/fetch
+  (fn [{:keys [db]} [_ after-handlers]]
+    {:db (-> db
+             (assoc-in [:combo-rankings :loading?] true))
+     :http-get {:url (format "%s/api/combo-rankings" api-host)
+                :handler [:combo-rankings/got after-handlers]}}))
+
+(rf/reg-event-fx
+  :combo-rankings/got
+  (fn [{:keys [db]} [_ after-handlers rankings]]
+    {:db (-> db
+             (assoc-in [:combo-rankings :loading?] false)
+             (assoc-in [:combo-rankings :rankings] rankings))
+     :dispatch-n (or after-handlers [])}))
+
+(rf/reg-event-db
+  :combo-rankings/next-pair
+  (fn [db [_]]
+    (-> db
+        (assoc-in [:combo-rankings :pair]
+                  (->> (get-in db [:combo-rankings :rankings] [])
+                       shuffle
+                       (take 2))))))
+
+(rf/reg-event-fx
+  :combo-rankings/vote
+  (fn [{:keys [db]} [_ winner loser]]
+    {:http-post {:url (format "%s/api/combo-rankings/%s/%s"
+                              api-host winner loser)
+                 :handler [:combo-rankings/voted]}}))
+
+(rf/reg-event-fx
+  :combo-rankings/voted
+  (fn [_ [_]]
+    {:dispatch [:combo-rankings/next-pair]}))
+
+(rf/reg-event-db
+  :combo-rankings/add-select
+  (fn [db [_ card]]
+    (-> db
+        (assoc-in [:combo-rankings :add :selected (keyword (:type card))] card))))
+
+(rf/reg-event-db
+  :combo-rankings/add-deselect
+  (fn [db [_ card]]
+    (-> db
+        (update-in [:combo-rankings :add :selected] dissoc (keyword (:type card))))))
+
+(defn format-combo-key
+  [ids]
+  (->> ids
+       (map name)
+       sort
+       (string/join ".")))
+
+(rf/reg-event-fx
+  :combo-rankings/add-submit
+  (fn [{:keys [db]} _]
+    (let [selections (get-in db [:combo-rankings :add :selected])]
+      {:db (-> db
+               (assoc-in [:combo-rankings :add :loading?] true))
+       :http-post {:url (format "%s/api/combo-rankings/%s"
+                                api-host
+                                (->> selections
+                                     vals
+                                     (map :id)
+                                     format-combo-key))
+                   :handler [:combo-rankings/added]}})))
+
+(rf/reg-event-fx
+  :combo-rankings/added
+  (fn [{:keys [db]} _]
+    {:db (-> db
+             (assoc-in [:combo-rankings :add :loading?] false)
+             (update-in [:combo-rankings :add] dissoc :selected))
+     :dispatch [::set-active-panel :combo-rankings-panel]}))
 
 (rf/reg-event-fx
   :cards/fetch
