@@ -18,6 +18,7 @@
     [axiescope.config :refer [api-host]]
     [axiescope.genes :as genes]
     [axiescope.db :as db]
+    [axiescope.query :as query]
     [axiescope.util :refer [ranking-type->key]]
     )
   (:require-macros
@@ -403,67 +404,6 @@
        :dispatch [:my-axies/fetch-page]}
       {})))
 
-(def fetch-my-axies-query
-  "query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {
-  axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {
-    total
-    results {
-      ...AxieBrief
-      __typename
-    }
-    __typename
-  }
-}
-fragment AxieBrief on Axie {
-  id
-  name
-  stage
-  class
-  breedCount
-  image
-  title
-  stats {
-    ...AxieStats
-    __typename
-  }
-  parts {
-    ...AxiePart
-    __typename
-  }
-  __typename
-}
-fragment AxiePart on AxiePart {
-  id
-  name
-  class
-  type
-  specialGenes
-  stage
-  abilities {
-    ...AxieCardAbility
-    __typename
-  }
-  __typename
-}
-fragment AxieCardAbility on AxieCardAbility {
-  id
-  name
-  attack
-  defense
-  energy
-  description
-  backgroundUrl
-  effectIconUrl
-  __typename
-}
-fragment AxieStats on AxieStats {
-  hp
-  speed
-  skill
-  morale
-  __typename
-}")
-
 (rf/reg-event-fx
   :my-axies/fetch-page
   (fn [{:keys [db]} [_ total-axies]]
@@ -471,7 +411,7 @@ fragment AxieStats on AxieStats {
       (if (or (nil? total-axies)
               (< (count axies) total-axies))
         {:dispatch [::re-graph/query
-                    fetch-my-axies-query
+                    query/fetch-my-axies-query
                     {:owner (:eth-addr db)
                      :sort  "IdDesc"
                      :size  100
@@ -524,120 +464,6 @@ fragment AxieStats on AxieStats {
   (fn [db [_ offset]]
     (assoc-in db [:my-axies :offset] offset)))
 
-(def fetch-axie-query
-  "query GetAxieDetail($axieId: ID!) {
-  axie(axieId: $axieId) {
-    ...AxieDetail
-    __typename
-  }
-}
-fragment AxieDetail on Axie {
-  id
-  image
-  class
-  name
-  genes
-  owner
-  birthDate
-  bodyShape
-  class
-  sireId
-  sireClass
-  matronId
-  matronClass
-  stage
-  title
-  breedCount
-  level
-  figure {
-    atlas
-    model
-    image
-    __typename
-  }
-  parts {
-    ...AxiePart
-    __typename
-  }
-  stats {
-    ...AxieStats
-    __typename
-  }
-  auction {
-    ...AxieAuction
-    __typename
-  }
-  ownerProfile {
-    name
-    __typename
-  }
-  battleInfo {
-    ...AxieBattleInfo
-    __typename
-  }
-  children {
-    id
-    name
-    class
-    image
-    title
-    stage
-    __typename
-  }
-  __typename
-}
-fragment AxieBattleInfo on AxieBattleInfo {
-  banned
-  banUntil
-  level
-  __typename
-}
-fragment AxiePart on AxiePart {
-  id
-  name
-  class
-  type
-  specialGenes
-  stage
-  abilities {
-    ...AxieCardAbility
-    __typename
-  }
-  __typename
-}
-fragment AxieCardAbility on AxieCardAbility {
-  id
-  name
-  attack
-  defense
-  energy
-  description
-  backgroundUrl
-  effectIconUrl
-  __typename
-}
-fragment AxieStats on AxieStats {
-  hp
-  speed
-  skill
-  morale
-  __typename
-}
-fragment AxieAuction on Auction {
-  startingPrice
-  endingPrice
-  startingTimestamp
-  endingTimestamp
-  duration
-  timeLeft
-  currentPrice
-  currentPriceUSD
-  suggestedPrice
-  seller
-  listingIndex
-  __typename
-}")
-
 (rf/reg-event-fx
   ::fetch-axie
   (fn [{:keys [db]} [_ axie-id {:keys [force? handler]}]]
@@ -646,7 +472,7 @@ fragment AxieAuction on Auction {
         (or (nil? axie)
             force?)
         {:dispatch [::re-graph/query
-                    fetch-axie-query
+                    query/fetch-axie-query
                     {:axieId axie-id}
                     [:axie/got handler]]}
 

@@ -7,6 +7,7 @@
                  [cljs-web3 "0.19.0-0-11"]
                  [district0x/re-frame-interval-fx "1.0.2"]
                  [re-graph "0.1.14" :exclusions [re-graph.hato]]
+                 [district0x/graphql-query "1.0.6"]
                  [camel-snake-kebab "0.4.0"]
                  [cljs-ajax "0.7.4"]
                  [funcool/cuerdas "2.2.0"]

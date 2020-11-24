@@ -46,8 +46,8 @@
   [axie]
   (->> axie
        :parts
-       (map :mystic)
-       (filter true?)
+       (map :special-genes)
+       (filter (partial = "Mystic"))
        count))
 
 (defn attach-num-mystic
